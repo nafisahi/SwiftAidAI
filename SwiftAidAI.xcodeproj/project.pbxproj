@@ -35,16 +35,6 @@
 			path = SwiftAidAI;
 			sourceTree = "<group>";
 		};
-		C86B02EE2D81E0F900896171 /* SwiftAidAITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SwiftAidAITests;
-			sourceTree = "<group>";
-		};
-		C86B02F82D81E0F900896171 /* SwiftAidAIUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SwiftAidAIUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -76,8 +66,6 @@
 			isa = PBXGroup;
 			children = (
 				C86B02DD2D81E0F700896171 /* SwiftAidAI */,
-				C86B02EE2D81E0F900896171 /* SwiftAidAITests */,
-				C86B02F82D81E0F900896171 /* SwiftAidAIUITests */,
 				C86B02DC2D81E0F700896171 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -130,9 +118,6 @@
 			dependencies = (
 				C86B02ED2D81E0F900896171 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				C86B02EE2D81E0F900896171 /* SwiftAidAITests */,
-			);
 			name = SwiftAidAITests;
 			packageProductDependencies = (
 			);
@@ -152,9 +137,6 @@
 			);
 			dependencies = (
 				C86B02F72D81E0F900896171 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				C86B02F82D81E0F900896171 /* SwiftAidAIUITests */,
 			);
 			name = SwiftAidAIUITests;
 			packageProductDependencies = (
