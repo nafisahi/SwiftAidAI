@@ -1,15 +1,15 @@
 import Foundation
 
-struct User {
-    var firstName: String
-    var surname: String
+struct User: Identifiable, Codable {
+    var id: String
+    var fullname: String
     var email: String
     var password: String
     
     // Computed property for initials
     var initials: String {
         let formatter = PersonNameComponentsFormatter()
-        let fullName = "\(firstName) \(surname)"
+        let fullName = "\(fullname)"
         if let components = formatter.personNameComponents(from: fullName) {
             formatter.style = .abbreviated
             return formatter.string(from: components)
@@ -22,8 +22,8 @@ struct User {
 
 extension User {
     static var MOCK_USER = User(
-        firstName: "Kobe",
-        surname: "Bryant",
+        id: "mockUserId",
+        fullname: "Kobe Bryant",
         email: "test@gmail.com",
         password: "password123" // Add a mock password
     )

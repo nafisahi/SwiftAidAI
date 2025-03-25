@@ -9,8 +9,13 @@ struct LoginView: View {
     @State private var passwordError: String = ""
     @State private var isFormValid: Bool = false
     
+    // State to track login status
+    @State private var isLoggedIn: Bool = false
+    
+    @EnvironmentObject var authViewModel: AuthViewModel
+    
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Background color gradient
                 LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
@@ -80,7 +85,15 @@ struct LoginView: View {
 
                     // Login button
                     Button(action: {
-                        // Handle login action
+                        Task {
+                            do {
+                                try await authViewModel.signIn(withEmail: email, password: password)
+                                isLoggedIn = true
+                            } catch {
+                                // Handle error (e.g., show an alert)
+                                print("Login failed: \(error.localizedDescription)")
+                            }
+                        }
                     }) {
                         Text("Login")
                             .font(.headline)
@@ -106,6 +119,14 @@ struct LoginView: View {
                             .foregroundColor(.blue)
                     }
                     .padding(.top, 15)
+
+                    // NavigationLink to ProfileView
+                    NavigationLink(value: isLoggedIn) {
+                        EmptyView()
+                    }
+                    .navigationDestination(isPresented: $isLoggedIn) {
+                        ProfileView()
+                    }
                 }
                 .padding(.vertical, 30)
                 .background(

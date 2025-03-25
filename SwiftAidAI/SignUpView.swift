@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct SignUpView: View {
     @State private var firstName: String = ""
@@ -14,171 +15,202 @@ struct SignUpView: View {
     @State private var passwordError: String = ""
     @State private var confirmPasswordError: String = ""
     @State private var isFormValid: Bool = false
+    @State private var showEmailInUseAlert: Bool = false
+    @State private var navigateToLogin: Bool = false
+    
+    @EnvironmentObject var authViewModel: AuthViewModel
 
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
-                           startPoint: .top, 
-                           endPoint: .bottom)
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                // Background gradient
+                LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
+                               startPoint: .top, 
+                               endPoint: .bottom)
+                    .ignoresSafeArea()
 
-            GeometryReader { geometry in
-                ScrollView {
-                    VStack(spacing: 20) {
-                        Text("Create Account")
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.blue)
-                            .padding(.top, 20)
-
-                        // First name and surname in horizontal arrangement
-                        HStack(spacing: 15) {
-                            // First name field with validation
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("First Name")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                    .padding(.leading, 5)
-                                
-                                TextField("First Name", text: $firstName)
-                                    .padding()
-                                    .background(Color.white)
-                                    .cornerRadius(10)
-                                    .shadow(color: .black.opacity(0.1), radius: 5)
-                                    .onChange(of: firstName) { validateFirstName() }
-                                
-                                if !firstNameError.isEmpty {
-                                    Text(firstNameError)
-                                        .font(.caption)
-                                        .foregroundColor(.red)
-                                        .padding(.leading, 4)
-                                }
-                            }
-                            
-                            // Surname field with validation
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Surname")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                    .padding(.leading, 5)
-                                
-                                TextField("Surname", text: $surname)
-                                    .padding()
-                                    .background(Color.white)
-                                    .cornerRadius(10)
-                                    .shadow(color: .black.opacity(0.1), radius: 5)
-                                    .onChange(of: surname) { validateSurname() }
-                                
-                                if !surnameError.isEmpty {
-                                    Text(surnameError)
-                                        .font(.caption)
-                                        .foregroundColor(.red)
-                                        .padding(.leading, 4)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-
-                        // Email field with validation
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Email")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .padding(.leading, 5)
-                            
-                            TextField("Email", text: $email)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.1), radius: 5)
-                                .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
-                                .onChange(of: email) { validateEmail() }
-                                .padding(.horizontal)
-                            
-                            if !emailError.isEmpty {
-                                Text(emailError)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding(.leading, 9)
-                            }
-                        }
-
-                        // Password field with validation
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Password")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .padding(.leading, 5)
-                            
-                            SecureField("Password", text: $password)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.1), radius: 5)
-                                .onChange(of: password) { 
-                                    validatePassword()
-                                    validateConfirmPassword()
-                                }
-                                .padding(.horizontal)
-                            
-                            if !passwordError.isEmpty {
-                                Text(passwordError)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding(.leading, 9)
-                            }
-                        }
-
-                        // Confirm password field with validation
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Confirm Password")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .padding(.leading, 5)
-                            
-                            SecureField("Confirm Password", text: $confirmPassword)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.1), radius: 5)
-                                .onChange(of: confirmPassword) { validateConfirmPassword() }
-                                .padding(.horizontal)
-                            
-                            if !confirmPasswordError.isEmpty {
-                                Text(confirmPasswordError)
-                                    .font(.caption)
-                                    .foregroundColor(.red)
-                                    .padding(.leading, 9)
-                            }
-                        }
-
-                        // Sign up button
-                        Button(action: {
-                            // Handle sign up action
-                        }) {
+                GeometryReader { geometry in
+                    ScrollView {
+                        VStack(spacing: 20) {
                             Text("Create Account")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(isFormValid ? Color.blue : Color.gray)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.2), radius: 5)
-                                .padding(.horizontal)
+                                .font(.largeTitle)
+                                .bold()
+                                .foregroundColor(.blue)
+                                .padding(.top, 20)
+
+                            // First name and surname in horizontal arrangement
+                            HStack(spacing: 15) {
+                                // First name field with validation
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("First Name")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                        .padding(.leading, 5)
+                                    
+                                    TextField("First Name", text: $firstName)
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(10)
+                                        .shadow(color: .black.opacity(0.1), radius: 5)
+                                        .onChange(of: firstName) { validateFirstName() }
+                                    
+                                    if !firstNameError.isEmpty {
+                                        Text(firstNameError)
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                            .padding(.leading, 4)
+                                    }
+                                }
+                                
+                                // Surname field with validation
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Surname")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                        .padding(.leading, 5)
+                                    
+                                    TextField("Surname", text: $surname)
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(10)
+                                        .shadow(color: .black.opacity(0.1), radius: 5)
+                                        .onChange(of: surname) { validateSurname() }
+                                    
+                                    if !surnameError.isEmpty {
+                                        Text(surnameError)
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                            .padding(.leading, 4)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal)
+
+                            // Email field with validation
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Email")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.leading, 5)
+                                
+                                TextField("Email", text: $email)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.1), radius: 5)
+                                    .keyboardType(.emailAddress)
+                                    .autocapitalization(.none)
+                                    .onChange(of: email) { validateEmail() }
+                                    .padding(.horizontal)
+                                
+                                if !emailError.isEmpty {
+                                    Text(emailError)
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.leading, 9)
+                                }
+                            }
+
+                            // Password field with validation
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Password")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.leading, 5)
+                                
+                                SecureField("Password", text: $password)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.1), radius: 5)
+                                    .onChange(of: password) { 
+                                        validatePassword()
+                                        validateConfirmPassword()
+                                    }
+                                    .padding(.horizontal)
+                                
+                                if !passwordError.isEmpty {
+                                    Text(passwordError)
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.leading, 9)
+                                }
+                            }
+
+                            // Confirm password field with validation
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Confirm Password")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                    .padding(.leading, 5)
+                                
+                                SecureField("Confirm Password", text: $confirmPassword)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.1), radius: 5)
+                                    .onChange(of: confirmPassword) { validateConfirmPassword() }
+                                    .padding(.horizontal)
+                                
+                                if !confirmPasswordError.isEmpty {
+                                    Text(confirmPasswordError)
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.leading, 9)
+                                }
+                            }
+
+                            // Sign up button
+                            Button(action: {
+                                Task {
+                                    do {
+                                        try await authViewModel.createUser(withEmail: email, password: password, fullname: "\(firstName) \(surname)")
+                                        // Handle successful sign-up, e.g., navigate to another view
+                                    } catch let error as NSError {
+                                        if error.code == AuthErrorCode.emailAlreadyInUse.rawValue {
+                                            showEmailInUseAlert = true
+                                        } else {
+                                            print("Sign-up failed: \(error.localizedDescription)")
+                                        }
+                                    }
+                                }
+                            }) {
+                                Text("Sign Up")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(maxWidth: .infinity)
+                                    .background(isFormValid ? Color.blue : Color.gray)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.1), radius: 5)
+                            }
+                            .disabled(!isFormValid)
+                            .padding(.horizontal)
+                            .alert(isPresented: $showEmailInUseAlert) {
+                                Alert(
+                                    title: Text("Email Already in Use"),
+                                    message: Text("There's already an account with this email. Would you like to try logging in?"),
+                                    primaryButton: .default(Text("OK")) {
+                                        navigateToLogin = true
+                                    },
+                                    secondaryButton: .cancel()
+                                )
+                            }
+                            
+                            // NavigationLink to LoginView
+                            .navigationDestination(isPresented: $navigateToLogin) {
+                                LoginView()
+                            }
                         }
-                        .disabled(!isFormValid)
-                        .padding(.top, 10)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.white.opacity(0.8))
+                                .shadow(color: .black.opacity(0.1), radius: 10)
+                        )
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 30)
                     }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white.opacity(0.8))
-                            .shadow(color: .black.opacity(0.1), radius: 10)
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 30)
                 }
             }
         }

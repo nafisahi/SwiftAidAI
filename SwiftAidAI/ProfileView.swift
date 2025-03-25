@@ -1,7 +1,10 @@
 import SwiftUI
 
 struct ProfileView: View {
-    @State private var user: User = User.MOCK_USER
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @State private var showDeleteAlert = false
+    @State private var showConfirmDialog = false
+    @State private var showDeletionMessage = false
     
     var body: some View {
         NavigationView {
@@ -15,7 +18,7 @@ struct ProfileView: View {
                         .foregroundColor(.purple)
                         .padding(.top, 20)
                     
-                    Text("\(user.firstName) \(user.surname)")
+                    Text("\(authViewModel.currentUser?.fullname ?? "Unknown User")")
                         .font(.title2)
                         .bold()
                         .foregroundColor(.primary)
@@ -28,7 +31,7 @@ struct ProfileView: View {
                     HStack {
                         Text("Email")
                         Spacer()
-                        Text(user.email)
+                        Text(authViewModel.currentUser?.email ?? "Unknown Email")
                             .foregroundColor(.gray)
                     }
                 }
@@ -36,17 +39,51 @@ struct ProfileView: View {
                 // Actions
                 Section {
                     Button(action: {
-                        // Handle log out action
+                        authViewModel.signOut()
+                        // Handle post sign-out actions, e.g., navigate to login view
                     }) {
                         Text("Log Out")
                             .foregroundColor(.blue)
                     }
                     
                     Button(action: {
-                        // Handle delete account action
+                        showDeleteAlert = true
                     }) {
                         Text("Delete Account")
                             .foregroundColor(.red)
+                    }
+                    .alert(isPresented: $showDeleteAlert) {
+                        Alert(
+                            title: Text("Delete Account"),
+                            message: Text("Are you sure you want to delete your account?"),
+                            primaryButton: .destructive(Text("Delete")) {
+                                showConfirmDialog = true
+                            },
+                            secondaryButton: .cancel()
+                        )
+                    }
+                    .confirmationDialog("Confirm Account Deletion", isPresented: $showConfirmDialog) {
+                        Button("Confirm", role: .destructive) {
+                            Task {
+                                do {
+                                    try await authViewModel.deleteAccount()
+                                    authViewModel.signOut()
+                                    showDeletionMessage = true
+                                } catch {
+                                    print("Failed to delete account: \(error.localizedDescription)")
+                                }
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    }
+                }
+                
+                // Deletion Confirmation Message
+                if showDeletionMessage {
+                    Section {
+                        Text("Your account has been successfully deleted. Thank you for using our service!")
+                            .foregroundColor(.green)
+                            .multilineTextAlignment(.center)
                     }
                 }
             }
