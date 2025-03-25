@@ -79,4 +79,13 @@ class AuthViewModel: ObservableObject {
             print("DEBUG: Failed to fetch user with error \(error.localizedDescription)")
         }
     }
+    
+    func resetPassword(withEmail email: String) async throws {
+        do {
+            try await Auth.auth().sendPasswordReset(withEmail: email)
+        } catch {
+            print("DEBUG: Failed to send password reset email with error \(error.localizedDescription)")
+            throw error
+        }
+    }
 }

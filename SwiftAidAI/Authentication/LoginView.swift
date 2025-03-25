@@ -14,6 +14,14 @@ struct LoginView: View {
     
     @EnvironmentObject var authViewModel: AuthViewModel
     
+    @State private var showLoginError = false
+    @State private var loginErrorMessage = ""
+    
+    @State private var showForgotPasswordSheet = false
+    @State private var resetEmailSent = false
+    @State private var resetEmail: String = ""
+    @State private var resetEmailError: String = ""
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -74,7 +82,8 @@ struct LoginView: View {
                     HStack {
                         Spacer()
                         Button(action: {
-                            // Handle forgot password action
+                            resetEmail = email // Pre-fill with email if already entered
+                            showForgotPasswordSheet = true
                         }) {
                             Text("Forgot Password?")
                                 .font(.subheadline)
@@ -82,6 +91,94 @@ struct LoginView: View {
                         }
                     }
                     .padding(.horizontal)
+                    .sheet(isPresented: $showForgotPasswordSheet) {
+                        NavigationStack {
+                            VStack(spacing: 20) {
+                                Image(systemName: "lock.rotation")
+                                    .font(.system(size: 50))
+                                    .foregroundColor(.blue)
+                                    .padding(.top, 30)
+                                
+                                Text("Reset Password")
+                                    .font(.title2)
+                                    .bold()
+                                
+                                Text("Enter your email address and we'll send you instructions to reset your password.")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    TextField("Email", text: $resetEmail)
+                                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                                        .textContentType(.emailAddress)
+                                        .autocapitalization(.none)
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(10)
+                                        .shadow(color: .black.opacity(0.1), radius: 5)
+                                    
+                                    if !resetEmailError.isEmpty {
+                                        Text(resetEmailError)
+                                            .font(.caption)
+                                            .foregroundColor(.red)
+                                            .padding(.leading)
+                                    }
+                                }
+                                .padding(.horizontal)
+                                
+                                Button(action: {
+                                    Task {
+                                        do {
+                                            try await authViewModel.resetPassword(withEmail: resetEmail)
+                                            resetEmailSent = true
+                                            // We'll keep the sheet open to show success message
+                                        } catch {
+                                            resetEmailError = "We couldn't find an account with that email. Please check and try again."
+                                        }
+                                    }
+                                }) {
+                                    Text("Send Reset Link")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color.blue)
+                                        .cornerRadius(10)
+                                }
+                                .padding(.horizontal)
+                                
+                                if resetEmailSent {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                            .font(.system(size: 40))
+                                        
+                                        Text("Reset Link Sent!")
+                                            .font(.headline)
+                                            .foregroundColor(.green)
+                                        
+                                        Text("Please check your email for instructions to reset your password.")
+                                            .font(.subheadline)
+                                            .foregroundColor(.gray)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                    .padding()
+                                    .background(Color.green.opacity(0.1))
+                                    .cornerRadius(10)
+                                    .padding()
+                                }
+                                
+                                Spacer()
+                            }
+                            .navigationBarItems(trailing: Button("Close") {
+                                showForgotPasswordSheet = false
+                                resetEmailSent = false
+                                resetEmailError = ""
+                            })
+                        }
+                    }
 
                     // Login button
                     Button(action: {
@@ -90,8 +187,8 @@ struct LoginView: View {
                                 try await authViewModel.signIn(withEmail: email, password: password)
                                 isLoggedIn = true
                             } catch {
-                                // Handle error (e.g., show an alert)
-                                print("Login failed: \(error.localizedDescription)")
+                                loginErrorMessage = "The email or password you entered is incorrect. Please try again."
+                                showLoginError = true
                             }
                         }
                     }) {
@@ -107,6 +204,13 @@ struct LoginView: View {
                     }
                     .disabled(!isFormValid)
                     .padding(.top, 10)
+                    .alert("Oops!", isPresented: $showLoginError) {
+                        Button("Try Again", role: .cancel) {
+                            password = "" // Clear password field for security
+                        }
+                    } message: {
+                        Text(loginErrorMessage)
+                    }
 
                     // Sign up navigation link with bold text
                     NavigationLink(destination: SignUpView()) {
@@ -145,7 +249,7 @@ struct LoginView: View {
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
         
         if email.isEmpty {
-            emailError = "Email is required"
+            emailError = "Please enter your email address"
         } else if !emailPredicate.evaluate(with: email) {
             emailError = "Please enter a valid email address"
         } else {
@@ -157,9 +261,9 @@ struct LoginView: View {
     
     private func validatePassword() {
         if password.isEmpty {
-            passwordError = "Password is required"
+            passwordError = "Please enter your password"
         } else if password.count < 6 {
-            passwordError = "Password must be at least 6 characters"
+            passwordError = "Your password should be at least 6 characters"
         } else {
             passwordError = ""
         }
