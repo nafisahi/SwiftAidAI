@@ -217,7 +217,7 @@ struct NosebleedStepCard: View {
                     
                     // Show timer after the pressure instruction if checked
                     if instruction.contains("Hold pressure for 10 minutes") && showTimer {
-                        TimerView(
+                        SharedTimerView(
                             timeRemaining: $timeRemaining,
                             timeRemainingFormatted: timeRemainingFormatted,
                             timerIsRunning: $timerIsRunning,
@@ -225,7 +225,7 @@ struct NosebleedStepCard: View {
                             onStop: { stopTimer() },
                             onReset: {
                                 stopTimer()
-                                timeRemaining = 600
+                                timeRemaining = 600  // Keep 10 minutes for nosebleeds
                                 startTimer()
                             },
                             timerColor: Color(red: 0.8, green: 0.2, blue: 0.2),

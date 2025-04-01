@@ -2,18 +2,18 @@ import SwiftUI
 
 struct BurnInjury: Identifiable {
     let id = UUID()
+    let type: BurnType
     let title: String
+    let description: String
     let icon: String
     let color: Color
-    let description: String
-    let type: BurnType
 }
 
 enum BurnType {
-    case thermal
     case chemical
-    case electrical
-    case scald
+    case severe
+    case minor
+    case sunburn
 }
 
 struct BurnsAndScaldsView: View {
@@ -21,40 +21,33 @@ struct BurnsAndScaldsView: View {
     @State private var isSearching = false
     
     let burnTopics = [
-        // Thermal Burns
         BurnInjury(
-            title: "Thermal Burns",
-            icon: "flame.fill",
-            color: .orange,
-            description: "Burns from fire, hot surfaces, and heat sources",
-            type: .thermal
-        ),
-        
-        // Chemical Burns
-        BurnInjury(
+            type: .chemical,
             title: "Chemical Burns",
-            icon: "drop.triangle.fill",
-            color: Color(red: 0.9, green: 0.5, blue: 0.0),
-            description: "Burns from acids, alkalis, and other chemicals",
-            type: .chemical
+            description: "Burns caused by strong acids, alkalis or other chemicals",
+            icon: "flask.fill",
+            color: .red
         ),
-        
-        // Electrical Burns
         BurnInjury(
-            title: "Electrical Burns",
-            icon: "bolt.fill",
-            color: Color(red: 1.0, green: 0.6, blue: 0.0),
-            description: "Burns from electrical current and lightning",
-            type: .electrical
+            type: .severe,
+            title: "Severe Burns",
+            description: "Deep or large burns requiring immediate medical attention",
+            icon: "flame.fill",
+            color: .red
         ),
-        
-        // Scalds
         BurnInjury(
-            title: "Scalds",
-            icon: "water.waves",
-            color: Color(red: 0.8, green: 0.4, blue: 0.0),
-            description: "Burns from hot liquids and steam",
-            type: .scald
+            type: .minor,
+            title: "Minor Burns",
+            description: "Small burns and scalds that can be treated at home",
+            icon: "bandage.fill",
+            color: .orange
+        ),
+        BurnInjury(
+            type: .sunburn,
+            title: "Sunburn",
+            description: "Skin damage caused by exposure to UV rays",
+            icon: "sun.max.fill",
+            color: .orange
         )
     ]
     
@@ -96,7 +89,7 @@ struct BurnsAndScaldsView: View {
                 // Burns Cards
                 LazyVStack(spacing: 16) {
                     ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: BurnInjuryDetailView(burn: topic)) {
+                        NavigationLink(destination: getBurnGuidanceView(for: topic)) {
                             BurnInjuryCard(burn: topic)
                         }
                     }
@@ -106,6 +99,20 @@ struct BurnsAndScaldsView: View {
         }
         .navigationTitle("Burns & Scalds")
         .navigationBarTitleDisplayMode(.large)
+    }
+    
+    @ViewBuilder
+    func getBurnGuidanceView(for burn: BurnInjury) -> some View {
+        switch burn.type {
+            case .chemical:
+                ChemicalBurnsGuidanceView()
+            case .severe:
+                SevereBurnsGuidanceView()
+            case .minor:
+                MinorBurnsGuidanceView()
+            case .sunburn:
+                SunburnGuidanceView()
+        }
     }
 }
 

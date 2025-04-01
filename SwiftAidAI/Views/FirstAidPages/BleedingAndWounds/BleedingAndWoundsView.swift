@@ -17,25 +17,25 @@ struct BleedingAndWoundsView: View {
             title: "Severe Bleeding",
             icon: "drop.fill",
             color: .red,
-            description: "Life-threatening bleeding and hemorrhage control"
+            description: "Life-threatening bleeding and hemorrhage control."
         ),
         BleedingWound(
             title: "Minor Cuts and Grazes",
             icon: "bandage.fill",
             color: Color(red: 0.8, green: 0.2, blue: 0.2),
-            description: "Treatment for small wounds and abrasions"
+            description: "Treatment for small wounds and abrasions."
         ),
         BleedingWound(
             title: "Nosebleeds",
             icon: "nose.fill",
             color: Color(red: 0.9, green: 0.3, blue: 0.3),
-            description: "Managing and stopping nose bleeds"
+            description: "Managing and stopping nose bleeds."
         ),
         BleedingWound(
             title: "Blisters",
             icon: "bandage.fill",
             color: Color(red: 0.7, green: 0.1, blue: 0.1),
-            description: "Care and treatment for skin blisters"
+            description: "Care and treatment for skin blisters."
         )
     ]
     

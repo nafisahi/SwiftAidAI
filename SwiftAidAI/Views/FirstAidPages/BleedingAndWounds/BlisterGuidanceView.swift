@@ -19,9 +19,9 @@ struct BlisterGuidanceView: View {
             title: "Clean the Area",
             icon: "drop.fill",
             instructions: [
-                "Wash the skin around the blister with clean water",
-                "Gently pat the skin dry with a sterile gauze pad or clean, non-fluffy cloth",
-                "If you cannot wash the area, try to keep it as clean as possible"
+                "Wash the skin around the blister with clean water.",
+                "Gently pat the skin dry with a sterile gauze pad or clean, non-fluffy cloth.",
+                "If you cannot wash the area, try to keep it as clean as possible."
             ],
             warningNote: nil,
             imageName: "blister-1"
@@ -31,9 +31,9 @@ struct BlisterGuidanceView: View {
             title: "Protect the Blister",
             icon: "bandage.fill",
             instructions: [
-                "Cover the blister with a plaster",
-                "Make sure the pad on the plaster is larger than the blister area",
-                "Ideally use a special blister plaster, as these have a cushioned pad"
+                "Cover the blister with a plaster.",
+                "Make sure the pad on the plaster is larger than the blister area.",
+                "Ideally use a special blister plaster, as these have a cushioned pad."
             ],
             warningNote: "Don't burst the blister as this can increase the risk of infection",
             imageName: "blister-2"

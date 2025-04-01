@@ -20,10 +20,10 @@ struct CutsAndGrazesGuidanceView: View {
             title: "Clean the Wound",
             icon: "drop.fill",
             instructions: [
-                "Rinse the wound under running water or use sterile wipes",
-                "Do not rub the wound",
-                "Pat the wound dry using a gauze swab",
-                "For a cut, raise and support the injured part above the level of the heart"
+                "Rinse the wound under running water or use sterile wipes.",
+                "Do not rub the wound.",
+                "Pat the wound dry using a gauze swab.",
+                "For a cut, raise and support the injured part above the level of the heart."
             ],
             warningNote: "Avoid touching the wound",
             imageName: "cut-1"
@@ -33,10 +33,10 @@ struct CutsAndGrazesGuidanceView: View {
             title: "Dress the Wound",
             icon: "bandage.fill",
             instructions: [
-                "Clean around the wound with soap and water",
-                "Wipe away from the wound, using a clean swab for each stroke",
-                "Pat dry",
-                "Apply a sterile dressing or a large plaster"
+                "Clean around the wound with soap and water.",
+                "Wipe away from the wound, using a clean swab for each stroke.",
+                "Pat dry.",
+                "Apply a sterile dressing or a large plaster."
             ],
             warningNote: nil,
             imageName: "cut-2"
@@ -45,11 +45,11 @@ struct CutsAndGrazesGuidanceView: View {
     
     // Emergency criteria previously in step 3
     let emergencyCriteria = [
-        "A wound won't stop bleeding",
-        "A foreign object is embedded in the wound",
-        "A wound is from a human or animal bite",
-        "You think the wound might be infected",
-        "You are unsure whether the casualty has been immunised against tetanus"
+        "A wound won't stop bleeding.",
+        "A foreign object is embedded in the wound.",
+        "A wound is from a human or animal bite.",
+        "You think the wound might be infected.",
+        "You are unsure whether the casualty has been immunised against tetanus."
     ]
     
     var body: some View {
