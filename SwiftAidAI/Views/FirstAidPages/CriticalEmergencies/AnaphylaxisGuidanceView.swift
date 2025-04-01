@@ -131,20 +131,26 @@ struct AnaphylaxisSymptomsCard: View {
 struct AnaphylaxisStepCard: View {
     let step: AnaphylaxisStep
     @Binding var completedSteps: Set<String>
-    @State private var secondDoseTimeRemaining = 300 // Timer for second dose
-    @State private var secondDoseTimerRunning = false
-    @State private var furtherDoseTimeRemaining = 300 // Separate timer for further doses
-    @State private var furtherDoseTimerRunning = false
+    @State private var timeRemaining = 300 // 5 minutes in seconds
+    @State private var timerIsRunning = false
     @State private var showingCPR = false
-    @State private var injectionTime: Date? // Add this to store injection time
+    @State private var injectionTime: Date? = nil
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
-    // Add helper function to format time
-    private func formatTime(_ date: Date) -> String {
+    // Format time for injection display
+    private func formatInjectionTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
+        formatter.timeZone = .current
         return formatter.string(from: date)
+    }
+    
+    // Format remaining time for timer
+    private func formatRemainingTime() -> String {
+        let minutes = timeRemaining / 60
+        let seconds = timeRemaining % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
     
     var body: some View {
@@ -193,38 +199,75 @@ struct AnaphylaxisStepCard: View {
                             action: {
                                 if completedSteps.contains(instruction) {
                                     completedSteps.remove(instruction)
-                                    if instruction.contains("note time of injection") {
+                                    if instruction.lowercased().contains("note time") {
                                         injectionTime = nil
+                                    }
+                                    if instruction.contains("second dose") {
+                                        timerIsRunning = false
+                                        timeRemaining = 300
                                     }
                                 } else {
                                     completedSteps.insert(instruction)
-                                    if instruction.contains("note time of injection") {
+                                    if instruction.lowercased().contains("note time") {
                                         injectionTime = Date()
+                                    }
+                                    if instruction.contains("second dose") {
+                                        timerIsRunning = true
                                     }
                                 }
                             }
                         )
                         
-                        // Show time immediately after the checkbox for injection time instruction
-                        if instruction.contains("note time of injection") && completedSteps.contains(instruction) {
+                        // Show injection time with improved visibility
+                        if instruction.lowercased().contains("note") && 
+                           instruction.lowercased().contains("time") && 
+                           completedSteps.contains(instruction) {
                             HStack {
                                 Image(systemName: "clock.fill")
                                     .foregroundColor(.orange)
-                                Text("Injection given at \(formatTime(Date()))")
+                                Text("Injection given at \(formatInjectionTime(injectionTime ?? Date()))")
                                     .foregroundColor(.orange)
                                     .font(.subheadline)
+                                    .fontWeight(.medium)
                             }
                             .padding(.leading, 28)
-                            .animation(.easeIn, value: completedSteps.contains(instruction))
+                            .padding(.top, 4)
+                            .padding(.bottom, 2)
+                            .transition(.opacity)
                         }
-                    }
-                }
-                
-                if let warning = step.warningNote {
-                    if warning.contains("CPR") {
-                        CPRWarningNote(showingCPR: $showingCPR)
-                    } else {
-                        WarningNote(text: warning)
+                        
+                        // Show timer for second dose
+                        if instruction.contains("second dose") && completedSteps.contains(instruction) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    Image(systemName: timerIsRunning ? "timer" : "timer.circle.fill")
+                                        .foregroundColor(.orange)
+                                    Text(timerIsRunning ? "Next dose in: \(formatRemainingTime())" : "5:00")
+                                        .foregroundColor(.orange)
+                                        .font(.subheadline)
+                                        .monospacedDigit()
+                                }
+                                
+                                HStack(spacing: 8) {
+                                    Button(action: {
+                                        timerIsRunning.toggle()
+                                        if !timerIsRunning {
+                                            timeRemaining = 300
+                                        }
+                                    }) {
+                                        Text(timerIsRunning ? "Reset Timer" : "Start Timer")
+                                            .font(.caption)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(Color.orange)
+                                            .foregroundColor(.white)
+                                            .cornerRadius(8)
+                                    }
+                                }
+                            }
+                            .padding(.leading, 28)
+                            .transition(.opacity)
+                        }
                     }
                 }
             }
@@ -249,14 +292,10 @@ struct AnaphylaxisStepCard: View {
             }
         }
         .onReceive(timer) { _ in
-            // Update second dose timer
-            if secondDoseTimerRunning && secondDoseTimeRemaining > 0 {
-                secondDoseTimeRemaining -= 1
-            }
-            
-            // Update further dose timer
-            if furtherDoseTimerRunning && furtherDoseTimeRemaining > 0 {
-                furtherDoseTimeRemaining -= 1
+            if timerIsRunning && timeRemaining > 0 {
+                timeRemaining -= 1
+            } else if timerIsRunning && timeRemaining == 0 {
+                timerIsRunning = false
             }
         }
     }
