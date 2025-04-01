@@ -23,7 +23,7 @@ struct BoneAndJointInjuriesView: View {
     let boneTopics = [
         // Broken Bones
         BoneInjury(
-            title: "Broken Bones",
+            title: "Broken Bones (Fractures)",
             icon: "cross.case.fill",
             color: .purple,
             description: "Managing fractures and broken bones safely",
@@ -37,24 +37,6 @@ struct BoneAndJointInjuriesView: View {
             color: Color(red: 0.6, green: 0.2, blue: 0.8),
             description: "Soft tissue and muscle injuries",
             type: .sprain
-        ),
-        
-        // Dislocated Joints
-        BoneInjury(
-            title: "Dislocated Joints",
-            icon: "figure.arms.open",
-            color: Color(red: 0.5, green: 0.1, blue: 0.7),
-            description: "Joint displacement and management",
-            type: .dislocation
-        ),
-        
-        // Spinal Injuries
-        BoneInjury(
-            title: "Spinal Injuries",
-            icon: "figure.seated.side",
-            color: Color(red: 0.4, green: 0.0, blue: 0.6),
-            description: "Suspected spinal cord injuries and immobilization",
-            type: .spinal
         )
     ]
     
@@ -96,7 +78,18 @@ struct BoneAndJointInjuriesView: View {
                 // Injury Cards
                 LazyVStack(spacing: 16) {
                     ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: BoneInjuryDetailView(injury: topic)) {
+                        NavigationLink(destination: {
+                            switch topic.type {
+                            case .fracture:
+                                BrokenBonesGuidanceView()
+                            case .sprain:
+                                SprainsGuidanceView()
+                            case .dislocation:
+                                Text("Guidance coming soon")
+                            case .spinal:
+                                Text("Guidance coming soon")
+                            }
+                        }) {
                             BoneInjuryCard(injury: topic)
                         }
                     }
