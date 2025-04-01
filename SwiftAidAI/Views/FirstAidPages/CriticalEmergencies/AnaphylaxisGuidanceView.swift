@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct AnaphylaxisStep: Identifiable {
     let id = UUID()
@@ -131,12 +132,16 @@ struct AnaphylaxisSymptomsCard: View {
 struct AnaphylaxisStepCard: View {
     let step: AnaphylaxisStep
     @Binding var completedSteps: Set<String>
+    
+    // States for timer functionality
     @State private var timeRemaining = 300 // 5 minutes in seconds
     @State private var timerIsRunning = false
+    @State private var showTimer = false
+    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var timerCancellable: Cancellable? = nil
+    
     @State private var showingCPR = false
     @State private var injectionTime: Date? = nil
-    
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     // Format time for injection display
     private func formatInjectionTime(_ date: Date) -> String {
@@ -147,10 +152,24 @@ struct AnaphylaxisStepCard: View {
     }
     
     // Format remaining time for timer
-    private func formatRemainingTime() -> String {
+    private var timeRemainingFormatted: String {
         let minutes = timeRemaining / 60
         let seconds = timeRemaining % 60
-        return String(format: "%d:%02d", minutes, seconds)
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    // Start the timer
+    private func startTimer() {
+        timeRemaining = 300 // Reset to 5 minutes
+        timer = Timer.publish(every: 1, on: .main, in: .common)
+        timerCancellable = timer.connect()
+        timerIsRunning = true
+    }
+    
+    // Stop the timer
+    private func stopTimer() {
+        timerCancellable?.cancel()
+        timerIsRunning = false
     }
     
     var body: some View {
@@ -199,76 +218,83 @@ struct AnaphylaxisStepCard: View {
                             action: {
                                 if completedSteps.contains(instruction) {
                                     completedSteps.remove(instruction)
-                                    if instruction.lowercased().contains("note time") {
+                                    // Clear injection time if unchecking the note time instruction
+                                    if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = nil
                                     }
                                     if instruction.contains("second dose") {
-                                        timerIsRunning = false
-                                        timeRemaining = 300
+                                        showTimer = false
+                                        stopTimer()
                                     }
                                 } else {
                                     completedSteps.insert(instruction)
-                                    if instruction.lowercased().contains("note time") {
+                                    // Set injection time if checking the note time instruction
+                                    if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = Date()
                                     }
                                     if instruction.contains("second dose") {
-                                        timerIsRunning = true
+                                        showTimer = true
+                                        startTimer()
                                     }
                                 }
                             }
                         )
                         
-                        // Show injection time with improved visibility
+                        // Show injection time message if this is the note time instruction and it's checked
                         if instruction.lowercased().contains("note") && 
                            instruction.lowercased().contains("time") && 
                            completedSteps.contains(instruction) {
-                            HStack {
+                            HStack(spacing: 4) {
                                 Image(systemName: "clock.fill")
                                     .foregroundColor(.orange)
-                                Text("Injection given at \(formatInjectionTime(injectionTime ?? Date()))")
-                                    .foregroundColor(.orange)
+                                    .font(.system(size: 16))
+                                
+                                Text("Adrenaline administered at \(formatInjectionTime(injectionTime ?? Date()))")
                                     .font(.subheadline)
+                                    .foregroundColor(.orange)
                                     .fontWeight(.medium)
                             }
                             .padding(.leading, 28)
                             .padding(.top, 4)
-                            .padding(.bottom, 2)
-                            .transition(.opacity)
+                            .transition(.slide)
                         }
                         
-                        // Show timer for second dose
-                        if instruction.contains("second dose") && completedSteps.contains(instruction) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Image(systemName: timerIsRunning ? "timer" : "timer.circle.fill")
-                                        .foregroundColor(.orange)
-                                    Text(timerIsRunning ? "Next dose in: \(formatRemainingTime())" : "5:00")
-                                        .foregroundColor(.orange)
-                                        .font(.subheadline)
-                                        .monospacedDigit()
-                                }
-                                
-                                HStack(spacing: 8) {
-                                    Button(action: {
-                                        timerIsRunning.toggle()
-                                        if !timerIsRunning {
-                                            timeRemaining = 300
-                                        }
-                                    }) {
-                                        Text(timerIsRunning ? "Reset Timer" : "Start Timer")
-                                            .font(.caption)
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.orange)
-                                            .foregroundColor(.white)
-                                            .cornerRadius(8)
-                                    }
+                        // Show timer after the second dose instruction if checked
+                        if instruction.contains("second dose") && showTimer {
+                            SharedTimerView(
+                                timeRemaining: $timeRemaining,
+                                timeRemainingFormatted: timeRemainingFormatted,
+                                timerIsRunning: $timerIsRunning,
+                                onStart: { startTimer() },
+                                onStop: { stopTimer() },
+                                onReset: {
+                                    stopTimer()
+                                    timeRemaining = 300
+                                    startTimer()
+                                },
+                                timerColor: .orange,
+                                labelText: "Next Dose Timer: "
+                            )
+                            .padding(.leading, 28)
+                            .padding(.vertical, 8)
+                            .onReceive(timer) { _ in
+                                if timerIsRunning && timeRemaining > 0 {
+                                    timeRemaining -= 1
+                                } else if timeRemaining == 0 {
+                                    stopTimer()
                                 }
                             }
-                            .padding(.leading, 28)
-                            .transition(.opacity)
                         }
                     }
+                }
+            }
+            
+            // Warning note if present
+            if let warning = step.warningNote {
+                if warning.contains("CPR") {
+                    CPRWarningNote(showingCPR: $showingCPR)
+                } else {
+                    WarningNote(text: warning)
                 }
             }
         }
@@ -289,13 +315,6 @@ struct AnaphylaxisStepCard: View {
                     .navigationBarItems(trailing: Button("Done") {
                         showingCPR = false
                     })
-            }
-        }
-        .onReceive(timer) { _ in
-            if timerIsRunning && timeRemaining > 0 {
-                timeRemaining -= 1
-            } else if timerIsRunning && timeRemaining == 0 {
-                timerIsRunning = false
             }
         }
     }

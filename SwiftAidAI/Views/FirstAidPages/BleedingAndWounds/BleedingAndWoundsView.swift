@@ -32,10 +32,10 @@ struct BleedingAndWoundsView: View {
             description: "Managing and stopping nose bleeds"
         ),
         BleedingWound(
-            title: "Embedded Objects",
-            icon: "scissors",
+            title: "Blisters",
+            icon: "bandage.fill",
             color: Color(red: 0.7, green: 0.1, blue: 0.1),
-            description: "Handling objects embedded in wounds"
+            description: "Care and treatment for skin blisters"
         )
     ]
     
@@ -54,9 +54,16 @@ struct BleedingAndWoundsView: View {
             VStack(spacing: 16) {
                 ForEach(filteredTopics) { wound in
                     NavigationLink(destination: {
-                        if wound.title == "Severe Bleeding" {
+                        switch wound.title {
+                        case "Severe Bleeding":
                             SevereBleedingGuidanceView()
-                        } else {
+                        case "Minor Cuts and Grazes":
+                            CutsAndGrazesGuidanceView()
+                        case "Nosebleeds":
+                            NosebleedGuidanceView()
+                        case "Blisters":
+                            BlisterGuidanceView()
+                        default:
                             BleedingWoundDetailView(wound: wound)
                         }
                     }) {
