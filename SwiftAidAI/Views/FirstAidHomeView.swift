@@ -208,67 +208,42 @@ struct FirstAidHomeView: View {
                     )
                     .zIndex(1)
                     
-                    // Emergency buttons
-                    HStack(spacing: 12) {
-                        // Emergency Call Buttons
+                    // Emergency Call Buttons
+                    HStack(spacing: 20) {
+                        // 111 Button
                         Button(action: {
                             selectedPhoneNumber = "111"
-                            callType = "NHS Non-Emergency"
+                            callType = "Non-Emergency"
                             showCallConfirmation = true
                         }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "phone.fill")
-                                Text("111")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .frame(height: 32)
-                            .background(Color.blue)
-                            .cornerRadius(16)
-                        }
-                        .alert(callType, isPresented: $showCallConfirmation) {
-                            Button("Cancel", role: .cancel) { }
-                            Button("Call", role: .destructive) {
-                                if let url = URL(string: "tel://\(selectedPhoneNumber)"),
-                                   UIApplication.shared.canOpenURL(url) {
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                        } message: {
-                            Text("Are you sure you want to call \(selectedPhoneNumber)?")
+                            Label("111", systemImage: "phone.fill")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .cornerRadius(25)
                         }
                         
+                        // 999 Button
                         Button(action: {
                             selectedPhoneNumber = "999"
-                            callType = "Emergency Services"
+                            callType = "Emergency"
                             showCallConfirmation = true
                         }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "phone.fill")
-                                Text("999")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .frame(height: 32)
-                            .background(Color.red)
-                            .cornerRadius(16)
-                        }
-                        .alert(callType, isPresented: $showCallConfirmation) {
-                            Button("Cancel", role: .cancel) { }
-                            Button("Call", role: .destructive) {
-                                if let url = URL(string: "tel://\(selectedPhoneNumber)"),
-                                   UIApplication.shared.canOpenURL(url) {
-                                    UIApplication.shared.open(url)
-                                }
-                            }
-                        } message: {
-                            Text("Are you sure you want to call \(selectedPhoneNumber)?")
+                            Label("999", systemImage: "phone.fill")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.red)
+                                .cornerRadius(25)
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 12)
+                    .padding(.vertical, 8)
+                    .background(.clear)
+                    .zIndex(2)
                     
                     // Offline banner if needed
                     if !networkMonitor.isConnected {
@@ -288,11 +263,43 @@ struct FirstAidHomeView: View {
                             ForEach(filteredTopics) { topic in
                                 if topic.category == .critical {
                                     NavigationLink(destination: CriticalEmergenciesView()) {
-                                        EmergencyCard(topic: topic)
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .wounds {
+                                    NavigationLink(destination: BleedingAndWoundsView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .burns {
+                                    NavigationLink(destination: BurnsAndScaldsView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .bones {
+                                    NavigationLink(destination: BoneAndJointInjuriesView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .breathing {
+                                    NavigationLink(destination: BreathingIssuesView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .head {
+                                    NavigationLink(destination: HeadAndNeurologicalView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .medical {
+                                    NavigationLink(destination: MedicalAndPoisoningView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .environmental {
+                                    NavigationLink(destination: EnvironmentalEmergenciesView()) {
+                                        EmergencyTopicCard(topic: topic)
+                                    }
+                                } else if topic.category == .special {
+                                    NavigationLink(destination: SpecialAreasEmergenciesView()) {
+                                        EmergencyTopicCard(topic: topic)
                                     }
                                 } else {
                                 NavigationLink(destination: EmergencyDetailView(topic: topic)) {
-                                    EmergencyCard(topic: topic)
+                                    EmergencyTopicCard(topic: topic)
                                     }
                                 }
                             }
@@ -317,7 +324,7 @@ struct FirstAidHomeView: View {
 }
 
 // Emergency Card Component
-struct EmergencyCard: View {
+struct EmergencyTopicCard: View {
     let topic: EmergencyTopic
     
     var body: some View {

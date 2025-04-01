@@ -9,6 +9,9 @@ struct CriticalEmergency: Identifiable {
 }
 
 struct CriticalEmergenciesView: View {
+    @State private var searchText = ""
+    @State private var isSearching = false
+    
     let criticalTopics = [
         CriticalEmergency(
             title: "Primary Survey (DR ABC)",
@@ -68,17 +71,55 @@ struct CriticalEmergenciesView: View {
     
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 16) {
-                ForEach(criticalTopics) { topic in
-                    NavigationLink(destination: CriticalEmergencyDetailView(emergency: topic)) {
+            VStack(spacing: 16) {
+                ForEach(filteredTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.title {
+                        case "Primary Survey (DR ABC)":
+                            PrimarySurveyDetailView()
+                        case "Unresponsive and Not Breathing (CPR)":
+                            CPRGuidanceView()
+                        case "Unresponsive but Breathing":
+                            RecoveryPositionView()
+                        case "Choking":
+                            ChokingGuidanceView()
+                        case "Severe Bleeding":
+                            SevereBleedingGuidanceView()
+                        case "Shock":
+                            ShockGuidanceView()
+                        case "Heart Attack":
+                            HeartAttackGuidanceView()
+                                .navigationTitle("Heart Attack")
+                        case "Stroke":
+                            StrokeGuidanceView()
+                        case "Anaphylaxis":
+                            AnaphylaxisGuidanceView()
+                        default:
+                            Text("Coming Soon")
+                                .navigationTitle(topic.title)
+                        }
+                    }) {
                         CriticalEmergencyCard(emergency: topic)
                     }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .padding()
         }
         .navigationTitle("Critical Emergencies")
         .navigationBarTitleDisplayMode(.large)
+        .searchable(text: $searchText, prompt: "Search critical emergencies")
+    }
+    
+    var filteredTopics: [CriticalEmergency] {
+        if searchText.isEmpty {
+            return criticalTopics
+        } else {
+            return criticalTopics.filter { topic in
+                topic.title.lowercased().contains(searchText.lowercased()) ||
+                topic.description.lowercased().contains(searchText.lowercased())
+            }
+        }
     }
 }
 
