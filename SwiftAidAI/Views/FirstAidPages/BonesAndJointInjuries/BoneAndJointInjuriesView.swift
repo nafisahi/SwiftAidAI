@@ -85,9 +85,11 @@ struct BoneAndJointInjuriesView: View {
                             case .sprain:
                                 SprainsGuidanceView()
                             case .dislocation:
-                                Text("Guidance coming soon")
+                                Text("Dislocation guidance coming soon")
+                                    .padding()
                             case .spinal:
-                                Text("Guidance coming soon")
+                                Text("Spinal injury guidance coming soon")
+                                    .padding()
                             }
                         }) {
                             BoneInjuryCard(injury: topic)

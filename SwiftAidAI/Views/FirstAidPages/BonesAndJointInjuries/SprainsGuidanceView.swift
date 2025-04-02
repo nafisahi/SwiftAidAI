@@ -132,6 +132,34 @@ struct SprainStepCard: View {
     let step: SprainStep
     @Binding var completedSteps: Set<String>
     
+    // Add timer states
+    @State private var showTimer = false
+    @State private var timeRemaining = 1200 // 20 minutes in seconds
+    @State private var timerIsRunning = false
+    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var timerCancellable: Cancellable? = nil
+    
+    // Format the remaining time as MM:SS
+    private var timeRemainingFormatted: String {
+        let minutes = timeRemaining / 60
+        let seconds = timeRemaining % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    // Start the timer
+    private func startTimer() {
+        timeRemaining = 1200 // Reset to 20 minutes
+        timer = Timer.publish(every: 1, on: .main, in: .common)
+        timerCancellable = timer.connect()
+        timerIsRunning = true
+    }
+    
+    // Stop the timer
+    private func stopTimer() {
+        timerCancellable?.cancel()
+        timerIsRunning = false
+    }
+    
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
@@ -200,12 +228,49 @@ struct SprainStepCard: View {
                             action: {
                                 if completedSteps.contains(instruction) {
                                     completedSteps.remove(instruction)
+                                    // If unchecking the ice instruction, hide timer
+                                    if instruction.contains("Hold in place for up to 20 minutes") {
+                                        showTimer = false
+                                        stopTimer()
+                                    }
                                 } else {
                                     completedSteps.insert(instruction)
+                                    // If checking the ice instruction, show timer
+                                    if instruction.contains("Hold in place for up to 20 minutes") {
+                                        showTimer = true
+                                        startTimer()
+                                    }
                                 }
                             }
                         )
                         .padding(.leading, instruction.hasPrefix("•") ? 16 : 0)
+                        
+                        // Show timer after the ice instruction if checked
+                        if instruction.contains("Hold in place for up to 20 minutes") && showTimer {
+                            SharedTimerView(
+                                timeRemaining: $timeRemaining,
+                                timeRemainingFormatted: timeRemainingFormatted,
+                                timerIsRunning: $timerIsRunning,
+                                onStart: { startTimer() },
+                                onStop: { stopTimer() },
+                                onReset: {
+                                    stopTimer()
+                                    timeRemaining = 1200  // Reset to 20 minutes
+                                    startTimer()
+                                },
+                                timerColor: Color(red: 0.6, green: 0.2, blue: 0.8),
+                                labelText: "Ice Timer: "
+                            )
+                            .padding(.leading, 28)
+                            .padding(.vertical, 8)
+                            .onReceive(timer) { _ in
+                                if timerIsRunning && timeRemaining > 0 {
+                                    timeRemaining -= 1
+                                } else if timeRemaining == 0 {
+                                    stopTimer()
+                                }
+                            }
+                        }
                     }
                     
                     if hasEmergencyNumbers(instruction) {

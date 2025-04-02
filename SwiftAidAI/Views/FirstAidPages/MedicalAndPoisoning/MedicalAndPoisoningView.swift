@@ -11,9 +11,8 @@ struct MedicalCondition: Identifiable {
 
 enum MedicalConditionType {
     case diabetic
-    case poisoning
+    case foodPoisoning
     case alcoholPoisoning
-    case drugOverdose
 }
 
 struct MedicalAndPoisoningView: View {
@@ -30,27 +29,19 @@ struct MedicalAndPoisoningView: View {
         ),
         
         MedicalCondition(
-            title: "Poisoning",
+            title: "Food Poisoning",
             icon: "exclamationmark.triangle.fill",
-            color: .green,
-            description: "Response to toxic substance exposure",
-            type: .poisoning
+            color: .orange,
+            description: "Response to foodborne illness",
+            type: .foodPoisoning
         ),
         
         MedicalCondition(
             title: "Alcohol Poisoning",
-            icon: "wineglass.fill",
-            color: .green,
-            description: "Recognizing and managing alcohol overdose",
+            icon: "exclamationmark.triangle.fill",
+            color: .purple,
+            description: "Managing severe alcohol intoxication",
             type: .alcoholPoisoning
-        ),
-        
-        MedicalCondition(
-            title: "Drug Overdose",
-            icon: "pills.fill",
-            color: .green,
-            description: "Emergency response to drug overdose",
-            type: .drugOverdose
         )
     ]
     
@@ -157,27 +148,14 @@ struct MedicalConditionDetailView: View {
     let condition: MedicalCondition
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header
-                HStack {
-                    Image(systemName: condition.icon)
-                        .font(.system(size: 40))
-                        .foregroundColor(condition.color)
-                    
-                    Text(condition.title)
-                        .font(.title)
-                        .bold()
-                }
-                .padding()
-                
-                // Content placeholder
-                Text("Detailed information about \(condition.title) will be displayed here.")
-                    .padding()
-            }
+        switch condition.type {
+        case .diabetic:
+            DiabeticEmergencyView()
+        case .foodPoisoning:
+            FoodPoisoningView()
+        case .alcoholPoisoning:
+            AlcoholPoisoningView()
         }
-        .navigationTitle(condition.title)
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

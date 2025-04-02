@@ -156,6 +156,10 @@ struct BleedingStepCard: View {
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -197,17 +201,25 @@ struct BleedingStepCard: View {
             // Instructions
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
-                    CheckboxRow(
-                        text: instruction,
-                        isChecked: completedSteps.contains(instruction),
-                        action: {
-                            if completedSteps.contains(instruction) {
-                                completedSteps.remove(instruction)
-                            } else {
-                                completedSteps.insert(instruction)
+                    VStack(alignment: .leading, spacing: 4) {
+                        CheckboxRow(
+                            text: instruction,
+                            isChecked: completedSteps.contains(instruction),
+                            action: {
+                                if completedSteps.contains(instruction) {
+                                    completedSteps.remove(instruction)
+                                } else {
+                                    completedSteps.insert(instruction)
+                                }
                             }
+                        )
+                        
+                        if hasEmergencyNumbers(instruction) {
+                            SharedEmergencyCallButtons()
+                                .padding(.leading, 28)
+                                .padding(.top, 4)
                         }
-                    )
+                    }
                 }
                 
                 if let warning = step.warningNote {
@@ -215,6 +227,10 @@ struct BleedingStepCard: View {
                         CPRWarningNote(showingCPR: $showingCPR)
                     } else {
                         WarningNote(text: warning)
+                        if hasEmergencyNumbers(warning) {
+                            SharedEmergencyCallButtons()
+                                .padding(.top, 4)
+                        }
                     }
                 }
             }

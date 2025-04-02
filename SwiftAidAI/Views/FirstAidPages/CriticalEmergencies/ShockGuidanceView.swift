@@ -98,8 +98,6 @@ struct ShockGuidanceView: View {
                     ShockStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                ShockSymptomsCard()
-                
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -112,44 +110,21 @@ struct ShockGuidanceView: View {
 
 struct ShockIntroductionCard: View {
     var body: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("What is Shock?")
-                    .font(.title2)
-                    .bold()
-                
-                Text("Shock is a life-threatening condition where vital organs don't receive enough blood flow. It can be caused by severe bleeding, heart problems, dehydration, allergic reactions, spinal injuries, or severe infections.")
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.pink.opacity(0.1))
-            )
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What is Shock?")
+                .font(.title2)
+                .bold()
             
-            ShockSymptomsCard()
+            Text("Shock is a life-threatening condition where vital organs don't receive enough blood flow. It can be caused by severe bleeding, heart problems, dehydration, allergic reactions, spinal injuries, or severe infections.")
+                .foregroundColor(.secondary)
         }
-        .padding(.horizontal)
-    }
-}
-
-struct ShockSymptomsCard: View {
-    var body: some View {
-        SymptomsCard(
-            title: "Warning Signs of Shock",
-            symptoms: [
-                "Pale, cold, clammy skin",
-                "Fast, shallow breathing",
-                "Weak, rapid pulse",
-                "Grey-blue lips or extremities",
-                "Nausea and possible vomiting",
-                "Restlessness or aggression",
-                "Yawning and gasping for air"
-            ],
-            accentColor: .pink,
-            warningNote: "These signs may develop rapidly - act quickly"
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.pink.opacity(0.1))
         )
+        .padding(.horizontal)
     }
 }
 
@@ -157,6 +132,10 @@ struct ShockStepCard: View {
     let step: ShockStep
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
+    
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -191,6 +170,10 @@ struct ShockStepCard: View {
                     CPRWarningNote(showingCPR: $showingCPR)
                 } else {
                     WarningNote(text: warning)
+                    if hasEmergencyNumbers(warning) {
+                        SharedEmergencyCallButtons()
+                            .padding(.top, 4)
+                    }
                 }
             }
         }
@@ -250,20 +233,32 @@ private struct EmergencyInstructions: View {
     let instructions: [String]
     @Binding var completedSteps: Set<String>
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             ForEach(instructions, id: \.self) { instruction in
-                CheckboxRow(
-                    text: instruction,
-                    isChecked: completedSteps.contains(instruction),
-                    action: {
-                        if completedSteps.contains(instruction) {
-                            completedSteps.remove(instruction)
-                        } else {
-                            completedSteps.insert(instruction)
+                VStack(alignment: .leading, spacing: 4) {
+                    CheckboxRow(
+                        text: instruction,
+                        isChecked: completedSteps.contains(instruction),
+                        action: {
+                            if completedSteps.contains(instruction) {
+                                completedSteps.remove(instruction)
+                            } else {
+                                completedSteps.insert(instruction)
+                            }
                         }
+                    )
+                    
+                    if hasEmergencyNumbers(instruction) {
+                        SharedEmergencyCallButtons()
+                            .padding(.leading, 28)
+                            .padding(.top, 4)
                     }
-                )
+                }
             }
         }
     }
@@ -273,20 +268,32 @@ private struct RegularInstructions: View {
     let instructions: [String]
     @Binding var completedSteps: Set<String>
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             ForEach(instructions, id: \.self) { instruction in
-                CheckboxRow(
-                    text: instruction,
-                    isChecked: completedSteps.contains(instruction),
-                    action: {
-                        if completedSteps.contains(instruction) {
-                            completedSteps.remove(instruction)
-                        } else {
-                            completedSteps.insert(instruction)
+                VStack(alignment: .leading, spacing: 4) {
+                    CheckboxRow(
+                        text: instruction,
+                        isChecked: completedSteps.contains(instruction),
+                        action: {
+                            if completedSteps.contains(instruction) {
+                                completedSteps.remove(instruction)
+                            } else {
+                                completedSteps.insert(instruction)
+                            }
                         }
+                    )
+                    
+                    if hasEmergencyNumbers(instruction) {
+                        SharedEmergencyCallButtons()
+                            .padding(.leading, 28)
+                            .padding(.top, 4)
                     }
-                )
+                }
             }
         }
     }

@@ -1,48 +1,48 @@
 import SwiftUI
 
-struct BreathingIssue: Identifiable {
+struct EnvironmentalEmergency: Identifiable {
     let id = UUID()
     let title: String
     let icon: String
     let color: Color
     let description: String
-    let type: BreathingIssueType
+    let type: EnvironmentalEmergencyType
 }
 
-enum BreathingIssueType {
-    case asthma
-    case hyperventilation
+enum EnvironmentalEmergencyType {
+    case heatstroke
+    case hypothermia
 }
 
-struct BreathingIssuesView: View {
+struct EnvironmentalEmergenciesView: View {
     @State private var searchText = ""
     @State private var isSearching = false
     
-    let breathingTopics = [
-        // Asthma Attacks
-        BreathingIssue(
-            title: "Asthma Attacks",
-            icon: "lungs.fill",
-            color: .blue,
-            description: "Managing acute asthma and using inhalers",
-            type: .asthma
+    let environmentalTopics = [
+        // Heat-related
+        EnvironmentalEmergency(
+            title: "Heatstroke",
+            icon: "thermometer.sun.fill",
+            color: .red,
+            description: "Life-threatening high body temperature",
+            type: .heatstroke
         ),
         
-        // Hyperventilation
-        BreathingIssue(
-            title: "Hyperventilation",
-            icon: "wind",
-            color: Color(red: 0.0, green: 0.5, blue: 1.0),
-            description: "Breathing control and panic management",
-            type: .hyperventilation
+        // Cold-related
+        EnvironmentalEmergency(
+            title: "Hypothermia",
+            icon: "thermometer.snowflake",
+            color: .blue,
+            description: "Dangerous lowering of body temperature",
+            type: .hypothermia
         )
     ]
     
-    var filteredTopics: [BreathingIssue] {
+    var filteredTopics: [EnvironmentalEmergency] {
         if searchText.isEmpty {
-            return breathingTopics
+            return environmentalTopics
         }
-        return breathingTopics.filter { 
+        return environmentalTopics.filter { 
             $0.title.localizedCaseInsensitiveContains(searchText) ||
             $0.description.localizedCaseInsensitiveContains(searchText)
         }
@@ -57,7 +57,7 @@ struct BreathingIssuesView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
                         
-                        TextField("Search breathing issues", text: $searchText)
+                        TextField("Search environmental emergencies", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                         
                         if !searchText.isEmpty {
@@ -73,45 +73,56 @@ struct BreathingIssuesView: View {
                 }
                 .padding()
                 
-                // Breathing Issue Cards
+                // Environmental Emergency Cards
                 LazyVStack(spacing: 16) {
                     ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: BreathingIssueDetailView(issue: topic)) {
-                            BreathingIssueCard(issue: topic)
+                        NavigationLink(destination: destinationView(for: topic)) {
+                            EnvironmentalEmergencyCard(emergency: topic)
                         }
                     }
                 }
                 .padding()
             }
         }
-        .navigationTitle("Breathing Issues")
+        .navigationTitle("Environmental Emergencies")
         .navigationBarTitleDisplayMode(.large)
+    }
+    
+    @ViewBuilder
+    private func destinationView(for emergency: EnvironmentalEmergency) -> some View {
+        switch emergency.type {
+        case .heatstroke:
+            HeatstrokeGuidanceView()
+        case .hypothermia:
+            // Placeholder until HypothermiaGuidanceView is created
+            Text("Hypothermia Guidance Coming Soon")
+        }
     }
 }
 
-struct BreathingIssueCard: View {
-    let issue: BreathingIssue
+struct EnvironmentalEmergencyCard: View {
+    let emergency: EnvironmentalEmergency
     
     var body: some View {
         HStack(spacing: 16) {
             // Icon Circle
             ZStack {
                 Circle()
-                    .fill(issue.color.opacity(0.1))
+                    .fill(emergency.color.opacity(0.1))
                     .frame(width: 56, height: 56)
                 
-                Image(systemName: issue.icon)
+                Image(systemName: emergency.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(issue.color)
+                    .foregroundColor(emergency.color)
             }
             
             // Content
             VStack(alignment: .leading, spacing: 4) {
-                Text(issue.title)
+                Text(emergency.title)
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text(issue.description)
+                Text(emergency.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
@@ -132,41 +143,41 @@ struct BreathingIssueCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(issue.color.opacity(0.2), lineWidth: 1)
+                .stroke(emergency.color.opacity(0.2), lineWidth: 1)
         )
     }
 }
 
-struct BreathingIssueDetailView: View {
-    let issue: BreathingIssue
+struct EnvironmentalEmergencyDetailView: View {
+    let emergency: EnvironmentalEmergency
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Header
                 HStack {
-                    Image(systemName: issue.icon)
+                    Image(systemName: emergency.icon)
                         .font(.system(size: 40))
-                        .foregroundColor(issue.color)
+                        .foregroundColor(emergency.color)
                     
-                    Text(issue.title)
+                    Text(emergency.title)
                         .font(.title)
                         .bold()
                 }
                 .padding()
                 
                 // Content placeholder
-                Text("Detailed information about \(issue.title) will be displayed here.")
+                Text("Detailed information about \(emergency.title) will be displayed here.")
                     .padding()
             }
         }
-        .navigationTitle(issue.title)
+        .navigationTitle(emergency.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationStack {
-        BreathingIssuesView()
+        EnvironmentalEmergenciesView()
     }
 } 

@@ -1,55 +1,48 @@
 import SwiftUI
 
-struct HeadInjury: Identifiable {
+struct BreathingIssue: Identifiable {
     let id = UUID()
     let title: String
     let icon: String
     let color: Color
     let description: String
-    let type: HeadInjuryType
+    let type: BreathingIssueType
 }
 
-enum HeadInjuryType {
-    case headInjury
-    case concussion
-    case seizure
+enum BreathingIssueType {
+    case asthma
+    case hyperventilation
 }
 
-struct HeadAndNeurologicalView: View {
+struct BreathingIssuesView: View {
     @State private var searchText = ""
     @State private var isSearching = false
     
-    let headTopics = [
-        HeadInjury(
-            title: "Head Injury",
-            icon: "brain.head.profile",
-            color: Color(red: 0.3, green: 0.3, blue: 0.8), // Indigo color from FirstAidHomeView
-            description: "Managing head trauma and monitoring symptoms",
-            type: .headInjury
+    let breathingTopics = [
+        // Asthma Attacks
+        BreathingIssue(
+            title: "Asthma Attacks",
+            icon: "lungs.fill",
+            color: .blue,
+            description: "Managing acute asthma and using inhalers",
+            type: .asthma
         ),
         
-        HeadInjury(
-            title: "Concussion",
-            icon: "sparkles.square.filled.on.square",
-            color: Color(red: 0.3, green: 0.3, blue: 0.8),
-            description: "Recognition and immediate care for concussions",
-            type: .concussion
-        ),
-        
-        HeadInjury(
-            title: "Seizures/Epilepsy",
-            icon: "waveform.path.ecg.rectangle",
-            color: Color(red: 0.3, green: 0.3, blue: 0.8),
-            description: "Supporting someone during a seizure",
-            type: .seizure
+        // Hyperventilation
+        BreathingIssue(
+            title: "Hyperventilation",
+            icon: "wind",
+            color: Color(red: 0.0, green: 0.5, blue: 1.0),
+            description: "Breathing control and panic management",
+            type: .hyperventilation
         )
     ]
     
-    var filteredTopics: [HeadInjury] {
+    var filteredTopics: [BreathingIssue] {
         if searchText.isEmpty {
-            return headTopics
+            return breathingTopics
         }
-        return headTopics.filter { 
+        return breathingTopics.filter { 
             $0.title.localizedCaseInsensitiveContains(searchText) ||
             $0.description.localizedCaseInsensitiveContains(searchText)
         }
@@ -64,7 +57,7 @@ struct HeadAndNeurologicalView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
                         
-                        TextField("Search head injuries", text: $searchText)
+                        TextField("Search breathing issues", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                         
                         if !searchText.isEmpty {
@@ -80,45 +73,52 @@ struct HeadAndNeurologicalView: View {
                 }
                 .padding()
                 
-                // Head Injury Cards
+                // Breathing Issue Cards
                 LazyVStack(spacing: 16) {
                     ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: HeadInjuryDetailView(injury: topic)) {
-                            HeadInjuryCard(injury: topic)
+                        NavigationLink(destination: {
+                            switch topic.type {
+                            case .asthma:
+                                AsthmaGuidanceView()
+                            case .hyperventilation:
+                                HyperventilationGuidanceView()
+                            }
+                        }) {
+                            BreathingIssueCard(issue: topic)
                         }
                     }
                 }
                 .padding()
             }
         }
-        .navigationTitle("Head & Neurological")
+        .navigationTitle("Breathing Issues")
         .navigationBarTitleDisplayMode(.large)
     }
 }
 
-struct HeadInjuryCard: View {
-    let injury: HeadInjury
+struct BreathingIssueCard: View {
+    let issue: BreathingIssue
     
     var body: some View {
         HStack(spacing: 16) {
             // Icon Circle
             ZStack {
                 Circle()
-                    .fill(injury.color.opacity(0.1))
+                    .fill(issue.color.opacity(0.1))
                     .frame(width: 56, height: 56)
                 
-                Image(systemName: injury.icon)
+                Image(systemName: issue.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(injury.color)
+                    .foregroundColor(issue.color)
             }
             
             // Content
             VStack(alignment: .leading, spacing: 4) {
-                Text(injury.title)
+                Text(issue.title)
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text(injury.description)
+                Text(issue.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
@@ -139,41 +139,41 @@ struct HeadInjuryCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(injury.color.opacity(0.2), lineWidth: 1)
+                .stroke(issue.color.opacity(0.2), lineWidth: 1)
         )
     }
 }
 
-struct HeadInjuryDetailView: View {
-    let injury: HeadInjury
+struct BreathingIssueDetailView: View {
+    let issue: BreathingIssue
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Header
                 HStack {
-                    Image(systemName: injury.icon)
+                    Image(systemName: issue.icon)
                         .font(.system(size: 40))
-                        .foregroundColor(injury.color)
+                        .foregroundColor(issue.color)
                     
-                    Text(injury.title)
+                    Text(issue.title)
                         .font(.title)
                         .bold()
                 }
                 .padding()
                 
                 // Content placeholder
-                Text("Detailed information about \(injury.title) will be displayed here.")
+                Text("Detailed information about \(issue.title) will be displayed here.")
                     .padding()
             }
         }
-        .navigationTitle(injury.title)
+        .navigationTitle(issue.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationStack {
-        HeadAndNeurologicalView()
+        BreathingIssuesView()
     }
 } 

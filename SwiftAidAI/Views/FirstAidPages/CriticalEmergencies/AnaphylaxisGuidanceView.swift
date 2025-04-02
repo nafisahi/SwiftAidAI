@@ -172,6 +172,10 @@ struct AnaphylaxisStepCard: View {
         timerIsRunning = false
     }
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -240,6 +244,12 @@ struct AnaphylaxisStepCard: View {
                             }
                         )
                         
+                        if hasEmergencyNumbers(instruction) {
+                            SharedEmergencyCallButtons()
+                                .padding(.leading, 28)
+                                .padding(.top, 4)
+                        }
+                        
                         // Show injection time message if this is the note time instruction and it's checked
                         if instruction.lowercased().contains("note") && 
                            instruction.lowercased().contains("time") && 
@@ -295,6 +305,10 @@ struct AnaphylaxisStepCard: View {
                     CPRWarningNote(showingCPR: $showingCPR)
                 } else {
                     WarningNote(text: warning)
+                    if hasEmergencyNumbers(warning) {
+                        SharedEmergencyCallButtons()
+                            .padding(.top, 4)
+                    }
                 }
             }
         }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct StrokeStep: Identifiable {
+struct HypothermiaStep: Identifiable {
     let id = UUID()
     let number: Int
     let title: String
@@ -10,69 +10,73 @@ struct StrokeStep: Identifiable {
     let imageName: String?
 }
 
-struct StrokeGuidanceView: View {
+struct HypothermiaGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @State private var showingCPR = false
     
     let steps = [
-        StrokeStep(
+        HypothermiaStep(
             number: 1,
-            title: "Face (F)",
-            icon: "face.smiling",
+            title: "Move to Shelter",
+            icon: "house.fill",
             instructions: [
-                "Look at their face for signs of weakness",
-                "Check if their mouth or eyes are droopy",
-                "Ask them to smile - check if it's uneven"
+                "Move them indoors if possible",
+                "If outdoors, find a sheltered place",
+                "Shield them from wind",
+                "Protect them from cold ground using insulating materials"
             ],
             warningNote: nil,
-            imageName: "face"
+            imageName: nil
         ),
-        StrokeStep(
+        HypothermiaStep(
             number: 2,
-            title: "Arms (A)",
-            icon: "figure.arms.open",
+            title: "Manage Clothing",
+            icon: "tshirt.fill",
             instructions: [
-                "Ask them to raise both arms",
-                "Check if they can keep both arms raised",
-                "Note if one arm drifts downward"
+                "Remove any wet clothing",
+                "Replace with dry clothing or blankets",
+                "Cover their head",
+                "Wrap in foil survival blanket if available"
             ],
-            warningNote: nil,
-            imageName: "arm"
+            warningNote: "Do not give away your own clothes - you must stay warm too",
+            imageName: nil
         ),
-        StrokeStep(
+        HypothermiaStep(
             number: 3,
-            title: "Speech (S)",
-            icon: "text.bubble.fill",
-            instructions: [
-                "Ask them simple questions (e.g., 'What is your name?')",
-                "Check if they can speak clearly",
-                "Note if they have trouble understanding you"
-            ],
-            warningNote: nil,
-            imageName: "speech"
-        ),
-        StrokeStep(
-            number: 4,
-            title: "Time to Call (T)",
+            title: "Call for Help",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 immediately",
-                "Tell them you suspect a stroke",
-                "Explain the FAST symptoms you observed"
+                "Call 999 or 112 for emergency help",
+                "Stay with the casualty",
+                "If in remote area, send two people for help together"
             ],
-            warningNote: "Every minute counts - don't delay calling for help",
-            imageName: "time"
+            warningNote: "Never leave the casualty alone",
+            imageName: nil
         ),
-        StrokeStep(
-            number: 5,
-            title: "Care While Waiting",
-            icon: "heart.circle.fill",
+        HypothermiaStep(
+            number: 4,
+            title: "Warm Gradually",
+            icon: "thermometer.medium",
             instructions: [
-                "Keep them comfortable and supported",
-                "Provide reassurance",
-                "Do not give them food or drink",
-                "Monitor their level of response"
+                "If indoors, warm room to about 25°C (77°F)",
+                "Cover with layers of blankets",
+                "If alert, give warm drinks and high-energy food",
+                "Monitor breathing and response level"
             ],
-            warningNote: "If they become unresponsive, prepare to start CPR",
+            warningNote: "Do not apply direct heat (hot water bottles/fires) - risk of burns. Do not give alcohol.",
+            imageName: nil
+        ),
+        HypothermiaStep(
+            number: 5,
+            title: "Monitor Condition",
+            icon: "heart.text.square.fill",
+            instructions: [
+                "Check breathing regularly",
+                "Monitor level of response",
+                "Watch for signs of improvement",
+                "Be prepared to start CPR if they become unresponsive"
+            ],
+            warningNote: "If they become unresponsive, start CPR immediately",
             imageName: nil
         )
     ]
@@ -80,11 +84,10 @@ struct StrokeGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                StrokeIntroCard()
-                StrokeSymptomsCard()
+                HypothermiaIntroductionCard()
                 
                 ForEach(steps) { step in
-                    StrokeStepCard(step: step, completedSteps: $completedSteps)
+                    HypothermiaStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
                 AttributionFooter()
@@ -92,54 +95,55 @@ struct StrokeGuidanceView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Stroke (FAST)")
+        .navigationTitle("Hypothermia")
         .navigationBarTitleDisplayMode(.large)
     }
 }
 
-struct StrokeIntroCard: View {
+struct HypothermiaIntroductionCard: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What is a Stroke?")
-                .font(.title2)
-                .bold()
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("What is Hypothermia?")
+                    .font(.title2)
+                    .bold()
+                
+                Text("Hypothermia occurs when body temperature drops below 35°C (95°F). Normal body temperature is around 37°C (98.6°F). This condition can become life-threatening quickly and requires immediate treatment.")
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.blue.opacity(0.1))
+            )
             
-            Text("A stroke can occur when blood supply to the brain is disrupted and starves the brain of oxygen. It is caused by either a blockage or a bleed in the brain's blood vessels.")
-                .foregroundColor(.secondary)
+            HypothermiaSymptomsCard()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.purple.opacity(0.1))
-        )
         .padding(.horizontal)
     }
 }
 
-struct StrokeSymptomsCard: View {
+struct HypothermiaSymptomsCard: View {
     var body: some View {
         SymptomsCard(
             title: "Signs and Symptoms",
             symptoms: [
-                "Facial weakness - uneven smile, droopy mouth or eye",
-                "Arm weakness - difficulty raising both arms",
-                "Speech problems - unclear speech or comprehension",
-                "Numbness",
-                "Blurred vision",
-                "Confusion",
-                "Dizziness",
-                "Headaches",
-                "Feeling or being sick"
+                "Shivering, cold and pale with dry skin",
+                "Unusually tired and confused",
+                "Irrational behaviour",
+                "Reduced level of response",
+                "Slow and shallow breathing",
+                "Slow and weakening pulse"
             ],
-            accentColor: .purple,
-            warningNote: "Remember FAST: Face, Arms, Speech, Time to call 999"
+            accentColor: .blue,
+            warningNote: "Hypothermia is a medical emergency - call 999/112"
         )
     }
 }
 
-struct StrokeStepCard: View {
-    let step: StrokeStep
+struct HypothermiaStepCard: View {
+    let step: HypothermiaStep
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
     
@@ -151,9 +155,10 @@ struct StrokeStepCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack(spacing: 16) {
+                // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.purple)
+                        .fill(Color.blue)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -162,6 +167,7 @@ struct StrokeStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Title and Icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -169,11 +175,11 @@ struct StrokeStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.blue)
                 }
             }
             
-            // Add the image if present
+            // Add the image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -206,14 +212,17 @@ struct StrokeStepCard: View {
                         }
                     }
                 }
-            }
-            
-            // Warning note
-            if let warning = step.warningNote {
-                WarningNote(text: warning)
-                if hasEmergencyNumbers(warning) {
-                    SharedEmergencyCallButtons()
-                        .padding(.top, 4)
+                
+                if let warning = step.warningNote {
+                    if warning.contains("CPR") {
+                        CPRWarningNote(showingCPR: $showingCPR)
+                    } else {
+                        WarningNote(text: warning)
+                    }
+                    if hasEmergencyNumbers(warning) {
+                        SharedEmergencyCallButtons()
+                            .padding(.top, 4)
+                    }
                 }
             }
         }
@@ -225,7 +234,7 @@ struct StrokeStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
@@ -241,6 +250,6 @@ struct StrokeStepCard: View {
 
 #Preview {
     NavigationStack {
-        StrokeGuidanceView()
+        HypothermiaGuidanceView()
     }
-}
+} 

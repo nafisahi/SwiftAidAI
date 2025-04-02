@@ -150,6 +150,10 @@ struct RecoveryStepCard: View {
     @Binding var completedSteps: Set<String>
     @State private var showingPrimarySurvey = false
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -192,48 +196,57 @@ struct RecoveryStepCard: View {
             }
             
             // Instructions
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
-                    if step.number == 1 && instruction.contains("Primary Survey") {
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
-                                .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
-                                .font(.system(size: 20))
-                            
-                            (Text(instruction.replacingOccurrences(of: "Primary Survey", with: ""))
-                                .foregroundColor(.primary) +
-                            Text("Primary Survey")
-                                .foregroundColor(.blue)
-                                .underline())
-                                .font(.subheadline)
-                                .onTapGesture {
-                                    showingPrimarySurvey = true
-                                }
-                            
-                            Spacer()
-                        }
-                    } else {
-                        CheckboxRow(
-                            text: instruction,
-                            isChecked: completedSteps.contains(instruction),
-                            action: {
-                                if completedSteps.contains(instruction) {
-                                    completedSteps.remove(instruction)
-                                } else {
-                                    completedSteps.insert(instruction)
-                                }
+                    VStack(alignment: .leading, spacing: 4) {
+                        if step.number == 1 && instruction.contains("Primary Survey") {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                    .font(.system(size: 20))
+                                
+                                (Text(instruction.replacingOccurrences(of: "Primary Survey", with: ""))
+                                    .foregroundColor(.primary) +
+                                Text("Primary Survey")
+                                    .foregroundColor(.blue)
+                                    .underline())
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        showingPrimarySurvey = true
+                                    }
+                                
+                                Spacer()
                             }
-                        )
+                        } else {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                            
+                            if hasEmergencyNumbers(instruction) {
+                                SharedEmergencyCallButtons()
+                                    .padding(.leading, 28)
+                                    .padding(.top, 4)
+                            }
+                        }
                     }
                 }
             }
             
-            // Warning Note if present
+            // Warning note if present
             if let warning = step.warningNote {
-                Text(warning)
-                    .font(.subheadline)
-                    .foregroundColor(.orange)
-                    .padding(.top, 4)
+                WarningNote(text: warning)
+                if hasEmergencyNumbers(warning) {
+                    SharedEmergencyCallButtons()
+                        .padding(.top, 4)
+                }
             }
         }
         .padding()

@@ -1,58 +1,46 @@
 import SwiftUI
 
-struct SpecialAreaEmergency: Identifiable {
+struct HeadInjury: Identifiable {
     let id = UUID()
     let title: String
     let icon: String
     let color: Color
     let description: String
-    let type: SpecialAreaType
+    let type: HeadInjuryType
 }
 
-enum SpecialAreaType {
-    case eyeInjury
-    case foreignObject
-    case dentalInjury
+enum HeadInjuryType {
+    case headInjury
+    case seizure
 }
 
-struct SpecialAreasEmergenciesView: View {
+struct HeadAndNeurologicalView: View {
     @State private var searchText = ""
     @State private var isSearching = false
     
-    // Using the brown color from FirstAidHomeView
-    let specialColor = Color(red: 0.6, green: 0.4, blue: 0.2)
-    
-    let specialTopics = [
-        SpecialAreaEmergency(
-            title: "Eye Injuries",
-            icon: "eye.fill",
-            color: Color(red: 0.6, green: 0.4, blue: 0.2),
-            description: "Managing injuries to the eye and surrounding area",
-            type: .eyeInjury
+    let headTopics = [
+        HeadInjury(
+            title: "Head Injury",
+            icon: "brain.head.profile",
+            color: Color(red: 0.3, green: 0.3, blue: 0.8), // Indigo color from FirstAidHomeView
+            description: "Managing head trauma and monitoring symptoms",
+            type: .headInjury
         ),
         
-        SpecialAreaEmergency(
-            title: "Foreign Object in Eye/Ear",
-            icon: "ear.fill",
-            color: Color(red: 0.6, green: 0.4, blue: 0.2),
-            description: "Safe removal of foreign objects from eyes and ears",
-            type: .foreignObject
-        ),
-        
-        SpecialAreaEmergency(
-            title: "Knocked-out Teeth",
-            icon: "mouth.fill",
-            color: Color(red: 0.6, green: 0.4, blue: 0.2),
-            description: "Emergency dental care and tooth preservation",
-            type: .dentalInjury
+        HeadInjury(
+            title: "Seizures/Epilepsy",
+            icon: "waveform.path.ecg.rectangle",
+            color: Color(red: 0.3, green: 0.3, blue: 0.8),
+            description: "Supporting someone during a seizure",
+            type: .seizure
         )
     ]
     
-    var filteredTopics: [SpecialAreaEmergency] {
+    var filteredTopics: [HeadInjury] {
         if searchText.isEmpty {
-            return specialTopics
+            return headTopics
         }
-        return specialTopics.filter { 
+        return headTopics.filter { 
             $0.title.localizedCaseInsensitiveContains(searchText) ||
             $0.description.localizedCaseInsensitiveContains(searchText)
         }
@@ -67,7 +55,7 @@ struct SpecialAreasEmergenciesView: View {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.gray)
                         
-                        TextField("Search eye, ear & dental emergencies", text: $searchText)
+                        TextField("Search head injuries", text: $searchText)
                             .textFieldStyle(PlainTextFieldStyle())
                         
                         if !searchText.isEmpty {
@@ -83,45 +71,45 @@ struct SpecialAreasEmergenciesView: View {
                 }
                 .padding()
                 
-                // Special Area Emergency Cards
+                // Head Injury Cards
                 LazyVStack(spacing: 16) {
                     ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: SpecialAreaDetailView(emergency: topic)) {
-                            SpecialAreaCard(emergency: topic)
+                        NavigationLink(destination: HeadInjuryDetailView(injury: topic)) {
+                            HeadInjuryCard(injury: topic)
                         }
                     }
                 }
                 .padding()
             }
         }
-        .navigationTitle("Eyes, Ears & Dental")
+        .navigationTitle("Head & Neurological")
         .navigationBarTitleDisplayMode(.large)
     }
 }
 
-struct SpecialAreaCard: View {
-    let emergency: SpecialAreaEmergency
+struct HeadInjuryCard: View {
+    let injury: HeadInjury
     
     var body: some View {
         HStack(spacing: 16) {
             // Icon Circle
             ZStack {
                 Circle()
-                    .fill(emergency.color.opacity(0.1))
+                    .fill(injury.color.opacity(0.1))
                     .frame(width: 56, height: 56)
                 
-                Image(systemName: emergency.icon)
+                Image(systemName: injury.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(emergency.color)
+                    .foregroundColor(injury.color)
             }
             
             // Content
             VStack(alignment: .leading, spacing: 4) {
-                Text(emergency.title)
+                Text(injury.title)
                     .font(.headline)
                     .foregroundColor(.primary)
                 
-                Text(emergency.description)
+                Text(injury.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
@@ -142,41 +130,29 @@ struct SpecialAreaCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(emergency.color.opacity(0.2), lineWidth: 1)
+                .stroke(injury.color.opacity(0.2), lineWidth: 1)
         )
     }
 }
 
-struct SpecialAreaDetailView: View {
-    let emergency: SpecialAreaEmergency
+struct HeadInjuryDetailView: View {
+    let injury: HeadInjury
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header
-                HStack {
-                    Image(systemName: emergency.icon)
-                        .font(.system(size: 40))
-                        .foregroundColor(emergency.color)
-                    
-                    Text(emergency.title)
-                        .font(.title)
-                        .bold()
-                }
-                .padding()
-                
-                // Content placeholder
-                Text("Detailed information about \(emergency.title) will be displayed here.")
-                    .padding()
+        Group {
+            switch injury.type {
+            case .headInjury:
+                HeadInjuryGuidanceView()
+            case .seizure:
+                SeizureGuidanceView()
             }
         }
-        .navigationTitle(emergency.title)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationStack {
-        SpecialAreasEmergenciesView()
+        HeadAndNeurologicalView()
     }
 } 

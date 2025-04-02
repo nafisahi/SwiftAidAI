@@ -197,3 +197,5 @@ struct BurnInjuryDetailView: View {
         BurnsAndScaldsView()
     }
 } 
+
+

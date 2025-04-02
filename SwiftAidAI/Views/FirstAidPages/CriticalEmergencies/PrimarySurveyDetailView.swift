@@ -134,6 +134,10 @@ struct PrimarySurveyStepCard: View {
     let step: PrimarySurveyStep
     @Binding var completedSteps: Set<String>
     
+    private func hasEmergencyNumbers(_ text: String) -> Bool {
+        text.contains("999") || text.contains("112")
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
@@ -175,33 +179,35 @@ struct PrimarySurveyStepCard: View {
             // Instructions
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
-                    CheckboxRow(
-                        text: instruction,
-                        isChecked: completedSteps.contains(instruction),
-                        action: {
-                            if completedSteps.contains(instruction) {
-                                completedSteps.remove(instruction)
-                            } else {
-                                completedSteps.insert(instruction)
+                    VStack(alignment: .leading, spacing: 4) {
+                        CheckboxRow(
+                            text: instruction,
+                            isChecked: completedSteps.contains(instruction),
+                            action: {
+                                if completedSteps.contains(instruction) {
+                                    completedSteps.remove(instruction)
+                                } else {
+                                    completedSteps.insert(instruction)
+                                }
                             }
+                        )
+                        
+                        if hasEmergencyNumbers(instruction) {
+                            SharedEmergencyCallButtons()
+                                .padding(.leading, 28)
+                                .padding(.top, 4)
                         }
-                    )
+                    }
                 }
             }
             
             // Warning note if present
             if let warning = step.warningNote {
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
-                        .font(.subheadline)
-                    
-                    Text(warning)
-                        .font(.subheadline)
-                        .foregroundColor(.orange)
-                        .fixedSize(horizontal: false, vertical: true)
+                WarningNote(text: warning)
+                if hasEmergencyNumbers(warning) {
+                    SharedEmergencyCallButtons()
+                        .padding(.top, 4)
                 }
-                .padding(.top, 4)
             }
         }
         .padding()

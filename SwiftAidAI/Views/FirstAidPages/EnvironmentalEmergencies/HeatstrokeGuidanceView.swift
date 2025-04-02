@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct StrokeStep: Identifiable {
+struct HeatstrokeStep: Identifiable {
     let id = UUID()
     let number: Int
     let title: String
@@ -10,69 +10,56 @@ struct StrokeStep: Identifiable {
     let imageName: String?
 }
 
-struct StrokeGuidanceView: View {
+struct HeatstrokeGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     
     let steps = [
-        StrokeStep(
+        HeatstrokeStep(
             number: 1,
-            title: "Face (F)",
-            icon: "face.smiling",
+            title: "Move to Cool Place",
+            icon: "sun.min.fill",
             instructions: [
-                "Look at their face for signs of weakness",
-                "Check if their mouth or eyes are droopy",
-                "Ask them to smile - check if it's uneven"
+                "Move them to a cool, shaded place",
+                "Remove their outer clothing if possible"
             ],
             warningNote: nil,
-            imageName: "face"
+            imageName: nil
         ),
-        StrokeStep(
+        HeatstrokeStep(
             number: 2,
-            title: "Arms (A)",
-            icon: "figure.arms.open",
-            instructions: [
-                "Ask them to raise both arms",
-                "Check if they can keep both arms raised",
-                "Note if one arm drifts downward"
-            ],
-            warningNote: nil,
-            imageName: "arm"
-        ),
-        StrokeStep(
-            number: 3,
-            title: "Speech (S)",
-            icon: "text.bubble.fill",
-            instructions: [
-                "Ask them simple questions (e.g., 'What is your name?')",
-                "Check if they can speak clearly",
-                "Note if they have trouble understanding you"
-            ],
-            warningNote: nil,
-            imageName: "speech"
-        ),
-        StrokeStep(
-            number: 4,
-            title: "Time to Call (T)",
+            title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
                 "Call 999 or 112 immediately",
-                "Tell them you suspect a stroke",
-                "Explain the FAST symptoms you observed"
+                "Explain symptoms and follow their instructions"
             ],
-            warningNote: "Every minute counts - don't delay calling for help",
-            imageName: "time"
+            warningNote: "Heatstroke is a life-threatening condition",
+            imageName: nil
         ),
-        StrokeStep(
-            number: 5,
-            title: "Care While Waiting",
-            icon: "heart.circle.fill",
+        HeatstrokeStep(
+            number: 3,
+            title: "Cool Them Down",
+            icon: "thermometer.snowflake",
             instructions: [
-                "Keep them comfortable and supported",
-                "Provide reassurance",
-                "Do not give them food or drink",
-                "Monitor their level of response"
+                "Wrap them in a cool, wet sheet",
+                "Fan them or sponge with cold water",
+                "Place cold packs in armpits and around neck if available",
+                "Replace wet sheet with dry one once temperature normalizes"
             ],
-            warningNote: "If they become unresponsive, prepare to start CPR",
+            warningNote: "If temperature rises again, repeat cooling process",
+            imageName: nil
+        ),
+        HeatstrokeStep(
+            number: 4,
+            title: "Monitor Condition",
+            icon: "heart.text.square.fill",
+            instructions: [
+                "Check their temperature regularly",
+                "Monitor breathing and pulse",
+                "Watch their level of response",
+            
+            ],
+            warningNote: "If they become unresponsive, start CPR immediately",
             imageName: nil
         )
     ]
@@ -80,11 +67,10 @@ struct StrokeGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                StrokeIntroCard()
-                StrokeSymptomsCard()
+                HeatstrokeIntroductionCard()
                 
                 ForEach(steps) { step in
-                    StrokeStepCard(step: step, completedSteps: $completedSteps)
+                    HeatstrokeStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
                 AttributionFooter()
@@ -92,54 +78,55 @@ struct StrokeGuidanceView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Stroke (FAST)")
+        .navigationTitle("Heatstroke")
         .navigationBarTitleDisplayMode(.large)
     }
 }
 
-struct StrokeIntroCard: View {
+struct HeatstrokeIntroductionCard: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("What is a Stroke?")
-                .font(.title2)
-                .bold()
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("What is Heatstroke?")
+                    .font(.title2)
+                    .bold()
+                
+                Text("Heatstroke is caused by a failure of the 'thermostat' in the brain which regulates body temperature. The body becomes unable to cool down, leading to dangerously high temperatures above 40°C (104°F).")
+                    .foregroundColor(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.red.opacity(0.1))
+            )
             
-            Text("A stroke can occur when blood supply to the brain is disrupted and starves the brain of oxygen. It is caused by either a blockage or a bleed in the brain's blood vessels.")
-                .foregroundColor(.secondary)
+            HeatstrokeSymptomsCard()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.purple.opacity(0.1))
-        )
         .padding(.horizontal)
     }
 }
 
-struct StrokeSymptomsCard: View {
+struct HeatstrokeSymptomsCard: View {
     var body: some View {
         SymptomsCard(
             title: "Signs and Symptoms",
             symptoms: [
-                "Facial weakness - uneven smile, droopy mouth or eye",
-                "Arm weakness - difficulty raising both arms",
-                "Speech problems - unclear speech or comprehension",
-                "Numbness",
-                "Blurred vision",
-                "Confusion",
-                "Dizziness",
-                "Headaches",
-                "Feeling or being sick"
+                "Headache, dizziness and discomfort",
+                "Restlessness, confusion or unusual behaviour",
+                "Hot flushed and dry skin",
+                "Fast deterioration in level of response",
+                "Full bounding pulse",
+                "Body temperature above 40°C (104°F)"
             ],
-            accentColor: .purple,
-            warningNote: "Remember FAST: Face, Arms, Speech, Time to call 999"
+            accentColor: .red,
+            warningNote: "Heatstroke is a medical emergency - call 999/112"
         )
     }
 }
 
-struct StrokeStepCard: View {
-    let step: StrokeStep
+struct HeatstrokeStepCard: View {
+    let step: HeatstrokeStep
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
     
@@ -151,9 +138,10 @@ struct StrokeStepCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack(spacing: 16) {
+                // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.purple)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -162,6 +150,7 @@ struct StrokeStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Title and Icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -169,11 +158,11 @@ struct StrokeStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.red)
                 }
             }
             
-            // Add the image if present
+            // Add the image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -206,14 +195,17 @@ struct StrokeStepCard: View {
                         }
                     }
                 }
-            }
-            
-            // Warning note
-            if let warning = step.warningNote {
-                WarningNote(text: warning)
-                if hasEmergencyNumbers(warning) {
-                    SharedEmergencyCallButtons()
-                        .padding(.top, 4)
+                
+                if let warning = step.warningNote {
+                    if warning.contains("CPR") || warning.contains("start CPR") {
+                        CPRWarningNote(showingCPR: $showingCPR)
+                    } else {
+                        WarningNote(text: warning)
+                    }
+                    if hasEmergencyNumbers(warning) {
+                        SharedEmergencyCallButtons()
+                            .padding(.top, 4)
+                    }
                 }
             }
         }
@@ -222,10 +214,6 @@ struct StrokeStepCard: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.purple.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
@@ -237,10 +225,4 @@ struct StrokeStepCard: View {
             }
         }
     }
-}
-
-#Preview {
-    NavigationStack {
-        StrokeGuidanceView()
-    }
-}
+} 

@@ -5,9 +5,6 @@ struct FirstAidHomeView: View {
     @State private var searchText = ""
     @State private var selectedTab = 0
     @StateObject private var networkMonitor = NetworkMonitor()
-    @State private var showCallConfirmation = false
-    @State private var selectedPhoneNumber = ""
-    @State private var callType = ""
     @State private var isSearching = false
     
     // Emergency topics data
@@ -90,16 +87,6 @@ struct FirstAidHomeView: View {
             icon: "thermometer.sun.fill",
             color: .teal,
             category: .environmental
-        ),
-        
-        // Special Areas (Brown)
-        EmergencyTopic(
-            id: 9,
-            title: "Eyes, Ears & Dental",
-            subtitle: "Sensory and oral emergencies",
-            icon: "eye.fill",
-            color: Color(red: 0.6, green: 0.4, blue: 0.2),
-            category: .special
         )
     ]
     
@@ -208,53 +195,16 @@ struct FirstAidHomeView: View {
                     )
                     .zIndex(1)
                     
-                    // Emergency Call Buttons
-                    HStack(spacing: 20) {
-                        // 111 Button
-                        Button(action: {
-                            selectedPhoneNumber = "111"
-                            callType = "Non-Emergency"
-                            showCallConfirmation = true
-                        }) {
-                            Label("111", systemImage: "phone.fill")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(25)
-                        }
-                        
-                        // 999 Button
-                        Button(action: {
-                            selectedPhoneNumber = "999"
-                            callType = "Emergency"
-                            showCallConfirmation = true
-                        }) {
-                            Label("999", systemImage: "phone.fill")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.red)
-                                .cornerRadius(25)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .padding(.vertical, 8)
-                    .background(.clear)
-                    .zIndex(2)
-                    
                     // Offline banner if needed
                     if !networkMonitor.isConnected {
-                    HStack {
-                        Image(systemName: "wifi.slash")
-                        Text("Offline mode active")
-                        Spacer()
-                    }
-                    .font(.subheadline)
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
+                        HStack {
+                            Image(systemName: "wifi.slash")
+                            Text("Offline mode active")
+                            Spacer()
+                        }
+                        .font(.subheadline)
+                        .padding()
+                        .background(Color.blue.opacity(0.1))
                         .transition(.opacity)
                     }
                     
@@ -293,22 +243,23 @@ struct FirstAidHomeView: View {
                                     NavigationLink(destination: EnvironmentalEmergenciesView()) {
                                         EmergencyTopicCard(topic: topic)
                                     }
-                                } else if topic.category == .special {
-                                    NavigationLink(destination: SpecialAreasEmergenciesView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
                                 } else {
-                                NavigationLink(destination: EmergencyDetailView(topic: topic)) {
-                                    EmergencyTopicCard(topic: topic)
+                                    NavigationLink(destination: EmergencyDetailView(topic: topic)) {
+                                        EmergencyTopicCard(topic: topic)
                                     }
                                 }
                             }
                         }
                         .padding()
-                }
-                
+                    }
+                    
                     // CustomTabBar
                     CustomTabBar(selectedTab: $selectedTab)
+                    
+                    // In the body of FirstAidHomeView, add a condition for the Symptoms tab
+                    if selectedTab == 1 {
+                        SymptomCheckerView()
+                    }
                 }
             }
             .navigationBarHidden(true)
@@ -441,7 +392,6 @@ enum EmergencyCategory {
     case head
     case medical
     case environmental
-    case special
 }
 
 // Placeholder for Emergency Detail View
