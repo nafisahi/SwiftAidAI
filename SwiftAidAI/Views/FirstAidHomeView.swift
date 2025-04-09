@@ -2,12 +2,47 @@ import SwiftUI
 import Network
 
 struct FirstAidHomeView: View {
-    @State private var searchText = ""
     @State private var selectedTab = 0
-    @StateObject private var networkMonitor = NetworkMonitor()
-    @State private var isSearching = false
     
-    // Emergency topics data
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            // First Aid Tab
+            NavigationStack {
+                HomeContentView()
+            }
+            .tabItem {
+                Label("First Aid", systemImage: "cross.case.fill")
+            }
+            .tag(0)
+            
+            // Symptoms Tab
+            SymptomCheckerTabView(selectedTab: $selectedTab)
+                .tabItem {
+                    Label("Symptoms", systemImage: "stethoscope")
+                }
+                .tag(1)
+            
+            // Alert Tab
+            AlertView()
+                .tabItem {
+                    Label("Alert", systemImage: "bell.fill")
+                }
+                .tag(2)
+        }
+    }
+}
+
+struct HomeContentView: View {
+    @State private var searchText = ""
+    @State private var isSearching = false
+    @StateObject private var networkMonitor = NetworkMonitor()
+    
+    // Grid layout
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
     let emergencyTopics: [EmergencyTopic] = [
         // Critical Emergencies (Red)
         EmergencyTopic(
@@ -90,179 +125,147 @@ struct FirstAidHomeView: View {
         )
     ]
     
-    // Grid layout
-    let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-    ]
-    
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
-                
+        ZStack {
+            Color(.systemBackground)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Top navigation area with blur effect
                 VStack(spacing: 0) {
-                    // Top navigation area with blur effect
-                    VStack(spacing: 0) {
-                        HStack(spacing: 16) {
-                            // Profile icon
-                            NavigationLink(destination: ProfileView()) {
-                                Image(systemName: "person.circle.fill")
-                                    .font(.system(size: 32))
-                                    .foregroundColor(.primary)
+                    HStack(spacing: 16) {
+                        // Profile icon
+                        NavigationLink(destination: ProfileView()) {
+                            Image(systemName: "person.circle.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(.primary)
+                        }
+                        
+                        // Title and Search Bar
+                        HStack(spacing: 12) {
+                            // Left spacer to help with centering
+                            if !isSearching {
+                                Spacer()
                             }
                             
-                            // Title and Search Bar
-                            HStack(spacing: 12) {
-                                // Left spacer to help with centering
-                                if !isSearching {
-                                    Spacer()
-                                }
-                                
-                                Text("First Aid")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(.primary)
-                                    .opacity(isSearching ? 0 : 1)
-                                    .animation(.easeInOut(duration: 0.2), value: isSearching)
-                                
-                                // Right spacer to help with centering
-                                if !isSearching {
-                                    Spacer()
-                                }
-                                
-                                // Animated Search Bar
-                                HStack {
-                                    if isSearching {
-                                        HStack {
-                                            Image(systemName: "magnifyingglass")
-                                                .foregroundColor(.gray)
-                                            
-                                            TextField("Search first aid topics", text: $searchText)
-                                                .textFieldStyle(PlainTextFieldStyle())
-                                                .transition(.move(edge: .trailing))
-                                            
-                                            if !searchText.isEmpty {
-                                                Button(action: { searchText = "" }) {
-                                                    Image(systemName: "xmark.circle.fill")
-                                                        .foregroundColor(.gray)
-                                                }
-                                            }
-                                            
-                                            Button(action: {
-                                                searchText = ""
-                                                withAnimation {
-                                                    isSearching = false
-                                                }
-                                            }) {
-                                                Text("Cancel")
-                                                    .foregroundColor(.primary)
+                            Text("First Aid")
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(.primary)
+                                .opacity(isSearching ? 0 : 1)
+                                .animation(.easeInOut(duration: 0.2), value: isSearching)
+                            
+                            // Right spacer to help with centering
+                            if !isSearching {
+                                Spacer()
+                            }
+                            
+                            // Animated Search Bar
+                            HStack {
+                                if isSearching {
+                                    HStack {
+                                        Image(systemName: "magnifyingglass")
+                                            .foregroundColor(.gray)
+                                        
+                                        TextField("Search first aid topics", text: $searchText)
+                                            .textFieldStyle(PlainTextFieldStyle())
+                                        
+                                        if !searchText.isEmpty {
+                                            Button(action: { searchText = "" }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .foregroundColor(.gray)
                                             }
                                         }
-                                        .padding(8)
-                                        .background(Color(.systemGray6))
-                                        .cornerRadius(10)
-                                    } else {
+                                        
                                         Button(action: {
+                                            searchText = ""
                                             withAnimation {
-                                                isSearching = true
+                                                isSearching = false
                                             }
                                         }) {
-                                            Image(systemName: "magnifyingglass")
-                                                .font(.system(size: 22))
+                                            Text("Cancel")
                                                 .foregroundColor(.primary)
                                         }
                                     }
-                                }
-                                .frame(width: isSearching ? nil : 44)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 16)
-                    }
-                    .background(
-                        Color(.systemBackground)
-                            .opacity(0.8)
-                            .background(.ultraThinMaterial)
-                            .shadow(
-                                color: Color.black.opacity(0.05),
-                                radius: 8,
-                                x: 0,
-                                y: 2
-                            )
-                            .ignoresSafeArea(edges: .top)
-                    )
-                    .zIndex(1)
-                    
-                    // Offline banner if needed
-                    if !networkMonitor.isConnected {
-                        HStack {
-                            Image(systemName: "wifi.slash")
-                            Text("Offline mode active")
-                            Spacer()
-                        }
-                        .font(.subheadline)
-                        .padding()
-                        .background(Color.blue.opacity(0.1))
-                        .transition(.opacity)
-                    }
-                    
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 20) {
-                            ForEach(filteredTopics) { topic in
-                                if topic.category == .critical {
-                                    NavigationLink(destination: CriticalEmergenciesView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .wounds {
-                                    NavigationLink(destination: BleedingAndWoundsView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .burns {
-                                    NavigationLink(destination: BurnsAndScaldsView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .bones {
-                                    NavigationLink(destination: BoneAndJointInjuriesView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .breathing {
-                                    NavigationLink(destination: BreathingIssuesView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .head {
-                                    NavigationLink(destination: HeadAndNeurologicalView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .medical {
-                                    NavigationLink(destination: MedicalAndPoisoningView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
-                                } else if topic.category == .environmental {
-                                    NavigationLink(destination: EnvironmentalEmergenciesView()) {
-                                        EmergencyTopicCard(topic: topic)
-                                    }
+                                    .padding(8)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
                                 } else {
-                                    NavigationLink(destination: EmergencyDetailView(topic: topic)) {
-                                        EmergencyTopicCard(topic: topic)
+                                    Button(action: {
+                                        withAnimation {
+                                            isSearching = true
+                                        }
+                                    }) {
+                                        Image(systemName: "magnifyingglass")
+                                            .font(.system(size: 22))
+                                            .foregroundColor(.primary)
                                     }
                                 }
                             }
+                            .frame(width: isSearching ? nil : 44)
                         }
-                        .padding()
                     }
-                    
-                    // CustomTabBar
-                    CustomTabBar(selectedTab: $selectedTab)
-                    
-                    // In the body of FirstAidHomeView, add a condition for the Symptoms tab
-                    if selectedTab == 1 {
-                        SymptomCheckerView()
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+                }
+                .background(
+                    Color(.systemBackground)
+                        .opacity(0.8)
+                        .background(.ultraThinMaterial)
+                        .shadow(
+                            color: Color.black.opacity(0.05),
+                            radius: 8,
+                            x: 0,
+                            y: 2
+                        )
+                )
+                
+                // Offline banner if needed
+                if !networkMonitor.isConnected {
+                    HStack {
+                        Image(systemName: "wifi.slash")
+                        Text("Offline mode active")
+                        Spacer()
                     }
+                    .font(.subheadline)
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                }
+                
+                ScrollView {
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        ForEach(filteredTopics) { topic in
+                            NavigationLink(destination: destinationView(for: topic)) {
+                                EmergencyTopicCard(topic: topic)
+                            }
+                        }
+                    }
+                    .padding()
                 }
             }
-            .navigationBarHidden(true)
+        }
+    }
+    
+    private func destinationView(for topic: EmergencyTopic) -> some View {
+        Group {
+            switch topic.category {
+            case .critical:
+                CriticalEmergenciesView()
+            case .wounds:
+                BleedingAndWoundsView()
+            case .burns:
+                BurnsAndScaldsView()
+            case .bones:
+                BoneAndJointInjuriesView()
+            case .breathing:
+                BreathingIssuesView()
+            case .head:
+                HeadAndNeurologicalView()
+            case .medical:
+                MedicalAndPoisoningView()
+            case .environmental:
+                EnvironmentalEmergenciesView()
+            }
         }
     }
     
@@ -426,4 +429,31 @@ class NetworkMonitor: ObservableObject {
 
 #Preview {
     FirstAidHomeView()
+}
+
+struct SymptomCheckerTabView: View {
+    @State private var showingSymptomChecker = false
+    @Binding var selectedTab: Int
+    
+    var body: some View {
+        Color.clear // Invisible view as placeholder
+            .onChange(of: selectedTab) { newValue in
+                if newValue == 1 { // 1 is the index of the Symptoms tab
+                    showingSymptomChecker = true
+                }
+            }
+            .sheet(isPresented: $showingSymptomChecker) {
+                SymptomCheckerView()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
+                    .interactiveDismissDisabled(false)
+                    .onDisappear {
+                        // If we're still on the Symptoms tab when the sheet is dismissed,
+                        // return to the previous tab. Otherwise, stay on current tab.
+                        if selectedTab == 1 {
+                            selectedTab = selectedTab == 1 ? 0 : selectedTab
+                        }
+                    }
+            }
+    }
 }
