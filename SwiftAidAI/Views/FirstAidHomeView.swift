@@ -34,7 +34,6 @@ struct FirstAidHomeView: View {
 
 struct HomeContentView: View {
     @State private var searchText = ""
-    @State private var isSearching = false
     @StateObject private var networkMonitor = NetworkMonitor()
     
     // Grid layout
@@ -43,87 +42,247 @@ struct HomeContentView: View {
         GridItem(.flexible())
     ]
     
-    let emergencyTopics: [EmergencyTopic] = [
-        // Critical Emergencies (Red)
-        EmergencyTopic(
-            id: 1,
+    // All first aid topics with their subtopics
+    let allFirstAidTopics: [FirstAidTopic] = [
+        // Critical Emergencies
+        FirstAidTopic(
+            category: .critical,
             title: "Critical Emergencies",
             subtitle: "Life-threatening situations",
             icon: "heart.fill",
             color: .red,
-            category: .critical
+            subtopics: [
+                "Primary Survey (DR ABC)",
+                "Unresponsive and Not Breathing (CPR)",
+                "Unresponsive but Breathing",
+                "Choking",
+                "Severe Bleeding",
+                "Shock",
+                "Heart Attack",
+                "Stroke",
+                "Anaphylaxis"
+            ],
+            subtopicKeywords: [
+                "Primary Survey (DR ABC)": ["danger", "response", "airway", "breathing", "circulation", "dr abc"],
+                "Unresponsive and Not Breathing (CPR)": ["cpr", "no pulse", "not breathing", "cardiac arrest", "compressions"],
+                "Unresponsive but Breathing": ["recovery position", "faint", "breathing unconscious", "passed out"],
+                "Choking": ["choke", "airway blocked", "can't breathe", "heimlich", "foreign object"],
+                "Severe Bleeding": ["hemorrhage", "bleeding", "blood loss", "major wound"],
+                "Shock": ["shock symptoms", "cold skin", "pale", "fast pulse", "faint"],
+                "Heart Attack": ["chest pain", "tight chest", "heart", "cardiac", "pain spreading arm"],
+                "Stroke": ["face droop", "slurred speech", "fast stroke test", "numbness", "stroke"],
+                "Anaphylaxis": ["severe allergy", "swelling", "epipen", "difficulty breathing", "allergic reaction"]
+            ]
         ),
         
-        // Bleeding & Wounds (Dark Red)
-        EmergencyTopic(
-            id: 2,
+        // Bleeding & Wounds
+        FirstAidTopic(
+            category: .wounds,
             title: "Bleeding & Wounds",
             subtitle: "Cuts, wounds, and severe bleeding",
             icon: "drop.fill",
             color: Color(red: 0.8, green: 0.2, blue: 0.2),
-            category: .wounds
+            subtopics: [
+                "Severe Bleeding",
+                "Minor Cuts and Grazes",
+                "Nosebleeds",
+                "Blisters"
+            ],
+            subtopicKeywords: [
+                "Severe Bleeding": ["deep wound", "lots of blood", "gushing blood"],
+                "Minor Cuts and Grazes": ["small cut", "abrasion", "scratch", "skin wound", "plaster"],
+                "Nosebleeds": ["bleeding nose", "blood from nose", "tilt forward"],
+                "Blisters": ["friction", "bubble", "blister", "skin burn", "foot sore"]
+            ]
         ),
         
-        // Burns & Scalds (Orange)
-        EmergencyTopic(
-            id: 3,
+        // Burns & Scalds
+        FirstAidTopic(
+            category: .burns,
             title: "Burns & Scalds",
             subtitle: "Thermal, chemical, and electrical burns",
             icon: "flame.fill",
             color: .orange,
-            category: .burns
+            subtopics: [
+                "Chemical Burns",
+                "Severe Burns",
+                "Minor Burns",
+                "Sunburn"
+            ],
+            subtopicKeywords: [
+                "Chemical Burns": ["acid", "alkali", "chemical exposure", "corrosive", "eye burn"],
+                "Severe Burns": ["deep burn", "third degree", "skin charred", "burn shock"],
+                "Minor Burns": ["first degree", "small burn", "blister burn", "scald"],
+                "Sunburn": ["sun exposure", "red skin", "peeling", "uv damage", "heat rash"]
+            ]
         ),
         
-        // Bone & Joint Injuries (Purple)
-        EmergencyTopic(
-            id: 4,
+        // Bone & Joint Injuries
+        FirstAidTopic(
+            category: .bones,
             title: "Bone & Joint Injuries",
             subtitle: "Fractures, sprains, and strains",
             icon: "figure.walk",
             color: .purple,
-            category: .bones
+            subtopics: [
+                "Broken Bones",
+                "Sprains",
+                "Dislocations",
+                "Spinal Injuries"
+            ],
+            subtopicKeywords: [
+                "Broken Bones": ["fracture", "snap", "deformed limb", "can't move", "bone sticking out"],
+                "Sprains": ["twisted ankle", "swollen joint", "ligament", "strain", "minor injury"],
+                "Dislocations": ["out of socket", "shoulder dislocation", "knee cap out", "joint injury"],
+                "Spinal Injuries": ["neck injury", "back trauma", "can't feel legs", "spine"]
+            ]
         ),
         
-        // Breathing Issues (Blue)
-        EmergencyTopic(
-            id: 5,
+        // Breathing Issues
+        FirstAidTopic(
+            category: .breathing,
             title: "Breathing Issues",
             subtitle: "Respiratory emergencies",
             icon: "lungs.fill",
             color: .blue,
-            category: .breathing
+            subtopics: [
+                "Asthma Attacks",
+                "Hyperventilation"
+            ],
+            subtopicKeywords: [
+                "Asthma Attacks": ["inhaler", "wheezing", "short of breath", "blue lips", "can't breathe"],
+                "Hyperventilation": ["panic", "rapid breathing", "anxiety attack", "tingling hands"]
+            ]
         ),
         
-        // Head & Brain (Indigo)
-        EmergencyTopic(
-            id: 6,
+        // Head & Brain
+        FirstAidTopic(
+            category: .head,
             title: "Head & Brain",
             subtitle: "Concussion and head injuries",
             icon: "brain.head.profile",
             color: Color(red: 0.3, green: 0.3, blue: 0.8),
-            category: .head
+            subtopics: [
+                "Concussion",
+                "Skull Fracture",
+                "Brain Injury"
+            ],
+            subtopicKeywords: [
+                "Concussion": ["head hit", "dizzy", "confused", "light sensitive", "mild brain injury"],
+                "Skull Fracture": ["cracked skull", "bleeding from ear", "depression in skull", "head trauma"],
+                "Brain Injury": ["serious head injury", "loss of consciousness", "seizure", "pupil difference"]
+            ]
         ),
         
-        // Medical & Poisoning (Green)
-        EmergencyTopic(
-            id: 7,
+        // Medical & Poisoning
+        FirstAidTopic(
+            category: .medical,
             title: "Medical & Poisoning",
             subtitle: "Conditions and toxic exposure",
             icon: "cross.case.fill",
             color: .green,
-            category: .medical
+            subtopics: [
+                "Diabetic Emergencies",
+                "Food Poisoning",
+                "Alcohol Poisoning"
+            ],
+            subtopicKeywords: [
+                "Diabetic Emergencies": ["low sugar", "high sugar", "glucose", "insulin", "diabetes attack"],
+                "Food Poisoning": ["vomiting", "diarrhea", "nausea", "bad food", "bacteria"],
+                "Alcohol Poisoning": ["drunk", "passed out", "slurred speech", "vomiting alcohol"]
+            ]
         ),
         
-        // Environmental (Teal)
-        EmergencyTopic(
-            id: 8,
+        // Environmental
+        FirstAidTopic(
+            category: .environmental,
             title: "Environmental",
             subtitle: "Heat, cold, and natural hazards",
             icon: "thermometer.sun.fill",
             color: .teal,
-            category: .environmental
+            subtopics: [
+                "Heatstroke",
+                "Hypothermia"
+            ],
+            subtopicKeywords: [
+                "Heatstroke": ["hot weather", "no sweating", "heat exhaustion", "collapse in sun"],
+                "Hypothermia": ["cold", "shivering", "frostbite", "blue skin", "body temperature low"]
+            ]
         )
     ]
+    
+    struct SearchResult: Identifiable {
+        let id = UUID()
+        let mainTopic: FirstAidTopic
+        let title: String
+        let subtitle: String
+        let icon: String
+        let color: Color
+        let category: EmergencyCategory
+        let isSubtopic: Bool
+    }
+    
+    var searchResults: [SearchResult] {
+        if searchText.isEmpty {
+            return allFirstAidTopics.map { topic in
+                SearchResult(
+                    mainTopic: topic,
+                    title: topic.title,
+                    subtitle: topic.subtitle,
+                    icon: topic.icon,
+                    color: topic.color,
+                    category: topic.category,
+                    isSubtopic: false
+                )
+            }
+        }
+        
+        var results: [SearchResult] = []
+        let searchTerms = searchText.lowercased().split(separator: " ")
+        
+        for topic in allFirstAidTopics {
+            // Check if main topic matches
+            let matchesMainTopic = topic.title.lowercased().contains(searchText.lowercased()) ||
+                                 topic.subtitle.lowercased().contains(searchText.lowercased())
+            
+            if matchesMainTopic {
+                results.append(SearchResult(
+                    mainTopic: topic,
+                    title: topic.title,
+                    subtitle: topic.subtitle,
+                    icon: topic.icon,
+                    color: topic.color,
+                    category: topic.category,
+                    isSubtopic: false
+                ))
+            }
+            
+            // Check subtopics and their keywords
+            for (subtopic, keywords) in topic.subtopicKeywords {
+                let matchesSubtopic = subtopic.lowercased().contains(searchText.lowercased()) ||
+                                    searchTerms.allSatisfy { term in
+                                        subtopic.lowercased().contains(term) ||
+                                        keywords.contains { keyword in
+                                            keyword.lowercased().contains(term)
+                                        }
+                                    }
+                
+                if matchesSubtopic {
+                    results.append(SearchResult(
+                        mainTopic: topic,
+                        title: subtopic,
+                        subtitle: "Part of \(topic.title)",
+                        icon: topic.icon,
+                        color: topic.color,
+                        category: topic.category,
+                        isSubtopic: true
+                    ))
+                }
+            }
+        }
+        
+        return results
+    }
     
     var body: some View {
         ZStack {
@@ -133,80 +292,23 @@ struct HomeContentView: View {
             VStack(spacing: 0) {
                 // Top navigation area with blur effect
                 VStack(spacing: 0) {
-                    HStack(spacing: 16) {
-                        // Profile icon
+                    HStack {
                         NavigationLink(destination: ProfileView()) {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 32))
                                 .foregroundColor(.primary)
                         }
                         
-                        // Title and Search Bar
-                        HStack(spacing: 12) {
-                            // Left spacer to help with centering
-                            if !isSearching {
                                 Spacer()
-                            }
                             
                             Text("First Aid")
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundColor(.primary)
-                                .opacity(isSearching ? 0 : 1)
-                                .animation(.easeInOut(duration: 0.2), value: isSearching)
                             
-                            // Right spacer to help with centering
-                            if !isSearching {
                                 Spacer()
-                            }
-                            
-                            // Animated Search Bar
-                            HStack {
-                                if isSearching {
-                                    HStack {
-                                        Image(systemName: "magnifyingglass")
-                                            .foregroundColor(.gray)
-                                        
-                                        TextField("Search first aid topics", text: $searchText)
-                                            .textFieldStyle(PlainTextFieldStyle())
-                                        
-                                        if !searchText.isEmpty {
-                                            Button(action: { searchText = "" }) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.gray)
-                                            }
-                                        }
-                                        
-                                        Button(action: {
-                                            searchText = ""
-                                            withAnimation {
-                                                isSearching = false
-                                            }
-                                        }) {
-                                            Text("Cancel")
-                                                .foregroundColor(.primary)
-                                        }
-                                    }
-                                    .padding(8)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(10)
-                                } else {
-                                    Button(action: {
-                                        withAnimation {
-                                            isSearching = true
-                                        }
-                                    }) {
-                                        Image(systemName: "magnifyingglass")
-                                            .font(.system(size: 22))
-                                            .foregroundColor(.primary)
-                                    }
-                                }
-                            }
-                            .frame(width: isSearching ? nil : 44)
-                        }
                     }
                     .padding(.horizontal)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
+                    .padding(.vertical, 12)
                 }
                 .background(
                     Color(.systemBackground)
@@ -220,33 +322,134 @@ struct HomeContentView: View {
                         )
                 )
                 
-                // Offline banner if needed
-                if !networkMonitor.isConnected {
-                    HStack {
-                        Image(systemName: "wifi.slash")
-                        Text("Offline mode active")
-                        Spacer()
-                    }
-                    .font(.subheadline)
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                }
-                
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 20) {
-                        ForEach(filteredTopics) { topic in
-                            NavigationLink(destination: destinationView(for: topic)) {
-                                EmergencyTopicCard(topic: topic)
+                    VStack(spacing: 20) {
+                        // Search Bar
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                            
+                            TextField("Search all first aid topics", text: $searchText)
+                                .textFieldStyle(PlainTextFieldStyle())
+                            
+                            if !searchText.isEmpty {
+                                Button(action: { searchText = "" }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.gray)
+                                }
+                                .frame(width: 44, height: 44)
                             }
                         }
+                        .padding(12)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                        .padding(.top, 16)
+                        
+                        // Topics Grid
+                    LazyVGrid(columns: columns, spacing: 20) {
+                            ForEach(searchResults) { result in
+                                NavigationLink(destination: destinationView(for: result)) {
+                                    if result.isSubtopic {
+                                        SubtopicCard(result: result)
+                                    } else {
+                                        EmergencyTopicCard(topic: EmergencyTopic(
+                                            id: 1,
+                                            title: result.title,
+                                            subtitle: result.subtitle,
+                                            icon: result.icon,
+                                            color: result.color,
+                                            category: result.category
+                                        ))
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding()
                 }
             }
         }
     }
     
-    private func destinationView(for topic: EmergencyTopic) -> some View {
+    private func destinationView(for result: SearchResult) -> some View {
+        if result.isSubtopic {
+            // Direct navigation to specific guidance views for subtopics
+            switch result.title {
+            // Critical Emergencies subtopics
+            case "Primary Survey (DR ABC)":
+                return AnyView(PrimarySurveyDetailView())
+            case "Unresponsive and Not Breathing (CPR)":
+                return AnyView(CPRGuidanceView())
+            case "Unresponsive but Breathing":
+                return AnyView(RecoveryPositionView())
+            case "Choking":
+                return AnyView(ChokingGuidanceView())
+            case "Severe Bleeding":
+                return AnyView(SevereBleedingGuidanceView())
+            case "Shock":
+                return AnyView(ShockGuidanceView())
+            case "Heart Attack":
+                return AnyView(HeartAttackGuidanceView())
+            case "Stroke":
+                return AnyView(StrokeGuidanceView())
+            case "Anaphylaxis":
+                return AnyView(AnaphylaxisGuidanceView())
+                
+            // Bleeding & Wounds subtopics
+            case "Minor Cuts and Grazes":
+                return AnyView(CutsAndGrazesGuidanceView())
+            case "Nosebleeds":
+                return AnyView(NosebleedGuidanceView())
+            case "Blisters":
+                return AnyView(BlisterGuidanceView())
+                
+            // Burns & Scalds subtopics
+            case "Chemical Burns":
+                return AnyView(ChemicalBurnsGuidanceView())
+            case "Severe Burns":
+                return AnyView(SevereBurnsGuidanceView())
+            case "Minor Burns":
+                return AnyView(MinorBurnsGuidanceView())
+            case "Sunburn":
+                return AnyView(SunburnGuidanceView())
+                
+            // Bone & Joint Injuries subtopics
+            case "Broken Bones":
+                return AnyView(BrokenBonesGuidanceView())
+            case "Sprains":
+                return AnyView(SprainsGuidanceView())
+                
+            // Breathing Issues subtopics
+            case "Asthma Attacks":
+                return AnyView(AsthmaGuidanceView())
+            case "Hyperventilation":
+                return AnyView(HyperventilationGuidanceView())
+                
+            // Medical & Poisoning subtopics
+            case "Diabetic Emergencies":
+                return AnyView(DiabeticEmergencyView())
+            case "Food Poisoning":
+                return AnyView(FoodPoisoningView())
+            case "Alcohol Poisoning":
+                return AnyView(AlcoholPoisoningView())
+                
+            // Environmental subtopics
+            case "Heatstroke":
+                return AnyView(HeatstrokeGuidanceView())
+            case "Hypothermia":
+                return AnyView(HypothermiaGuidanceView())
+                
+            default:
+                return AnyView(destinationView(for: result.mainTopic))
+            }
+        } else {
+            // For main topics, show the category view
+            return AnyView(destinationView(for: result.mainTopic))
+        }
+    }
+    
+    private func destinationView(for topic: FirstAidTopic) -> some View {
         Group {
             switch topic.category {
             case .critical:
@@ -268,13 +471,76 @@ struct HomeContentView: View {
             }
         }
     }
+}
+
+struct SubtopicCard: View {
+    let result: HomeContentView.SearchResult
     
-    var filteredTopics: [EmergencyTopic] {
-        if searchText.isEmpty {
-            return emergencyTopics
+    var body: some View {
+        HStack(spacing: 16) {
+            // Icon Circle
+            ZStack {
+                Circle()
+                    .fill(result.color.opacity(0.15))
+                    .frame(width: 44, height: 44) // Match Apple's minimum touch target size
+                
+                Image(systemName: result.icon)
+                    .font(.system(size: 24))
+                    .foregroundColor(result.color)
+            }
+            
+            // Title and Subtitle
+            VStack(alignment: .leading, spacing: 4) {
+                Text(result.title)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
+                
+                Text(result.subtitle)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.9)
+            }
+            
+            Spacer()
+            
+            // Arrow indicator
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.gray)
         }
-        return emergencyTopics.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(
+                    color: result.color.opacity(0.1),
+                    radius: 8,
+                    x: 0,
+                    y: 2
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(result.color.opacity(0.2), lineWidth: 1)
+        )
     }
+}
+
+// First Aid Topic with subtopics
+struct FirstAidTopic: Identifiable {
+    let id = UUID()
+    let category: EmergencyCategory
+    let title: String
+    let subtitle: String
+    let icon: String
+    let color: Color
+    let subtopics: [String]
+    let subtopicKeywords: [String: [String]]
 }
 
 // Emergency Card Component
@@ -282,37 +548,45 @@ struct EmergencyTopicCard: View {
     let topic: EmergencyTopic
     
     var body: some View {
-        VStack(spacing: 12) {
+        HStack(spacing: 16) {
             // Icon with background
             ZStack {
                 Circle()
                     .fill(topic.color.opacity(0.15))
-                    .frame(width: 60, height: 60)
+                    .frame(width: 44, height: 44) // Match Apple's minimum touch target size
                 
                 Image(systemName: topic.icon)
-                    .font(.system(size: 28))
+                    .font(.system(size: 24))
                     .foregroundColor(topic.color)
             }
             
             // Title and subtitle
-            VStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(topic.title)
                     .font(.headline)
-                    .multilineTextAlignment(.center)
                     .foregroundColor(.primary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.9)
                 
                 Text(topic.subtitle)
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .minimumScaleFactor(0.9)
             }
+            
+            Spacer()
+            
+            // Arrow indicator
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.gray)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 160)
-        .padding()
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .fill(Color(.systemBackground))
                 .shadow(
                     color: topic.color.opacity(0.1),
@@ -322,7 +596,7 @@ struct EmergencyTopicCard: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(topic.color.opacity(0.2), lineWidth: 1)
         )
     }
@@ -437,7 +711,7 @@ struct SymptomCheckerTabView: View {
     
     var body: some View {
         Color.clear // Invisible view as placeholder
-            .onChange(of: selectedTab) { newValue in
+            .onChange(of: selectedTab) { oldValue, newValue in
                 if newValue == 1 { // 1 is the index of the Symptoms tab
                     showingSymptomChecker = true
                 }
