@@ -4,7 +4,8 @@ struct User: Identifiable, Codable {
     var id: String
     var fullname: String
     var email: String
-    var password: String
+    var createdAt: String
+    var lastLoginAt: String
     
     // Computed property for initials
     var initials: String {
@@ -25,6 +26,7 @@ extension User {
         id: "mockUserId",
         fullname: "Kobe Bryant",
         email: "test@gmail.com",
-        password: "password123" // Add a mock password
+        createdAt: Date().description,
+        lastLoginAt: Date().description
     )
 }

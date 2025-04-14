@@ -20,6 +20,13 @@ class AuthViewModel: ObservableObject {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.userSession = result.user
+            
+            // Update last login time
+            let db = Firestore.firestore()
+            try await db.collection("users").document(result.user.uid).updateData([
+                "lastLoginAt": Date().description
+            ])
+            
             await fetchUser()
         } catch {
             print("DEBUG: Failed to sign in with error \(error.localizedDescription)")
@@ -33,7 +40,14 @@ class AuthViewModel: ObservableObject {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.userSession = result.user
             
-            let user = User(id: result.user.uid, fullname: fullname, email: email, password: password)
+            let user = User(
+                id: result.user.uid,
+                fullname: fullname,
+                email: email,
+                createdAt: result.user.metadata.creationDate?.description ?? Date().description,
+                lastLoginAt: result.user.metadata.lastSignInDate?.description ?? Date().description
+            )
+            
             let encodedUser = try Firestore.Encoder().encode(user)
             try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser)
             

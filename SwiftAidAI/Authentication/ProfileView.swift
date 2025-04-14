@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -7,6 +8,7 @@ struct ProfileView: View {
     @State private var showDeletionMessage = false
     @State private var confirmationPassword = ""
     @State private var showPasswordError = false
+    @State private var showLogoutAlert = false
     
     var body: some View {
         List {
@@ -40,10 +42,18 @@ struct ProfileView: View {
             // Actions
             Section {
                 Button(action: {
-                    authViewModel.signOut()
+                    showLogoutAlert = true
                 }) {
                     Text("Log Out")
                         .foregroundColor(.blue)
+                }
+                .alert("Log Out", isPresented: $showLogoutAlert) {
+                    Button("Cancel", role: .cancel) { }
+                    Button("Log Out", role: .destructive) {
+                        authViewModel.signOut()
+                    }
+                } message: {
+                    Text("Are you sure you want to log out? You can always sign back in later.")
                 }
                 
                 Button(action: {
@@ -124,18 +134,23 @@ struct ProfileView: View {
                         
                         Button(action: {
                             Task {
-                                // Verify password matches current user's password
-                                if confirmationPassword == authViewModel.currentUser?.password {
-                                    do {
-                                        try await authViewModel.deleteAccount()
-                                        showPasswordConfirmation = false
-                                        showDeletionMessage = true
-                                        authViewModel.signOut()
-                                    } catch {
-                                        print("Failed to delete account: \(error.localizedDescription)")
-                                    }
-                                } else {
+                                do {
+                                    // Reauthenticate user with Firebase Auth
+                                    let credential = EmailAuthProvider.credential(
+                                        withEmail: authViewModel.currentUser?.email ?? "",
+                                        password: confirmationPassword
+                                    )
+                                    
+                                    try await Auth.auth().currentUser?.reauthenticate(with: credential)
+                                    
+                                    // If reauthentication succeeds, delete the account
+                                    try await authViewModel.deleteAccount()
+                                    showPasswordConfirmation = false
+                                    showDeletionMessage = true
+                                    authViewModel.signOut()
+                                } catch {
                                     showPasswordError = true
+                                    print("Failed to delete account: \(error.localizedDescription)")
                                 }
                             }
                         }) {
