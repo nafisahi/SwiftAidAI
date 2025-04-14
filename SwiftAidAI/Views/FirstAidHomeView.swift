@@ -1,4 +1,4 @@
-import SwiftUI
+import SwiftUI 
 import Network
 
 struct FirstAidHomeView: View {
@@ -38,8 +38,8 @@ struct HomeContentView: View {
     
     // Grid layout
     let columns = [
-        GridItem(.flexible()),
-        GridItem(.flexible())
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
     ]
     
     // All first aid topics with their subtopics
@@ -299,13 +299,13 @@ struct HomeContentView: View {
                                 .foregroundColor(.primary)
                         }
                         
-                                Spacer()
-                            
-                            Text("First Aid")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.primary)
-                            
-                                Spacer()
+                        Spacer()
+                        
+                        Text("First Aid")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
@@ -347,7 +347,7 @@ struct HomeContentView: View {
                         .padding(.top, 16)
                         
                         // Topics Grid
-                    LazyVGrid(columns: columns, spacing: 20) {
+                        LazyVGrid(columns: columns, spacing: 16) {
                             ForEach(searchResults) { result in
                                 NavigationLink(destination: destinationView(for: result)) {
                                     if result.isSubtopic {
@@ -365,7 +365,8 @@ struct HomeContentView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 8)
                     }
                 }
             }
@@ -477,12 +478,19 @@ struct SubtopicCard: View {
     let result: HomeContentView.SearchResult
     
     var body: some View {
-        HStack(spacing: 16) {
+        let screenWidth = UIScreen.main.bounds.width
+        let spacing: CGFloat = 16
+        let horizontalPadding: CGFloat = 16
+        let cardSize = (screenWidth - (horizontalPadding * 2) - spacing) / 2
+        
+        VStack(alignment: .center, spacing: 16) {
+            Spacer(minLength: 16)
+            
             // Icon Circle
             ZStack {
                 Circle()
                     .fill(result.color.opacity(0.15))
-                    .frame(width: 44, height: 44) // Match Apple's minimum touch target size
+                    .frame(width: 48, height: 48)
                 
                 Image(systemName: result.icon)
                     .font(.system(size: 24))
@@ -490,32 +498,28 @@ struct SubtopicCard: View {
             }
             
             // Title and Subtitle
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .center, spacing: 4) {
                 Text(result.title)
-                    .font(.headline)
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.9)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
                 
                 Text(result.subtitle)
-                    .font(.subheadline)
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.9)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
             }
+            .padding(.horizontal, 8)
             
-            Spacer()
-            
-            // Arrow indicator
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.gray)
+            Spacer(minLength: 16)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .frame(width: cardSize, height: cardSize)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
                 .shadow(
                     color: result.color.opacity(0.1),
@@ -525,7 +529,7 @@ struct SubtopicCard: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16)
                 .stroke(result.color.opacity(0.2), lineWidth: 1)
         )
     }
@@ -548,12 +552,19 @@ struct EmergencyTopicCard: View {
     let topic: EmergencyTopic
     
     var body: some View {
-        HStack(spacing: 16) {
-            // Icon with background
+        let screenWidth = UIScreen.main.bounds.width
+        let spacing: CGFloat = 16
+        let horizontalPadding: CGFloat = 16
+        let cardSize = (screenWidth - (horizontalPadding * 2) - spacing) / 2
+        
+        VStack(alignment: .center, spacing: 16) {
+            Spacer(minLength: 16)
+            
+            // Icon Circle
             ZStack {
                 Circle()
                     .fill(topic.color.opacity(0.15))
-                    .frame(width: 44, height: 44) // Match Apple's minimum touch target size
+                    .frame(width: 48, height: 48)
                 
                 Image(systemName: topic.icon)
                     .font(.system(size: 24))
@@ -561,32 +572,28 @@ struct EmergencyTopicCard: View {
             }
             
             // Title and subtitle
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .center, spacing: 4) {
                 Text(topic.title)
-                    .font(.headline)
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.primary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.9)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
                 
                 Text(topic.subtitle)
-                    .font(.subheadline)
+                    .font(.system(size: 13))
                     .foregroundColor(.secondary)
                     .lineLimit(2)
-                    .minimumScaleFactor(0.9)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
             }
+            .padding(.horizontal, 8)
             
-            Spacer()
-            
-            // Arrow indicator
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.gray)
+            Spacer(minLength: 16)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .frame(width: cardSize, height: cardSize)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
                 .shadow(
                     color: topic.color.opacity(0.1),
@@ -596,8 +603,8 @@ struct EmergencyTopicCard: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(topic.color.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(topic.color.opacity(0.15), lineWidth: 1)
         )
     }
 }

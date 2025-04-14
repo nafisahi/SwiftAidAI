@@ -1,4 +1,4 @@
-import SwiftUI
+import SwiftUI 
 
 struct EmergencyCard: View {
     let emergency: CriticalEmergency
