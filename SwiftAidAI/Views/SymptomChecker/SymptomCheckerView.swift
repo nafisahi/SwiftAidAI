@@ -1,11 +1,19 @@
 import SwiftUI
 
+// Add import for Models module or relative import for ChatMessage
+@_implementationOnly import FirebaseFirestore // If needed
+@_implementationOnly import FirebaseAuth // If needed
+
 struct SymptomCheckerView: View {
     @State private var symptomText = ""
     @State private var showingChat = false
     @State private var isLoading = false
     @State private var errorMessage: String?
     @StateObject private var geminiService: GeminiService
+    @StateObject private var chatHistory = ChatHistoryService()
+    @State private var conversationId: String = UUID().uuidString
+    @State private var messages: [ChatMessage] = []
+    @Environment(\.dismiss) var dismiss
     
     init() {
         // In a production app, this should be stored securely and not hardcoded
@@ -25,103 +33,117 @@ struct SymptomCheckerView: View {
     ]
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Header Section
-                VStack(spacing: 12) {
-                    Text("Symptom Checker")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.primary)
-                    
-                    Text("Tell us what you or someone else is experiencing. We'll guide you step by step.")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .padding(.top)
-                
-                // Symptom Input Field
-                VStack(spacing: 8) {
-                    HStack {
-                        TextField("Describe symptoms...", text: $symptomText)
-                            .padding()
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header Section
+                    VStack(spacing: 12) {
+                        Text("Symptom Checker")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(.primary)
                         
-                        if !symptomText.isEmpty {
-                            Button(action: {
-                                symptomText = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
-                                    .font(.system(size: 20))
-                                    .frame(width: 44, height: 44)
-                            }
-                            .transition(.opacity)
-                            .animation(.easeInOut, value: symptomText.isEmpty)
-                        }
+                        Text("Tell us what you or someone else is experiencing. We'll guide you step by step.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
-                    .background(
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(.systemBackground))
-                            .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Color.blue.opacity(0.2), lineWidth: 1)
-                    )
-                    .padding(.horizontal)
-                }
-                
-                // Common Symptoms Chips
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(commonSymptoms, id: \.self) { symptom in
-                            SymptomChip(text: symptom) {
-                                symptomText = symptom
+                    .padding(.top)
+                    
+                    // Symptom Input Field
+                    VStack(spacing: 8) {
+                        HStack {
+                            TextField("Describe symptoms...", text: $symptomText)
+                                .padding()
+                            
+                            if !symptomText.isEmpty {
+                                Button(action: {
+                                    symptomText = ""
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundStyle(.secondary)
+                                        .font(.system(size: 20))
+                                        .frame(width: 44, height: 44)
+                                }
+                                .transition(.opacity)
+                                .animation(.easeInOut, value: symptomText.isEmpty)
                             }
                         }
-                    }
-                    .padding(.horizontal)
-                }
-                
-                // Start AI Check Button
-                Button(action: {
-                    Task {
-                        await analyzeSymptoms()
-                    }
-                }) {
-                    HStack {
-                        if isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        } else {
-                            Image(systemName: "stethoscope")
-                            Text("Start AI Check")
-                        }
-                    }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 25)
-                            .fill(Color.blue)
-                    )
-                    .padding(.horizontal)
-                }
-                .disabled(symptomText.isEmpty || isLoading)
-                .opacity(symptomText.isEmpty || isLoading ? 0.6 : 1)
-                
-                if let error = errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.subheadline)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color(.systemBackground))
+                                .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        )
                         .padding(.horizontal)
+                    }
+                    
+                    // Common Symptoms Chips
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(commonSymptoms, id: \.self) { symptom in
+                                SymptomChip(text: symptom) {
+                                    symptomText = symptom
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                    // Start AI Check Button
+                    Button(action: {
+                        Task {
+                            await analyzeSymptoms()
+                        }
+                    }) {
+                        HStack {
+                            if isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Image(systemName: "stethoscope")
+                                Text("Start AI Check")
+                            }
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            RoundedRectangle(cornerRadius: 25)
+                                .fill(Color.blue)
+                        )
+                        .padding(.horizontal)
+                    }
+                    .disabled(symptomText.isEmpty || isLoading)
+                    .opacity(symptomText.isEmpty || isLoading ? 0.6 : 1)
+                    
+                    if let error = errorMessage {
+                        Text(error)
+                            .foregroundColor(.red)
+                            .font(.subheadline)
+                            .padding(.horizontal)
+                    }
                 }
             }
-        }
-        .fullScreenCover(isPresented: $showingChat) {
-            SymptomChatView(initialSymptom: symptomText)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showingChat) {
+                SymptomChatView(initialMessage: ChatMessage(text: symptomText, isUser: true))
+            }
+            .onAppear {
+                chatHistory.loadMessages(conversationId: conversationId) { loaded in
+                    self.messages = loaded
+                }
+            }
         }
     }
     
@@ -130,14 +152,37 @@ struct SymptomCheckerView: View {
         errorMessage = nil
         
         do {
-            let analysis = try await geminiService.analyzeSymptoms(symptomText)
-            // Handle the analysis result
+            // Just check if we can get a response, don't save anything
+            _ = try await geminiService.analyzeSymptoms(symptomText)
             showingChat = true
         } catch {
             errorMessage = "Failed to analyze symptoms: \(error.localizedDescription)"
         }
         
         isLoading = false
+    }
+    
+    private func sendMessage() {
+        let userMessage = ChatMessage(text: symptomText, isUser: true)
+        messages.append(userMessage)
+        chatHistory.saveMessage(userMessage, conversationId: conversationId)
+        chatHistory.saveConversationMetadata(conversationId: conversationId, title: symptomText)
+
+        Task {
+            do {
+                let reply = try await geminiService.analyzeSymptoms(symptomText)
+                DispatchQueue.main.async {
+                    let aiMessage = ChatMessage(text: reply, isUser: false)
+                    messages.append(aiMessage)
+                    chatHistory.saveMessage(aiMessage, conversationId: conversationId)
+                    chatHistory.updateConversationTimestamp(conversationId: conversationId)
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    errorMessage = "Failed to analyze symptoms: \(error.localizedDescription)"
+                }
+            }
+        }
     }
 }
 
@@ -269,15 +314,16 @@ struct MessageInputToolbar: View {
 }
 
 struct SymptomChatView: View {
-    let initialSymptom: String
+    let initialMessage: ChatMessage
     @Environment(\.dismiss) var dismiss
     @State private var messages: [ChatMessage] = []
     @State private var userInput = ""
     @State private var isLoading = false
     @State private var isTyping = false
     @StateObject private var geminiService = GeminiService(apiKey: "AIzaSyBvW-ZZv6bgNf2qp9e1aQQ50Zau38FpG-U")
-    @State private var currentTask: Task<Void, Never>?
-    @State private var currentMessage = ""
+    @StateObject private var chatHistory = ChatHistoryService()
+    @State private var conversationId: String = UUID().uuidString
+    @State private var showingHistory = false
     
     var body: some View {
         NavigationStack {
@@ -285,16 +331,6 @@ struct SymptomChatView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(spacing: 16) {
-                            // Initial user message
-                            MessageView(
-                                message: ChatMessage(text: initialSymptom, isUser: true),
-                                scrollProxy: proxy,
-                                isTyping: $isTyping,
-                                onStopTyping: cancelCurrentGeneration
-                            )
-                            .padding(.top, 16)
-                            
-                            // AI responses
                             ForEach(messages) { message in
                                 MessageView(
                                     message: message,
@@ -335,102 +371,93 @@ struct SymptomChatView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Close") {
-                        cancelCurrentGeneration()
-                        dismiss()
+                    Button(action: { showingHistory.toggle() }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .foregroundColor(.blue)
                     }
                 }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Close") {
+                        dismiss()
+                    }
+                    .foregroundColor(.blue)
+                }
             }
-            .onAppear {
-                startConversation()
+            .sheet(isPresented: $showingHistory) {
+                ChatHistorySidebarView(selectedConversationId: $conversationId)
+            }
+        }
+        .onAppear {
+            startConversation()
+        }
+    }
+    
+    private func startConversation() {
+        messages = [initialMessage]
+        chatHistory.saveMessage(initialMessage, conversationId: conversationId)
+        chatHistory.saveConversationMetadata(conversationId: conversationId, title: initialMessage.text)
+        
+        Task {
+            isLoading = true
+            do {
+                let analysis = try await geminiService.analyzeSymptoms(initialMessage.text)
+                let aiMessage = ChatMessage(text: analysis, isUser: false)
+                
+                await MainActor.run {
+                    messages.append(aiMessage)
+                    chatHistory.saveMessage(aiMessage, conversationId: conversationId)
+                    chatHistory.updateConversationTimestamp(conversationId: conversationId)
+                    isLoading = false
+                    isTyping = true
+                }
+            } catch {
+                await MainActor.run {
+                    let errorMessage = "I apologize, but I'm having trouble analyzing your symptoms. Please try again."
+                    let aiMessage = ChatMessage(text: errorMessage, isUser: false)
+                    messages.append(aiMessage)
+                    chatHistory.saveMessage(aiMessage, conversationId: conversationId)
+                    isLoading = false
+                }
             }
         }
     }
     
     private func cancelCurrentGeneration() {
-        currentTask?.cancel()
-        currentTask = nil
         isLoading = false
         isTyping = false
-        
-        // If we have a partial message, add it to the messages
-        if !currentMessage.isEmpty {
-            messages.append(ChatMessage(text: currentMessage, isUser: false))
-            currentMessage = ""
-        }
-    }
-    
-    private func startConversation() {
-        cancelCurrentGeneration() // Cancel any existing task first
-        
-        currentTask = Task {
-            isLoading = true
-            currentMessage = ""
-            do {
-                guard !Task.isCancelled else { return }
-                
-                // Get the response in chunks
-                let analysis = try await geminiService.analyzeSymptoms(initialSymptom)
-                guard !Task.isCancelled else { return }
-                
-                await MainActor.run {
-                    if Task.isCancelled { return }
-                    messages.append(ChatMessage(text: analysis, isUser: false))
-                    currentMessage = ""
-                    isLoading = false
-                    isTyping = true
-                }
-            } catch {
-                guard !Task.isCancelled else { return }
-                await MainActor.run {
-                    if Task.isCancelled { return }
-                    if !currentMessage.isEmpty {
-                        messages.append(ChatMessage(text: currentMessage, isUser: false))
-                    } else {
-                        messages.append(ChatMessage(text: "I apologize, but I'm having trouble analyzing your symptoms. Please try again.", isUser: false))
-                    }
-                    currentMessage = ""
-                    isLoading = false
-                }
-            }
-        }
     }
     
     private func sendMessage() {
         guard !userInput.isEmpty && !isLoading && !isTyping else { return }
         
-        let userMessage = userInput
-        messages.append(ChatMessage(text: userMessage, isUser: true))
+        let userMessage = ChatMessage(text: userInput, isUser: true)
+        messages.append(userMessage)
+        chatHistory.saveMessage(userMessage, conversationId: conversationId)
+        chatHistory.updateConversationTimestamp(conversationId: conversationId)
+        
+        let currentInput = userInput
         userInput = ""
         
-        cancelCurrentGeneration() // Cancel any existing task first
-        
-        currentTask = Task {
+        Task {
             isLoading = true
-            currentMessage = ""
             do {
-                guard !Task.isCancelled else { return }
-                
-                let response = try await geminiService.analyzeSymptoms(userMessage, previousMessages: messages)
-                guard !Task.isCancelled else { return }
+                let response = try await geminiService.analyzeSymptoms(currentInput, previousMessages: messages)
+                let aiMessage = ChatMessage(text: response, isUser: false)
                 
                 await MainActor.run {
-                    if Task.isCancelled { return }
-                    messages.append(ChatMessage(text: response, isUser: false))
-                    currentMessage = ""
+                    messages.append(aiMessage)
+                    chatHistory.saveMessage(aiMessage, conversationId: conversationId)
+                    chatHistory.updateConversationTimestamp(conversationId: conversationId)
                     isLoading = false
                     isTyping = true
                 }
             } catch {
-                guard !Task.isCancelled else { return }
                 await MainActor.run {
-                    if Task.isCancelled { return }
-                    if !currentMessage.isEmpty {
-                        messages.append(ChatMessage(text: currentMessage, isUser: false))
-                    } else {
-                        messages.append(ChatMessage(text: "I apologize, but I'm having trouble processing your response. Could you please rephrase that?", isUser: false))
-                    }
-                    currentMessage = ""
+                    let errorMessage = "I apologize, but I'm having trouble processing your response. Could you please rephrase that?"
+                    let aiMessage = ChatMessage(text: errorMessage, isUser: false)
+                    messages.append(aiMessage)
+                    chatHistory.saveMessage(aiMessage, conversationId: conversationId)
                     isLoading = false
                 }
             }
@@ -655,13 +682,6 @@ struct FormattedAIResponse: View {
         
         return formattedText
     }
-}
-
-struct ChatMessage: Identifiable {
-    let id = UUID()
-    let text: String
-    let isUser: Bool
-    let timestamp = Date()
 }
 
 #Preview {
