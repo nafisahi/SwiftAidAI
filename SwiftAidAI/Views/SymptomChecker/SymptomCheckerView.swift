@@ -1,8 +1,8 @@
 import SwiftUI
 
 // Add import for Models module or relative import for ChatMessage
-@_implementationOnly import FirebaseFirestore // If needed
-@_implementationOnly import FirebaseAuth // If needed
+import FirebaseFirestore // If needed
+import FirebaseAuth // If needed
 
 struct SymptomCheckerView: View {
     @State private var symptomText = ""
@@ -13,6 +13,7 @@ struct SymptomCheckerView: View {
     @StateObject private var chatHistory = ChatHistoryService()
     @State private var conversationId: String = UUID().uuidString
     @State private var messages: [ChatMessage] = []
+    @State private var showingHistory = false
     @Environment(\.dismiss) var dismiss
     
     init() {
@@ -130,11 +131,21 @@ struct SymptomCheckerView: View {
                 }
             }
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingHistory.toggle() }) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .foregroundColor(.blue)
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Close") {
                         dismiss()
                     }
                 }
+            }
+            .sheet(isPresented: $showingHistory) {
+                ChatHistorySidebarView(selectedConversationId: $conversationId)
             }
             .fullScreenCover(isPresented: $showingChat) {
                 SymptomChatView(initialMessage: ChatMessage(text: symptomText, isUser: true))

@@ -9,6 +9,9 @@ struct ChatHistorySidebarView: View {
     @State private var isLoading = true
     @State private var errorMessage: String?
     @State private var listener: ListenerRegistration?
+    @State private var showingDeleteConfirmation = false
+    @State private var conversationToDelete: String? = nil
+    @State private var showingClearAllConfirmation = false
     let chatHistory = ChatHistoryService()
     var onConversationSelected: ((String, String) -> Void)? // Callback for selection
     
@@ -50,6 +53,14 @@ struct ChatHistorySidebarView: View {
                                     }
                                     .padding(.vertical, 4)
                                 }
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button(role: .destructive) {
+                                        conversationToDelete = convo.id
+                                        showingDeleteConfirmation = true
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
                             }
                             .onDelete { indexSet in
                                 deleteConversations(at: indexSet) // Handle conversation deletion
@@ -67,6 +78,35 @@ struct ChatHistorySidebarView: View {
                         dismiss() // Dismiss the sidebar
                     }
                 }
+                
+                if !sortedConversations.isEmpty {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(role: .destructive) {
+                            showingClearAllConfirmation = true
+                        } label: {
+                            Text("Clear All")
+                                .foregroundColor(.red)
+                        }
+                    }
+                }
+            }
+            .alert("Delete Conversation", isPresented: $showingDeleteConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Delete", role: .destructive) {
+                    if let id = conversationToDelete {
+                        deleteConversation(id: id)
+                    }
+                }
+            } message: {
+                Text("Are you sure you want to delete this conversation? This action cannot be undone.")
+            }
+            .alert("Clear All Conversations", isPresented: $showingClearAllConfirmation) {
+                Button("Cancel", role: .cancel) {}
+                Button("Clear All", role: .destructive) {
+                    clearAllConversations()
+                }
+            } message: {
+                Text("Are you sure you want to delete all conversations? This action cannot be undone.")
             }
             .overlay {
                 if let error = errorMessage {
@@ -174,5 +214,22 @@ struct ChatHistorySidebarView: View {
                 dismiss() // Dismiss sidebar after selection
             }
         }
+    }
+    
+    private func deleteConversation(id: String) {
+        chatHistory.deleteConversation(conversationId: id) { success in
+            if success {
+                DispatchQueue.main.async {
+                    conversationTitles.removeAll { $0.id == id }
+                }
+            }
+        }
+    }
+    
+    private func clearAllConversations() {
+        for conversation in sortedConversations {
+            chatHistory.deleteConversation(conversationId: conversation.id) { _ in }
+        }
+        // The listener will automatically update the UI when the deletions are complete
     }
 } 
