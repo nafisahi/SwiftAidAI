@@ -49,9 +49,22 @@
 		C86B02F52D81E0F900896171 /* SwiftAidAIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SwiftAidAIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		C8FEBA642DB1661300A30718 /* Exceptions for "SwiftAidAI" folder in "SwiftAidAI" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = C86B02DA2D81E0F700896171 /* SwiftAidAI */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		C86B02DD2D81E0F700896171 /* SwiftAidAI */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				C8FEBA642DB1661300A30718 /* Exceptions for "SwiftAidAI" folder in "SwiftAidAI" target */,
+			);
 			path = SwiftAidAI;
 			sourceTree = "<group>";
 		};
@@ -438,6 +451,8 @@
 				DEVELOPMENT_TEAM = ZV22S43WA7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwiftAidAI/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -467,6 +482,8 @@
 				DEVELOPMENT_TEAM = ZV22S43WA7;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = SwiftAidAI/Info.plist;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
