@@ -103,18 +103,31 @@ struct HospitalMapView: View {
     let hospitals: [HospitalLocation]
     @Binding var selectedHospital: HospitalLocation?
     let height: CGFloat
+    @State private var region: MKCoordinateRegion
     
-    var body: some View {
-        Map(coordinateRegion: .constant(MKCoordinateRegion(
+    init(userLocation: CLLocationCoordinate2D, hospitals: [HospitalLocation], selectedHospital: Binding<HospitalLocation?>, height: CGFloat) {
+        self.userLocation = userLocation
+        self.hospitals = hospitals
+        self._selectedHospital = selectedHospital
+        self.height = height
+        self._region = State(initialValue: MKCoordinateRegion(
             center: userLocation,
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )),
-        showsUserLocation: true,
-        annotationItems: hospitals) { hospital in
+        ))
+    }
+    
+    var body: some View {
+        Map(coordinateRegion: $region,
+            showsUserLocation: true,
+            annotationItems: hospitals) { hospital in
             MapAnnotation(coordinate: hospital.coordinate) {
                 Button(action: {
                     withAnimation {
                         selectedHospital = hospital
+                        region = MKCoordinateRegion(
+                            center: hospital.coordinate,
+                            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                        )
                     }
                 }) {
                     Circle()
