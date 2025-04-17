@@ -11,6 +11,7 @@ struct SymptomCheckerView: View {
     @State private var errorMessage: String?
     @StateObject private var geminiService: GeminiService
     @StateObject private var chatHistory = ChatHistoryService()
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var conversationId: String = UUID().uuidString
     @State private var messages: [ChatMessage] = []
     @State private var showingHistory = false
@@ -159,6 +160,11 @@ struct SymptomCheckerView: View {
     }
     
     private func analyzeSymptoms() async {
+        guard networkMonitor.isConnected else {
+            errorMessage = "Please check your internet connection to use the Symptom Checker."
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         

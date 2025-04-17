@@ -34,7 +34,7 @@ struct FirstAidHomeView: View {
 
 struct HomeContentView: View {
     @State private var searchText = ""
-    @StateObject private var networkMonitor = NetworkMonitor()
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     
     // Grid layout
     let columns = [
@@ -309,6 +309,21 @@ struct HomeContentView: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
+                    
+                    // Offline Mode Banner
+                    if !networkMonitor.isConnected {
+                        HStack(spacing: 8) {
+                            Image(systemName: "wifi.slash")
+                                .font(.system(size: 14))
+                                .foregroundColor(.red)
+                            Text("Offline Mode")
+                                .font(.system(size: 14))
+                                .foregroundColor(.red)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(Color.red.opacity(0.1))
+                    }
                 }
                 .background(
                     Color(.systemBackground)
@@ -690,6 +705,7 @@ struct EmergencyDetailView: View {
 
 // Add NetworkMonitor class
 class NetworkMonitor: ObservableObject {
+    static let shared = NetworkMonitor()
     @Published private(set) var isConnected = true
     private let monitor = NWPathMonitor()
     
@@ -715,26 +731,62 @@ class NetworkMonitor: ObservableObject {
 struct SymptomCheckerTabView: View {
     @State private var showingSymptomChecker = false
     @Binding var selectedTab: Int
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     
     var body: some View {
-        Color.clear // Invisible view as placeholder
-            .onChange(of: selectedTab) { oldValue, newValue in
-                if newValue == 1 { // 1 is the index of the Symptoms tab
-                    showingSymptomChecker = true
-                }
-            }
-            .sheet(isPresented: $showingSymptomChecker) {
-                SymptomCheckerView()
-                    .presentationDetents([.medium])
-                    .presentationDragIndicator(.visible)
-                    .interactiveDismissDisabled(false)
-                    .onDisappear {
-                        // If we're still on the Symptoms tab when the sheet is dismissed,
-                        // return to the previous tab. Otherwise, stay on current tab.
-                        if selectedTab == 1 {
-                            selectedTab = selectedTab == 1 ? 0 : selectedTab
-                        }
+        Group {
+            if networkMonitor.isConnected {
+                // Keep a clear background but immediately show sheet when connected
+                Color.clear
+                    .sheet(isPresented: $showingSymptomChecker) {
+                        SymptomCheckerView()
+                            .presentationDetents([.medium])
+                            .presentationDragIndicator(.visible)
+                            .interactiveDismissDisabled(false)
+                            .onDisappear {
+                                if selectedTab == 1 {
+                                    selectedTab = 0
+                                }
+                            }
                     }
+            } else {
+                // Offline message
+                VStack(spacing: 20) {
+                    Image(systemName: "wifi.slash")
+                        .font(.system(size: 60))
+                        .foregroundColor(.red)
+                    
+                    Text("Symptom Checker Unavailable")
+                        .font(.title2)
+                        .bold()
+                    
+                    Text("Please check your internet connection to use the Symptom Checker feature.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(.systemBackground))
             }
+        }
+        // Handle tab selection
+        .onChange(of: selectedTab) { oldValue, newValue in
+            if newValue == 1 && networkMonitor.isConnected {
+                showingSymptomChecker = true
+            }
+        }
+        // Handle network state changes
+        .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
+            if isConnected && selectedTab == 1 {
+                showingSymptomChecker = true
+            }
+        }
+        // Ensure sheet is shown when view appears if we're on the symptoms tab and connected
+        .onAppear {
+            if selectedTab == 1 && networkMonitor.isConnected {
+                showingSymptomChecker = true
+            }
+        }
     }
 }
