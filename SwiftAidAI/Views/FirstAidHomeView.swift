@@ -35,6 +35,7 @@ struct FirstAidHomeView: View {
 struct HomeContentView: View {
     @State private var searchText = ""
     @StateObject private var networkMonitor = NetworkMonitor.shared
+    @State private var showingProfile = false
     
     // Grid layout
     let columns = [
@@ -293,7 +294,9 @@ struct HomeContentView: View {
                 // Top navigation area with blur effect
                 VStack(spacing: 0) {
                     HStack {
-                        NavigationLink(destination: ProfileView()) {
+                        NavigationLink {
+                            ProfileView()
+                        } label: {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 32))
                                 .foregroundColor(.primary)

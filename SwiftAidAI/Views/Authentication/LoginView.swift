@@ -16,6 +16,7 @@ struct LoginView: View {
     
     @State private var showLoginError = false
     @State private var loginErrorMessage = ""
+    @State private var showVerificationView = false
     
     @State private var showForgotPasswordSheet = false
     @State private var resetEmailSent = false
@@ -185,7 +186,7 @@ struct LoginView: View {
                         Task {
                             do {
                                 try await authViewModel.signIn(withEmail: email, password: password)
-                                isLoggedIn = true
+                                showVerificationView = true
                             } catch {
                                 loginErrorMessage = "The email or password you entered is incorrect. Please try again."
                                 showLoginError = true
@@ -223,14 +224,6 @@ struct LoginView: View {
                             .foregroundColor(.blue)
                     }
                     .padding(.top, 15)
-
-                    // NavigationLink to ProfileView
-                    NavigationLink(value: isLoggedIn) {
-                        EmptyView()
-                    }
-                    .navigationDestination(isPresented: $isLoggedIn) {
-                        ProfileView()
-                    }
                 }
                 .padding(.vertical, 30)
                 .background(
@@ -240,6 +233,14 @@ struct LoginView: View {
                 )
                 .padding(.horizontal, 20)
             }
+        }
+        .navigationDestination(isPresented: $showVerificationView) {
+            VerificationCodeView(email: email) {
+                isLoggedIn = true
+            }
+        }
+        .navigationDestination(isPresented: $isLoggedIn) {
+            ProfileView()
         }
     }
     

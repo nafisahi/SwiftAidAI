@@ -8,6 +8,8 @@ class AuthViewModel: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
     @Published var errorMessage: String = ""
+    @Published var isVerificationRequired: Bool = false
+    @Published var tempUser: FirebaseAuth.User?
     
     init() {
         self.userSession = Auth.auth().currentUser
@@ -19,15 +21,10 @@ class AuthViewModel: ObservableObject {
     func signIn(withEmail email: String, password: String) async throws {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
-            self.userSession = result.user
+            self.tempUser = result.user
+            self.isVerificationRequired = true
             
-            // Update last login time
-            let db = Firestore.firestore()
-            try await db.collection("users").document(result.user.uid).updateData([
-                "lastLoginAt": Date().description
-            ])
-            
-            await fetchUser()
+            // Don't set userSession yet, wait for verification
         } catch {
             print("DEBUG: Failed to sign in with error \(error.localizedDescription)")
             self.errorMessage = "Email or password is incorrect."
@@ -35,10 +32,33 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    func verifyCode(_ code: String) async throws {
+        // In a real implementation, you would verify the code with your backend
+        // For now, we'll just simulate a successful verification
+        if code == "123456" {
+            if let tempUser = tempUser {
+                self.userSession = tempUser
+                self.tempUser = nil
+                self.isVerificationRequired = false
+                
+                // Update last login time
+                let db = Firestore.firestore()
+                try await db.collection("users").document(tempUser.uid).updateData([
+                    "lastLoginAt": Date().description
+                ])
+                
+                await fetchUser()
+            }
+        } else {
+            throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid verification code"])
+        }
+    }
+    
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
-            self.userSession = result.user
+            self.tempUser = result.user
+            self.isVerificationRequired = true
             
             let user = User(
                 id: result.user.uid,
@@ -51,7 +71,7 @@ class AuthViewModel: ObservableObject {
             let encodedUser = try Firestore.Encoder().encode(user)
             try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser)
             
-            await fetchUser()
+            // Don't set userSession yet, wait for verification
         } catch {
             print("DEBUG: Failed to create user with error \(error.localizedDescription)")
             throw error

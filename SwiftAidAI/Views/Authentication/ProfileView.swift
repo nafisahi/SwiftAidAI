@@ -168,16 +168,20 @@ struct ProfileView: View {
                 }
                 .padding()
                 .navigationBarTitle("", displayMode: .inline)
-                .navigationBarItems(trailing: Button("Cancel") {
-                    showPasswordConfirmation = false
-                    confirmationPassword = ""
-                    showPasswordError = false
-                })
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            showPasswordConfirmation = false
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 #Preview {
-    ProfileView()
+    NavigationStack {
+        ProfileView()
+    }
 } 

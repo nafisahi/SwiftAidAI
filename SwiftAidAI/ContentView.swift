@@ -14,6 +14,10 @@ struct ContentView: View {
         Group {
             if viewModel.userSession != nil {
                 FirstAidHomeView()
+            } else if viewModel.isVerificationRequired {
+                VerificationCodeView(email: viewModel.tempUser?.email ?? "") {
+                    // Verification complete callback
+                }
             } else {
                 LoginView()
             }

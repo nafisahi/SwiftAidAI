@@ -17,6 +17,7 @@ struct SignUpView: View {
     @State private var isFormValid: Bool = false
     @State private var showEmailInUseAlert: Bool = false
     @State private var navigateToLogin: Bool = false
+    @State private var showVerificationView: Bool = false
     
     @EnvironmentObject var authViewModel: AuthViewModel
 
@@ -165,7 +166,7 @@ struct SignUpView: View {
                                 Task {
                                     do {
                                         try await authViewModel.createUser(withEmail: email, password: password, fullname: "\(firstName) \(surname)")
-                                        // Handle successful sign-up, e.g., navigate to another view
+                                        showVerificationView = true
                                     } catch let error as NSError {
                                         if error.code == AuthErrorCode.emailAlreadyInUse.rawValue {
                                             showEmailInUseAlert = true
@@ -200,6 +201,14 @@ struct SignUpView: View {
                             // NavigationLink to LoginView
                             .navigationDestination(isPresented: $navigateToLogin) {
                                 LoginView()
+                            }
+                            
+                            // NavigationLink to VerificationCodeView
+                            .navigationDestination(isPresented: $showVerificationView) {
+                                VerificationCodeView(email: email) {
+                                    // Handle successful verification
+                                    // You can navigate to the main app view here
+                                }
                             }
                         }
                         .padding()
