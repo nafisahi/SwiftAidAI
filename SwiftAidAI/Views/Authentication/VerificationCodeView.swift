@@ -10,6 +10,7 @@ struct VerificationCodeView: View {
     @State private var isResendEnabled: Bool = false
     @State private var showView: Bool = false
     @State private var showBackAlert: Bool = false
+    @State private var isResending: Bool = false
     
     let email: String
     let onVerificationComplete: () -> Void
@@ -108,10 +109,16 @@ struct VerificationCodeView: View {
                                     resendCode()
                                 }
                             }) {
-                                Text("Resend Code")
-                                    .foregroundColor(.blue)
-                                    .fontWeight(.medium)
+                                if isResending {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                                } else {
+                                    Text("Resend Code")
+                                        .foregroundColor(.blue)
+                                        .fontWeight(.medium)
+                                }
                             }
+                            .disabled(isResending)
                         }
                     }
                     .padding(.top, 10)
@@ -222,17 +229,38 @@ struct VerificationCodeView: View {
     }
     
     private func resendCode() {
-        // Here you would typically request a new code from your backend
-        timeRemaining = 60
-        isResendEnabled = false
-        startTimer()
-        verificationCode = Array(repeating: "", count: 6)
-        showError = false
-        // Reset focus to first field
-        focusedField = nil
-        // Small delay to ensure focus reset works
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            focusedField = 0
+        isResending = true
+        Task {
+            do {
+                // Generate and send new code
+                let code = authViewModel.generateVerificationCode()
+                try await authViewModel.storeVerificationCode(email: email, code: code)
+                authViewModel.sendVerificationCodeWithBrevo(to: email, code: code)
+                
+                // Reset UI state
+                withAnimation {
+                    timeRemaining = 60
+                    isResendEnabled = false
+                    isResending = false
+                    verificationCode = Array(repeating: "", count: 6)
+                    showError = false
+                    // Reset focus to first field
+                    focusedField = nil
+                    // Small delay to ensure focus reset works
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        focusedField = 0
+                    }
+                }
+                
+                // Restart timer
+                startTimer()
+            } catch {
+                withAnimation {
+                    showError = true
+                    errorMessage = "Failed to resend code. Please try again."
+                    isResending = false
+                }
+            }
         }
     }
     

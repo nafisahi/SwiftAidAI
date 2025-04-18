@@ -323,6 +323,8 @@
 /* Begin XCBuildConfiguration section */
 		C86B02FD2D81E0F900896171 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -386,6 +388,8 @@
 		};
 		C86B02FE2D81E0F900896171 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -442,6 +446,8 @@
 		};
 		C86B03002D81E0F900896171 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -465,6 +471,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = nafisah.SwiftAidAI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -475,6 +483,8 @@
 		};
 		C86B03012D81E0F900896171 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -498,6 +508,8 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				NEW_SETTING = "";
+				NEW_SETTING1 = "";
 				PRODUCT_BUNDLE_IDENTIFIER = nafisah.SwiftAidAI;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -508,6 +520,8 @@
 		};
 		C86B03032D81E0F900896171 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -527,6 +541,8 @@
 		};
 		C86B03042D81E0F900896171 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -546,6 +562,8 @@
 		};
 		C86B03062D81E0F900896171 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -562,6 +580,8 @@
 		};
 		C86B03072D81E0F900896171 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = C86B02DD2D81E0F700896171 /* SwiftAidAI */;
+			baseConfigurationReferenceRelativePath = secrets.xcconfig;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
