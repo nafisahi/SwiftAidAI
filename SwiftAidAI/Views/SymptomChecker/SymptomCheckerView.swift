@@ -1,8 +1,8 @@
 import SwiftUI
 
-// Add import for Models module or relative import for ChatMessage
-import FirebaseFirestore // If needed
-import FirebaseAuth // If needed
+
+import FirebaseFirestore 
+import FirebaseAuth 
 
 struct SymptomCheckerView: View {
     @State private var symptomText = ""
@@ -18,7 +18,6 @@ struct SymptomCheckerView: View {
     @Environment(\.dismiss) var dismiss
     
     init() {
-        // In a production app, this should be stored securely and not hardcoded
         _geminiService = StateObject(wrappedValue: GeminiService())
     }
     

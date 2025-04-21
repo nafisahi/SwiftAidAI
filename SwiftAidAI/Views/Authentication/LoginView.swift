@@ -26,204 +26,13 @@ struct LoginView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background color gradient
-                LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
-                               startPoint: .top, 
-                               endPoint: .bottom)
-                    .ignoresSafeArea()
-
+                backgroundGradient
+                
                 VStack(spacing: 25) {
-                    // App logo
-                    Image("namelogo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 200, height: 200)
-                        .padding(.bottom, 5)
-
-                    
-                    // Email field with validation
-                    VStack(alignment: .leading, spacing: 4) {
-                        TextField("Email", text: $email)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: .black.opacity(0.1), radius: 5)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .onChange(of: email) { validateEmail() }
-                        
-                        if !emailError.isEmpty {
-                            Text(emailError)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 4)
-                        }
-                    }
-                    .padding(.horizontal)
-                    
-                    // Password field with validation
-                    VStack(alignment: .leading, spacing: 4) {
-                        SecureField("Password", text: $password)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .shadow(color: .black.opacity(0.1), radius: 5)
-                            .onChange(of: password) { validatePassword() }
-                        
-                        if !passwordError.isEmpty {
-                            Text(passwordError)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .padding(.leading, 4)
-                        }
-                    }
-                    .padding(.horizontal)
-
-                    // Forgot password link aligned to the right
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            resetEmail = email // Pre-fill with email if already entered
-                            showForgotPasswordSheet = true
-                        }) {
-                            Text("Forgot Password?")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .sheet(isPresented: $showForgotPasswordSheet) {
-                        NavigationStack {
-                            VStack(spacing: 20) {
-                                Image(systemName: "lock.rotation")
-                                    .font(.system(size: 50))
-                                    .foregroundColor(.blue)
-                                    .padding(.top, 30)
-                                
-                                Text("Reset Password")
-                                    .font(.title2)
-                                    .bold()
-                                
-                                Text("Enter your email address and we'll send you instructions to reset your password.")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    TextField("Email", text: $resetEmail)
-                                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                                        .textContentType(.emailAddress)
-                                        .autocapitalization(.none)
-                                        .padding()
-                                        .background(Color.white)
-                                        .cornerRadius(10)
-                                        .shadow(color: .black.opacity(0.1), radius: 5)
-                                    
-                                    if !resetEmailError.isEmpty {
-                                        Text(resetEmailError)
-                                            .font(.caption)
-                                            .foregroundColor(.red)
-                                            .padding(.leading)
-                                    }
-                                }
-                                .padding(.horizontal)
-                                
-                                Button(action: {
-                                    Task {
-                                        do {
-                                            try await authViewModel.resetPassword(withEmail: resetEmail)
-                                            resetEmailSent = true
-                                            // We'll keep the sheet open to show success message
-                                        } catch {
-                                            resetEmailError = "We couldn't find an account with that email. Please check and try again."
-                                        }
-                                    }
-                                }) {
-                                    Text("Send Reset Link")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding()
-                                        .background(Color.blue)
-                                        .cornerRadius(10)
-                                }
-                                .padding(.horizontal)
-                                
-                                if resetEmailSent {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.system(size: 40))
-                                        
-                                        Text("Reset Link Sent!")
-                                            .font(.headline)
-                                            .foregroundColor(.green)
-                                        
-                                        Text("Please check your email for instructions to reset your password.")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                            .multilineTextAlignment(.center)
-                                    }
-                                    .padding()
-                                    .background(Color.green.opacity(0.1))
-                                    .cornerRadius(10)
-                                    .padding()
-                                }
-                                
-                                Spacer()
-                            }
-                            .navigationBarItems(trailing: Button("Close") {
-                                showForgotPasswordSheet = false
-                                resetEmailSent = false
-                                resetEmailError = ""
-                            })
-                        }
-                    }
-
-                    // Login button
-                    Button(action: {
-                        Task {
-                            do {
-                                try await authViewModel.signIn(withEmail: email, password: password)
-                                showVerificationView = true
-                            } catch {
-                                loginErrorMessage = "The email or password you entered is incorrect. Please try again."
-                                showLoginError = true
-                            }
-                        }
-                    }) {
-                        Text("Login")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(isFormValid ? Color.blue : Color.gray)
-                            .cornerRadius(10)
-                            .shadow(color: .black.opacity(0.2), radius: 5)
-                            .padding(.horizontal)
-                    }
-                    .disabled(!isFormValid)
-                    .padding(.top, 10)
-                    .alert("Oops!", isPresented: $showLoginError) {
-                        Button("Try Again", role: .cancel) {
-                            password = "" // Clear password field for security
-                        }
-                    } message: {
-                        Text(loginErrorMessage)
-                    }
-
-                    // Sign up navigation link with bold text
-                    NavigationLink(destination: SignUpView()) {
-                        Text("Don't have an account? ")
-                            .font(.subheadline)
-                            .foregroundColor(.blue) +
-                        Text("Create one now!")
-                            .font(.subheadline)
-                            .bold()
-                            .foregroundColor(.blue)
-                    }
-                    .padding(.top, 15)
+                    logoSection
+                    loginFormSection
+                    forgotPasswordSection
+                    buttonsSection
                 }
                 .padding(.vertical, 30)
                 .background(
@@ -241,7 +50,181 @@ struct LoginView: View {
         }
     }
     
-    // Validation functions
+    // MARK: - View Components
+    
+    private var backgroundGradient: some View {
+        LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]),
+                      startPoint: .top,
+                      endPoint: .bottom)
+            .ignoresSafeArea()
+    }
+    
+    private var logoSection: some View {
+        Image("namelogo")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 200, height: 200)
+            .padding(.bottom, 5)
+    }
+    
+    private var loginFormSection: some View {
+        VStack(spacing: 20) {
+            emailField
+            passwordField
+        }
+    }
+    
+    private var emailField: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TextField("Email", text: $email)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.1), radius: 5)
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
+                .onChange(of: email) { validateEmail() }
+            
+            if !emailError.isEmpty {
+                Text(emailError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.leading, 4)
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var passwordField: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SecureField("Password", text: $password)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.1), radius: 5)
+                .onChange(of: password) { validatePassword() }
+            
+            if !passwordError.isEmpty {
+                Text(passwordError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.leading, 4)
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var forgotPasswordSection: some View {
+        HStack {
+            Spacer()
+            Button(action: {
+                resetEmail = email
+                showForgotPasswordSheet = true
+            }) {
+                Text("Forgot Password?")
+                    .font(.subheadline)
+                    .foregroundColor(.blue)
+            }
+        }
+        .padding(.horizontal)
+        .sheet(isPresented: $showForgotPasswordSheet) {
+            ForgotPasswordSheet(
+                resetEmail: $resetEmail,
+                resetEmailError: $resetEmailError,
+                resetEmailSent: $resetEmailSent,
+                showSheet: $showForgotPasswordSheet,
+                authViewModel: authViewModel
+            )
+        }
+    }
+    
+    private var buttonsSection: some View {
+        VStack(spacing: 15) {
+            loginButton
+            googleSignInButton
+            signUpLink
+        }
+    }
+    
+    private var loginButton: some View {
+        Button(action: {
+            Task {
+                do {
+                    try await authViewModel.signIn(withEmail: email, password: password)
+                    showVerificationView = true
+                } catch {
+                    loginErrorMessage = "The email or password you entered is incorrect. Please try again."
+                    showLoginError = true
+                }
+            }
+        }) {
+            Text("Login")
+                .font(.headline)
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(isFormValid ? Color.blue : Color.gray)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.2), radius: 5)
+                .padding(.horizontal)
+        }
+        .disabled(!isFormValid)
+        .alert("Oops!", isPresented: $showLoginError) {
+            Button("Try Again", role: .cancel) {
+                password = ""
+            }
+        } message: {
+            Text(loginErrorMessage)
+        }
+    }
+    
+    private var googleSignInButton: some View {
+        Button(action: {
+            Task {
+                do {
+                    try await authViewModel.signInWithGoogle()
+                } catch {
+                    loginErrorMessage = "Failed to sign in with Google. Please try again."
+                    showLoginError = true
+                }
+            }
+        }) {
+            HStack(spacing: 12) {
+                Image("google_logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 20, height: 20)
+                
+                Text("Sign in with Google")
+                    .font(.body)
+                    .foregroundColor(.black.opacity(0.75))
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(Color.white)
+            .cornerRadius(10)
+            .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 1)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
+            )
+        }
+        .padding(.horizontal)
+    }
+    
+    private var signUpLink: some View {
+        NavigationLink(destination: SignUpView()) {
+            Text("Don't have an account? ")
+                .font(.subheadline)
+                .foregroundColor(.blue) +
+            Text("Create one now!")
+                .font(.subheadline)
+                .bold()
+                .foregroundColor(.blue)
+        }
+    }
+    
+    // MARK: - Validation Functions
+    
     private func validateEmail() {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
@@ -274,6 +257,117 @@ struct LoginView: View {
     }
 }
 
+// MARK: - Supporting Views
+
+struct ForgotPasswordSheet: View {
+    @Binding var resetEmail: String
+    @Binding var resetEmailError: String
+    @Binding var resetEmailSent: Bool
+    @Binding var showSheet: Bool
+    var authViewModel: AuthViewModel
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                Image(systemName: "lock.rotation")
+                    .font(.system(size: 50))
+                    .foregroundColor(.blue)
+                    .padding(.top, 30)
+                
+                Text("Reset Password")
+                    .font(.title2)
+                    .bold()
+                
+                Text("Enter your email address and we'll send you instructions to reset your password.")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                resetEmailField
+                resetButton
+                successMessage
+                
+                Spacer()
+            }
+            .navigationBarItems(trailing: Button("Close") {
+                showSheet = false
+                resetEmailSent = false
+                resetEmailError = ""
+            })
+        }
+    }
+    
+    private var resetEmailField: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            TextField("Email", text: $resetEmail)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .textContentType(.emailAddress)
+                .autocapitalization(.none)
+                .padding()
+                .background(Color.white)
+                .cornerRadius(10)
+                .shadow(color: .black.opacity(0.1), radius: 5)
+            
+            if !resetEmailError.isEmpty {
+                Text(resetEmailError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .padding(.leading)
+            }
+        }
+        .padding(.horizontal)
+    }
+    
+    private var resetButton: some View {
+        Button(action: {
+            Task {
+                do {
+                    try await authViewModel.resetPassword(withEmail: resetEmail)
+                    resetEmailSent = true
+                } catch {
+                    resetEmailError = "We couldn't find an account with that email. Please check and try again."
+                }
+            }
+        }) {
+            Text("Send Reset Link")
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(10)
+        }
+        .padding(.horizontal)
+    }
+    
+    private var successMessage: some View {
+        Group {
+            if resetEmailSent {
+                VStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.system(size: 40))
+                    
+                    Text("Reset Link Sent!")
+                        .font(.headline)
+                        .foregroundColor(.green)
+                    
+                    Text("Please check your email for instructions to reset your password.")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(10)
+                .padding()
+            }
+        }
+    }
+}
+
 #Preview {
     LoginView()
+        .environmentObject(AuthViewModel())
 } 
