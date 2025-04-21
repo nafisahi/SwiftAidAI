@@ -36,6 +36,7 @@ class AlertViewModel: ObservableObject {
     @Published var alertStatus: AlertStatus
     @Published var autoAlertEnabled: Bool
     @Published var showingAlertConfirmation: Bool
+    @Published var showingNoContactsAlert: Bool
     @Published var emergencyContacts: [EmergencyContact] {
         didSet {
             saveContacts()
@@ -60,6 +61,7 @@ class AlertViewModel: ObservableObject {
         )
         self.autoAlertEnabled = false
         self.showingAlertConfirmation = false
+        self.showingNoContactsAlert = false
         self.showingContactPicker = false
         self.showingPermissionAlert = false
         self.emergencyContacts = []
@@ -283,7 +285,11 @@ struct AlertView: View {
                         // Emergency Alert Button
                         VStack(spacing: 8) {
                             Button(action: {
-                                viewModel.showingAlertConfirmation = true
+                                if viewModel.emergencyContacts.isEmpty {
+                                    viewModel.showingNoContactsAlert = true
+                                } else {
+                                    viewModel.showingAlertConfirmation = true
+                                }
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "exclamationmark.triangle.fill")
@@ -460,6 +466,14 @@ struct AlertView: View {
             if let contact = viewModel.contactToDelete {
                 Text("Are you sure you want to remove \(contact.name) from your emergency contacts?")
             }
+        }
+        .alert("No Emergency Contacts", isPresented: $viewModel.showingNoContactsAlert) {
+            Button("Add Contacts", role: .none) {
+                viewModel.requestContactPermission()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You haven't added any emergency contacts yet. Would you like to add contacts who will be notified in case of an emergency?")
         }
     }
 }

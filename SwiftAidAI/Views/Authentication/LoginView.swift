@@ -236,11 +236,8 @@ struct LoginView: View {
         }
         .navigationDestination(isPresented: $showVerificationView) {
             VerificationCodeView(email: email) {
-                isLoggedIn = true
+                // Remove navigation to profile, let ContentView handle it
             }
-        }
-        .navigationDestination(isPresented: $isLoggedIn) {
-            ProfileView()
         }
     }
     

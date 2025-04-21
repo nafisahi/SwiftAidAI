@@ -29,6 +29,16 @@ struct FirstAidHomeView: View {
                 }
                 .tag(2)
         }
+        .onAppear {
+            // Set tab bar appearance
+            let appearance = UITabBarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = .systemBackground
+            
+            // Use this appearance for both normal and scrolling
+            UITabBar.appearance().standardAppearance = appearance
+            UITabBar.appearance().scrollEdgeAppearance = appearance
+        }
     }
 }
 
@@ -294,8 +304,8 @@ struct HomeContentView: View {
                 // Top navigation area with blur effect
                 VStack(spacing: 0) {
                     HStack {
-                        NavigationLink {
-                            ProfileView()
+                        Button {
+                            showingProfile = true
                         } label: {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 32))
@@ -312,6 +322,9 @@ struct HomeContentView: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
+                    .sheet(isPresented: $showingProfile) {
+                        ProfileView()
+                    }
                     
                     // Offline Mode Banner
                     if !networkMonitor.isConnected {

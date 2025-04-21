@@ -9,7 +9,7 @@ struct SymptomCheckerView: View {
     @State private var showingChat = false
     @State private var isLoading = false
     @State private var errorMessage: String?
-    @StateObject private var geminiService: GeminiService
+    @StateObject private var geminiService = GeminiService()
     @StateObject private var chatHistory = ChatHistoryService()
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var conversationId: String = UUID().uuidString
@@ -19,8 +19,7 @@ struct SymptomCheckerView: View {
     
     init() {
         // In a production app, this should be stored securely and not hardcoded
-        let apiKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"] ?? "AIzaSyBvW-ZZv6bgNf2qp9e1aQQ50Zau38FpG-U"
-        _geminiService = StateObject(wrappedValue: GeminiService(apiKey: apiKey))
+        _geminiService = StateObject(wrappedValue: GeminiService())
     }
     
     let commonSymptoms = [
@@ -337,7 +336,7 @@ struct SymptomChatView: View {
     @State private var userInput = ""
     @State private var isLoading = false
     @State private var isTyping = false
-    @StateObject private var geminiService = GeminiService(apiKey: "AIzaSyBvW-ZZv6bgNf2qp9e1aQQ50Zau38FpG-U")
+    @StateObject private var geminiService = GeminiService()
     @StateObject private var chatHistory = ChatHistoryService()
     @State private var conversationId: String = UUID().uuidString
     @State private var showingHistory = false
@@ -625,7 +624,7 @@ struct FormattedAIResponse: View {
         var currentIndex = 0
         
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { timer in
+        timer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { timer in
             if currentIndex < formattedText.count && isTyping {
                 let index = formattedText.index(formattedText.startIndex, offsetBy: currentIndex)
                 displayedText.append(formattedText[index])
@@ -659,36 +658,15 @@ struct FormattedAIResponse: View {
         var formattedText = ""
         
         for (index, section) in sections.enumerated() {
-            // Add the section
-            if section.contains("•") {
-                // For bullet points, keep them as is but ensure proper spacing
-                formattedText += section.components(separatedBy: "\n")
-                    .map { $0.trimmingCharacters(in: .whitespaces) }
-                    .joined(separator: "\n")
-            } else if section.contains("1.") || section.contains("2.") || section.contains("3.") {
-                // For numbered questions, keep them as is but ensure proper spacing
+            // Handle bullet points and lists
+            if section.contains("•") || section.contains("1.") || section.contains("2.") || section.contains("3.") {
+                // For bullet points and numbered lists, preserve original formatting
                 formattedText += section.components(separatedBy: "\n")
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .joined(separator: "\n")
             } else {
-                // For regular paragraphs, wrap text at ~60 characters
-                let words = section.components(separatedBy: " ")
-                var currentLine = ""
-                
-                for word in words {
-                    if currentLine.isEmpty {
-                        currentLine = word
-                    } else if (currentLine + " " + word).count <= 60 {
-                        currentLine += " " + word
-                    } else {
-                        formattedText += currentLine + "\n"
-                        currentLine = word
-                    }
-                }
-                
-                if !currentLine.isEmpty {
-                    formattedText += currentLine
-                }
+                // For regular text, preserve original formatting
+                formattedText += section
             }
             
             // Add spacing between sections

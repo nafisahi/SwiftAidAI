@@ -225,9 +225,7 @@ class AuthViewModel: ObservableObject {
         request.httpMethod = "POST"
         
         // Get API key from build settings
-        if let apiKeyPath = Bundle.main.path(forResource: "secrets", ofType: "xcconfig"),
-           let apiKeyContents = try? String(contentsOfFile: apiKeyPath),
-           let apiKey = apiKeyContents.components(separatedBy: "=").last?.trimmingCharacters(in: .whitespacesAndNewlines) {
+        if let apiKey = Bundle.main.object(forInfoDictionaryKey: "SENDINBLUE_API_KEY") as? String {
             request.setValue(apiKey, forHTTPHeaderField: "api-key")
         } else {
             return

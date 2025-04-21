@@ -8,8 +8,8 @@ class GeminiService: ObservableObject {
     @Published var isProcessing = false
     @Published var lastError: String?
     
-    init(apiKey: String) {
-        self.apiKey = apiKey
+    init(apiKey: String? = nil) {
+        self.apiKey = apiKey ?? Bundle.main.object(forInfoDictionaryKey: "GEMINI_API_KEY") as? String ?? ""
     }
     
     func analyzeSymptoms(_ input: String, previousMessages: [ChatMessage] = []) async throws -> String {
