@@ -20,5 +20,9 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>338243487833-7juurg28lahg0ls311hi3936po44hugh.apps.googleusercontent.com</string>
+	<key>SENDINBLUE_API_KEY</key>
+	<string>$(SENDINBLUE_API_KEY)</string>
+	<key>GEMINI_API_KEY</key>
+	<string>$(GEMINI_API_KEY)</string>
 </dict>
 </plist>
