@@ -1,8 +1,10 @@
 import SwiftUI 
 import Network
+import UserNotifications
 
 struct FirstAidHomeView: View {
     @State private var selectedTab = 0
+    @State private var showingNotificationPermission = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -38,6 +40,37 @@ struct FirstAidHomeView: View {
             // Use this appearance for both normal and scrolling
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
+            
+            // Request notification permissions
+            requestNotificationPermissions()
+        }
+        .alert("Enable Notifications", isPresented: $showingNotificationPermission) {
+            Button("Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Later", role: .cancel) { }
+        } message: {
+            Text("SwiftAidAI would like to send you notifications for emergency alerts and important updates.")
+        }
+    }
+    
+    private func requestNotificationPermissions() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                if settings.authorizationStatus == .notDetermined {
+                    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                        if !granted {
+                            DispatchQueue.main.async {
+                                showingNotificationPermission = true
+                            }
+                        }
+                    }
+                } else if settings.authorizationStatus == .denied {
+                    showingNotificationPermission = true
+                }
+            }
         }
     }
 }

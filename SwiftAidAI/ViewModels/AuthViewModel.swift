@@ -254,35 +254,39 @@ class AuthViewModel: ObservableObject {
             throw NSError(domain: "UI", code: 1, userInfo: [NSLocalizedDescriptionKey: "No root view controller found"])
         }
 
-        // 4. Present Google sign-in and get tokens
-        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
+        do {
+            // 4. Present Google sign-in and get tokens
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: rootVC)
 
-        guard let idToken = result.user.idToken?.tokenString else {
-            throw NSError(domain: "GoogleSignIn", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ID Token"])
+            guard let idToken = result.user.idToken?.tokenString else {
+                throw NSError(domain: "GoogleSignIn", code: 2, userInfo: [NSLocalizedDescriptionKey: "Missing ID Token"])
+            }
+
+            let accessToken = result.user.accessToken.tokenString
+
+            // 5. Create Firebase credential
+            let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
+
+            // 6. Sign in with Firebase
+            let authResult = try await Auth.auth().signIn(with: credential)
+            self.userSession = authResult.user
+
+            // 7. Save user in Firestore
+            let user = User(
+                id: authResult.user.uid,
+                fullname: authResult.user.displayName ?? "Google User",
+                email: authResult.user.email ?? "",
+                createdAt: authResult.user.metadata.creationDate?.description ?? Date().description,
+                lastLoginAt: authResult.user.metadata.lastSignInDate?.description ?? Date().description
+            )
+
+            let encodedUser = try Firestore.Encoder().encode(user)
+            try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser, merge: true)
+
+            // 8. Fetch user object
+            await fetchUser()
+        } catch {
+            throw error
         }
-
-        let accessToken = result.user.accessToken.tokenString
-
-        // 5. Create Firebase credential
-        let credential = GoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
-
-        // 6. Sign in with Firebase
-        let authResult = try await Auth.auth().signIn(with: credential)
-        self.userSession = authResult.user
-
-        // 7. Save user in Firestore
-        let user = User(
-            id: authResult.user.uid,
-            fullname: authResult.user.displayName ?? "Google User",
-            email: authResult.user.email ?? "",
-            createdAt: authResult.user.metadata.creationDate?.description ?? Date().description,
-            lastLoginAt: authResult.user.metadata.lastSignInDate?.description ?? Date().description
-        )
-
-        let encodedUser = try Firestore.Encoder().encode(user)
-        try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser, merge: true)
-
-        // 8. Fetch user object
-        await fetchUser()
     }
 }

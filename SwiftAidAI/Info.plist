@@ -4,5 +4,21 @@
 <dict>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>SwiftAidAI uses notifications to alert you in emergencies and provide health updates.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.338243487833-7juurg28lahg0ls311hi3936po44hugh</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>googlechrome</string>
+		<string>googlechromes</string>
+	</array>
+	<key>GIDClientID</key>
+	<string>338243487833-7juurg28lahg0ls311hi3936po44hugh.apps.googleusercontent.com</string>
 </dict>
 </plist>
