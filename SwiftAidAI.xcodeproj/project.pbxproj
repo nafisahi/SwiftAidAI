@@ -458,6 +458,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SwiftAidAI/SwiftAidAI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftAidAI/Preview Content\"";
@@ -466,6 +467,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SwiftAidAI/Info.plist;
 				INFOPLIST_KEY_NSContactsUsageDescription = "SwiftAidAI needs access to your contacts so you can choose who gets emergency alerts.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "SwiftAidAI needs access to your health data to detect emegencies and trigger alerts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SwiftAidAI needs access to your health data to detect emegencies and trigger alerts.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -495,6 +498,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SwiftAidAI/SwiftAidAI.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SwiftAidAI/Preview Content\"";
@@ -503,6 +507,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SwiftAidAI/Info.plist;
 				INFOPLIST_KEY_NSContactsUsageDescription = "SwiftAidAI needs access to your contacts so you can choose who gets emergency alerts.";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "SwiftAidAI needs access to your health data to detect emegencies and trigger alerts.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "SwiftAidAI needs access to your health data to detect emegencies and trigger alerts.";
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We use your location to find the nearest hospital in emergencies.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

@@ -6,11 +6,6 @@ import Foundation
 import MessageUI
 
 // MARK: - Models
-struct HealthMetrics {
-    var heartRate: Double
-    var stepCount: Int
-}
-
 struct EmergencyContact: Identifiable, Codable {
     let id: UUID
     var name: String
@@ -28,121 +23,6 @@ struct EmergencyContact: Identifiable, Codable {
 struct AlertStatus {
     var isLocationShared: Bool
     var contactsNotified: Int
-}
-
-// MARK: - ViewModel
-class AlertViewModel: ObservableObject {
-    @Published var healthMetrics: HealthMetrics
-    @Published var alertStatus: AlertStatus
-    @Published var autoAlertEnabled: Bool
-    @Published var showingAlertConfirmation: Bool
-    @Published var showingNoContactsAlert: Bool
-    @Published var emergencyContacts: [EmergencyContact] {
-        didSet {
-            saveContacts()
-        }
-    }
-    @Published var showingContactPicker: Bool
-    @Published var showingPermissionAlert: Bool
-    @Published var contactToDelete: EmergencyContact?
-    @Published var showingDeleteConfirmation: Bool = false
-    let maxContacts = 3
-    
-    private let contactService = EmergencyContactService()
-    
-    init() {
-        self.healthMetrics = HealthMetrics(
-            heartRate: 75.0,
-            stepCount: 5432
-        )
-        self.alertStatus = AlertStatus(
-            isLocationShared: false,
-            contactsNotified: 0
-        )
-        self.autoAlertEnabled = false
-        self.showingAlertConfirmation = false
-        self.showingNoContactsAlert = false
-        self.showingContactPicker = false
-        self.showingPermissionAlert = false
-        self.emergencyContacts = []
-        
-        // Load saved contacts
-        loadContacts()
-    }
-    
-    // Health status calculations
-    func getHeartRateStatus(_ rate: Double) -> HealthStatus {
-        if rate > 120 || rate < 50 { return .critical }
-        if rate > 100 || rate < 60 { return .warning }
-        return .normal
-    }
-    
-    // Alert actions
-    func sendEmergencyAlert() {
-        alertStatus.isLocationShared = true
-        alertStatus.contactsNotified = emergencyContacts.filter { $0.isSelected }.count
-    }
-    
-    // Contact management
-    func canAddMoreContacts() -> Bool {
-        return emergencyContacts.count < maxContacts
-    }
-    
-    func addContact(_ contact: EmergencyContact) {
-        if emergencyContacts.count < maxContacts {
-            emergencyContacts.append(contact)
-            saveContacts()
-        }
-    }
-    
-    func removeContact(_ contact: EmergencyContact) {
-        emergencyContacts.removeAll { $0.id == contact.id }
-        saveContacts()
-    }
-    
-    func toggleContactSelection(_ contact: EmergencyContact) {
-        if let index = emergencyContacts.firstIndex(where: { $0.id == contact.id }) {
-            emergencyContacts[index].isSelected.toggle()
-            saveContacts()
-        }
-    }
-    
-    func requestContactPermission() {
-        let store = CNContactStore()
-        store.requestAccess(for: .contacts) { granted, error in
-            DispatchQueue.main.async {
-                if granted {
-                    self.showingContactPicker = true
-                } else {
-                    self.showingPermissionAlert = true
-                }
-            }
-        }
-    }
-    
-    func confirmDelete(_ contact: EmergencyContact) {
-        contactToDelete = contact
-        showingDeleteConfirmation = true
-    }
-    
-    func deleteConfirmedContact() {
-        if let contact = contactToDelete {
-            removeContact(contact)
-            contactToDelete = nil
-        }
-    }
-    
-    private func saveContacts() {
-        contactService.saveContacts(emergencyContacts)
-    }
-    
-    private func loadContacts() {
-        contactService.loadContacts { [weak self] contacts in
-            DispatchQueue.main.async {
-                self?.emergencyContacts = contacts
-            }
-        }
-    }
 }
 
 // MARK: - View
@@ -401,6 +281,9 @@ struct AlertView: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            viewModel.requestHealthData()
         }
         .alert("Send Emergency Alert", isPresented: $viewModel.showingAlertConfirmation) {
             Button("Cancel", role: .cancel) { }
