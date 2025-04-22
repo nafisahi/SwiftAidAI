@@ -12,6 +12,7 @@ struct ChokingStep: Identifiable {
 
 struct ChokingGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         ChokingStep(
@@ -85,6 +86,9 @@ struct ChokingGuidanceView: View {
                     ChokingStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Continue Until Card
+                ContinueUntilCard()
+                
                 // Attribution Footer
                 AttributionFooter()
                     .padding(.bottom, 32)
@@ -92,7 +96,19 @@ struct ChokingGuidanceView: View {
             .padding(.vertical)
         }
         .navigationTitle("Choking")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.automatic)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -112,7 +128,7 @@ struct ChokingIntroductionCard: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.purple.opacity(0.1))
+                    .fill(Color.red.opacity(0.1))
             )
             
             // Symptoms card
@@ -131,7 +147,7 @@ struct ChokingSymptomsCard: View {
                 "Red, puffy face",
                 "Signs of distress; pointing to throat or grasping the neck"
             ],
-            accentColor: .purple,
+            accentColor: .red,
             warningNote: nil
         )
     }
@@ -153,7 +169,7 @@ struct ChokingStepCard: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.purple)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -170,7 +186,7 @@ struct ChokingStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.red)
                 }
             }
             
@@ -227,14 +243,13 @@ struct ChokingStepCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.red.opacity(0.2), lineWidth: 1)
+        )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
         }
     }
 }

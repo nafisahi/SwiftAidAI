@@ -12,6 +12,7 @@ struct AnaphylaxisStep: Identifiable {
 }
 
 struct AnaphylaxisGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -20,11 +21,11 @@ struct AnaphylaxisGuidanceView: View {
             title: "Check for Auto-Injector",
             icon: "syringe",
             instructions: [
-                "Ask if they have an adrenaline auto-injector",
-                "Help them use it or follow the instructions to administer it yourself",
-                "Note the time of injection"
+                "Ask if they have an adrenaline auto-injector.",
+                "Help them use it or follow the instructions to administer it yourself.",
+                "Note the time of injection."
             ],
-            warningNote: "Don't delay giving adrenaline - it could save their life",
+            warningNote: "Don't delay giving adrenaline - it could save their life.",
             imageName: "step1"
         ),
         AnaphylaxisStep(
@@ -32,9 +33,9 @@ struct AnaphylaxisGuidanceView: View {
             title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 immediately",
-                "State that you suspect ANAPHYLAXIS",
-                "Give details about any known allergies"
+                "Call 999 or 112 immediately.",
+                "State that you suspect ANAPHYLAXIS.",
+                "Give details about any known allergies."
             ],
             warningNote: nil,
             imageName: "step2"
@@ -44,10 +45,10 @@ struct AnaphylaxisGuidanceView: View {
             title: "Position & Monitor",
             icon: "bed.double.fill",
             instructions: [
-                "Help them get comfortable",
-                "Lie them down with legs raised if breathing OK",
-                "Sit them up if they're having breathing difficulties",
-                "Monitor their breathing and level of response"
+                "Help them get comfortable.",
+                "Lie them down with legs raised if breathing OK.",
+                "Sit them up if they're having breathing difficulties.",
+                "Monitor their breathing and level of response."
             ],
             warningNote: "If they become unresponsive, prepare to start CPR",
             imageName: "step3"
@@ -57,9 +58,9 @@ struct AnaphylaxisGuidanceView: View {
             title: "Further Treatment",
             icon: "clock.fill",
             instructions: [
-                "A second dose can be given after 5 minutes if no improvement",
-                "Give further doses at 5-minute intervals if symptoms return",
-                "Keep any used auto-injectors to give to emergency services"
+                "A second dose can be given after 5 minutes if no improvement.",
+                "Give further doses at 5-minute intervals if symptoms return.",
+                "Keep any used auto-injectors to give to emergency services."
             ],
             warningNote: "Always monitor for deterioration even after giving adrenaline",
             imageName: "step1"
@@ -101,7 +102,7 @@ struct AnaphylaxisIntroCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.orange.opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -123,8 +124,8 @@ struct AnaphylaxisSymptomsCard: View {
                 "• Confusion and agitation",
                 "• Signs of shock leading to collapse"
             ],
-            accentColor: .orange,
-            warningNote: "Severe symptoms can develop rapidly - act quickly"
+            accentColor: .red,
+            warningNote: "Severe symptoms can develop rapidly - act quickly."
         )
     }
 }
@@ -182,7 +183,7 @@ struct AnaphylaxisStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.orange)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -198,7 +199,7 @@ struct AnaphylaxisStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.red)
                 }
             }
             
@@ -256,12 +257,12 @@ struct AnaphylaxisStepCard: View {
                            completedSteps.contains(instruction) {
                             HStack(spacing: 4) {
                                 Image(systemName: "clock.fill")
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.red)
                                     .font(.system(size: 16))
                                 
                                 Text("Adrenaline administered at \(formatInjectionTime(injectionTime ?? Date()))")
                                     .font(.subheadline)
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(.red)
                                     .fontWeight(.medium)
                             }
                             .padding(.leading, 28)
@@ -282,7 +283,7 @@ struct AnaphylaxisStepCard: View {
                                     timeRemaining = 300
                                     startTimer()
                                 },
-                                timerColor: .orange,
+                                timerColor: .red,
                                 labelText: "Next Dose Timer: "
                             )
                             .padding(.leading, 28)
@@ -320,7 +321,7 @@ struct AnaphylaxisStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {

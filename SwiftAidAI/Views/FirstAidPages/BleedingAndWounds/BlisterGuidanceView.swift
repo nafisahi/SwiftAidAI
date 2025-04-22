@@ -11,6 +11,7 @@ struct BlisterStep: Identifiable {
 }
 
 struct BlisterGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -56,6 +57,18 @@ struct BlisterGuidanceView: View {
         }
         .navigationTitle("Blisters")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                }
+            }
+        }
     }
 }
 
@@ -137,7 +150,7 @@ struct BlisterStepCard: View {
                 }
             }
             
-            // Warning note if present
+            // Warning note
             if let warning = step.warningNote {
                 WarningNote(text: warning)
             }

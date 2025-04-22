@@ -12,7 +12,7 @@ struct CPRWarningNote: View {
             (Text("If they become unresponsive, ")
                 .foregroundColor(.orange) +
             Text("start CPR")
-                .foregroundColor(.blue)
+                .foregroundColor(.red)
                 .underline() +
             Text(" immediately.")
                 .foregroundColor(.orange))

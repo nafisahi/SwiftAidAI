@@ -15,87 +15,56 @@ enum EnvironmentalEmergencyType {
 }
 
 struct EnvironmentalEmergenciesView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let environmentalTopics = [
-        // Heat-related
         EnvironmentalEmergency(
             title: "Heatstroke",
             icon: "thermometer.sun.fill",
-            color: .red,
-            description: "Life-threatening high body temperature",
+            color: .teal,
+            description: "Managing severe heat-related illness",
             type: .heatstroke
         ),
-        
-        // Cold-related
         EnvironmentalEmergency(
             title: "Hypothermia",
             icon: "thermometer.snowflake",
-            color: .blue,
-            description: "Dangerous lowering of body temperature",
+            color: .teal,
+            description: "Treating dangerously low body temperature",
             type: .hypothermia
         )
     ]
     
-    var filteredTopics: [EnvironmentalEmergency] {
-        if searchText.isEmpty {
-            return environmentalTopics
-        }
-        return environmentalTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search environmental emergencies", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
+            VStack(spacing: 16) {
+                ForEach(environmentalTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .heatstroke:
+                            HeatstrokeGuidanceView()
+                        case .hypothermia:
+                            HypothermiaGuidanceView()
                         }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .padding()
-                
-                // Environmental Emergency Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: destinationView(for: topic)) {
-                            EnvironmentalEmergencyCard(emergency: topic)
-                        }
+                    }) {
+                        EnvironmentalEmergencyCard(emergency: topic)
                     }
                 }
-                .padding()
             }
+            .padding()
         }
-        .navigationTitle("Environmental Emergencies")
+        .navigationTitle("Environmental")
         .navigationBarTitleDisplayMode(.large)
-    }
-    
-    @ViewBuilder
-    private func destinationView(for emergency: EnvironmentalEmergency) -> some View {
-        switch emergency.type {
-        case .heatstroke:
-            HeatstrokeGuidanceView()
-        case .hypothermia:
-            // Placeholder until HypothermiaGuidanceView is created
-            Text("Hypothermia Guidance Coming Soon")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.teal)
+                }
+            }
         }
     }
 }
@@ -121,11 +90,14 @@ struct EnvironmentalEmergencyCard: View {
                 Text(emergency.title)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
                 
                 Text(emergency.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Spacer()

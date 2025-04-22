@@ -11,6 +11,7 @@ struct BleedingStep: Identifiable {
 }
 
 struct SevereBleedingGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
     
@@ -128,6 +129,18 @@ struct SevereBleedingGuidanceView: View {
         }
         .navigationTitle("Severe Bleeding")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                }
+            }
+        }
     }
 }
 
@@ -145,7 +158,7 @@ struct BleedingIntroductionCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.red.opacity(0.1))
+                .fill(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -164,10 +177,9 @@ struct BleedingStepCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header
             HStack(spacing: 16) {
-                // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.red)
+                        .fill(Color(red: 0.8, green: 0.2, blue: 0.2))
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -176,7 +188,6 @@ struct BleedingStepCard: View {
                         .foregroundColor(.white)
                 }
                 
-                // Title and Icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -184,11 +195,11 @@ struct BleedingStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.red)
+                        .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
                 }
             }
             
-            // Add the image if available
+            // Add the image if present
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -202,17 +213,39 @@ struct BleedingStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        CheckboxRow(
-                            text: instruction,
-                            isChecked: completedSteps.contains(instruction),
-                            action: {
-                                if completedSteps.contains(instruction) {
-                                    completedSteps.remove(instruction)
-                                } else {
-                                    completedSteps.insert(instruction)
-                                }
+                        if instruction.contains("start CPR") {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                    .font(.system(size: 20))
+                                
+                                (Text("Be prepared to ")
+                                    .foregroundColor(.primary) +
+                                Text("start CPR")
+                                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                                    .underline() +
+                                Text(" if they become unresponsive")
+                                    .foregroundColor(.primary))
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        showingCPR = true
+                                    }
+                                
+                                Spacer()
                             }
-                        )
+                        } else {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                        }
                         
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
@@ -221,17 +254,31 @@ struct BleedingStepCard: View {
                         }
                     }
                 }
-                
-                if let warning = step.warningNote {
-                    if step.number == 8 && warning.contains("CPR") {
-                        CPRWarningNote(showingCPR: $showingCPR)
-                    } else {
-                        WarningNote(text: warning)
-                        if hasEmergencyNumbers(warning) {
-                            SharedEmergencyCallButtons()
-                                .padding(.top, 4)
-                        }
+            }
+            
+            // Warning note
+            if let warning = step.warningNote {
+                if warning.contains("CPR") {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        
+                        (Text("If they become unresponsive, ")
+                            .foregroundColor(.orange) +
+                        Text("start CPR")
+                            .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                            .underline())
+                            .font(.subheadline)
+                            .onTapGesture {
+                                showingCPR = true
+                            }
                     }
+                } else {
+                    WarningNote(text: warning)
+                }
+                if hasEmergencyNumbers(warning) {
+                    SharedEmergencyCallButtons()
+                        .padding(.top, 4)
                 }
             }
         }
@@ -241,14 +288,14 @@ struct BleedingStepCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.2), lineWidth: 1)
+        )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

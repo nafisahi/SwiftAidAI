@@ -23,7 +23,7 @@ struct VerificationCodeView: View {
         NavigationStack {
             ZStack {
                 // Background gradient
-                LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
+                LinearGradient(gradient: Gradient(colors: [Color.teal.opacity(0.3), Color.white]), 
                                startPoint: .top, 
                                endPoint: .bottom)
                     .ignoresSafeArea()
@@ -34,7 +34,7 @@ struct VerificationCodeView: View {
                         Text("Verify Your Email")
                             .font(.largeTitle)
                             .bold()
-                            .foregroundColor(.blue)
+                            .foregroundColor(.teal)
                             .transition(.opacity)
                         
                         Text("We've sent a 6-digit code to")
@@ -43,7 +43,7 @@ struct VerificationCodeView: View {
                         
                         Text(email)
                             .font(.headline)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.teal)
                             .transition(.opacity)
                     }
                     .padding(.top, 40)
@@ -58,7 +58,7 @@ struct VerificationCodeView: View {
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(Color.white)
-                                        .shadow(color: focusedField == index ? Color.blue.opacity(0.3) : Color.black.opacity(0.1), radius: 5)
+                                        .shadow(color: focusedField == index ? Color.teal.opacity(0.3) : Color.black.opacity(0.1), radius: 5)
                                 )
                                 .focused($focusedField, equals: index)
                                 .onChange(of: verificationCode[index]) { newValue in
@@ -111,10 +111,10 @@ struct VerificationCodeView: View {
                             }) {
                                 if isResending {
                                     ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                                        .progressViewStyle(CircularProgressViewStyle(tint: .teal))
                                 } else {
                                     Text("Resend Code")
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(.teal)
                                         .fontWeight(.medium)
                                 }
                             }
@@ -137,8 +137,8 @@ struct VerificationCodeView: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(isCodeValid ? Color.blue : Color.gray)
-                                    .shadow(color: isCodeValid ? Color.blue.opacity(0.3) : Color.gray.opacity(0.3), radius: 5)
+                                    .fill(isCodeValid ? Color.teal : Color.gray)
+                                    .shadow(color: isCodeValid ? Color.teal.opacity(0.3) : Color.gray.opacity(0.3), radius: 5)
                             )
                     }
                     .disabled(!isCodeValid)
@@ -166,7 +166,7 @@ struct VerificationCodeView: View {
                             Text("Back")
                                 .font(.system(size: 16, weight: .semibold))
                         }
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
                     }
                 }
             }

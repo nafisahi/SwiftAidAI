@@ -12,6 +12,7 @@ struct NosebleedStep: Identifiable {
 }
 
 struct NosebleedGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -69,6 +70,18 @@ struct NosebleedGuidanceView: View {
         }
         .navigationTitle("Nosebleeds")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                }
+            }
+        }
     }
 }
 
@@ -97,60 +110,11 @@ struct NosebleedStepCard: View {
     let step: NosebleedStep
     @Binding var completedSteps: Set<String>
     
-    // States for timer functionality
-    @State private var showTimer = false
-    @State private var timeRemaining = 600 // 10 minutes in seconds
-    @State private var timerIsRunning = false
-    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
-    @State private var timerCancellable: Cancellable? = nil
-    
-    // Add a computed property to check if this step has emergency call instructions
-    private var hasEmergencyCallInstructions: Bool {
-        for instruction in step.instructions {
-            if instruction.contains("999") || instruction.contains("112") {
-                return true
-            }
-        }
-        return false
-    }
-    
-    // Check if warning note contains emergency numbers
     private var warningHasEmergencyNumbers: Bool {
         if let warning = step.warningNote {
             return warning.contains("999") || warning.contains("112")
         }
         return false
-    }
-    
-    // Check if this step contains the pressure instruction
-    private var containsPressureInstruction: Bool {
-        for instruction in step.instructions {
-            if instruction.contains("Hold pressure for 10 minutes") {
-                return true
-            }
-        }
-        return false
-    }
-    
-    // Format the remaining time as MM:SS
-    private var timeRemainingFormatted: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-    
-    // Start the timer
-    private func startTimer() {
-        timeRemaining = 600 // Reset to 10 minutes
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
-    }
-    
-    // Stop the timer
-    private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
     }
     
     var body: some View {
@@ -196,61 +160,17 @@ struct NosebleedStepCard: View {
                         text: instruction,
                         isChecked: completedSteps.contains(instruction),
                         action: {
-                            // Toggle the step completion
                             if completedSteps.contains(instruction) {
                                 completedSteps.remove(instruction)
-                                // If unchecking the pressure instruction, hide timer
-                                if instruction.contains("Hold pressure for 10 minutes") {
-                                    showTimer = false
-                                    stopTimer()
-                                }
                             } else {
                                 completedSteps.insert(instruction)
-                                // If checking the pressure instruction, show timer
-                                if instruction.contains("Hold pressure for 10 minutes") {
-                                    showTimer = true
-                                    startTimer()
-                                }
                             }
                         }
                     )
-                    
-                    // Show timer after the pressure instruction if checked
-                    if instruction.contains("Hold pressure for 10 minutes") && showTimer {
-                        SharedTimerView(
-                            timeRemaining: $timeRemaining,
-                            timeRemainingFormatted: timeRemainingFormatted,
-                            timerIsRunning: $timerIsRunning,
-                            onStart: { startTimer() },
-                            onStop: { stopTimer() },
-                            onReset: {
-                                stopTimer()
-                                timeRemaining = 600  // Keep 10 minutes for nosebleeds
-                                startTimer()
-                            },
-                            timerColor: Color(red: 0.8, green: 0.2, blue: 0.2),
-                            labelText: "Pressure Timer: "
-                        )
-                        .padding(.leading, 28)
-                        .padding(.vertical, 8)
-                        .onReceive(timer) { _ in
-                            if timerIsRunning && timeRemaining > 0 {
-                                timeRemaining -= 1
-                            } else if timeRemaining == 0 {
-                                stopTimer()
-                            }
-                        }
-                    }
-                }
-                
-                // Add emergency call buttons if this step has emergency instructions
-                if hasEmergencyCallInstructions {
-                    SharedEmergencyCallButtons()
-                        .padding(.top, 8)
                 }
             }
             
-            // Warning note if present
+            // Warning note
             if let warning = step.warningNote {
                 WarningNote(text: warning)
                 

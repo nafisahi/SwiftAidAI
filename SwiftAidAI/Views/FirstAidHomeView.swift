@@ -16,6 +16,7 @@ struct FirstAidHomeView: View {
                 Label("First Aid", systemImage: "cross.case.fill")
             }
             .tag(0)
+            .tint(.teal)
             
             // Symptoms Tab
             SymptomCheckerTabView(selectedTab: $selectedTab)
@@ -23,6 +24,7 @@ struct FirstAidHomeView: View {
                     Label("Symptoms", systemImage: "stethoscope")
                 }
                 .tag(1)
+                .tint(.teal)
             
             // Alert Tab
             AlertView()
@@ -30,12 +32,17 @@ struct FirstAidHomeView: View {
                     Label("Alert", systemImage: "bell.fill")
                 }
                 .tag(2)
+                .tint(.teal)
         }
         .onAppear {
             // Set tab bar appearance
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = .systemBackground
+            
+            // Set the selected item color to teal
+            appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.teal)
+            appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(Color.teal)]
             
             // Use this appearance for both normal and scrolling
             UITabBar.appearance().standardAppearance = appearance
@@ -342,14 +349,14 @@ struct HomeContentView: View {
                         } label: {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 32))
-                                .foregroundColor(.primary)
+                                .foregroundColor(.teal)
                         }
                         
                         Spacer()
                         
                         Text("First Aid")
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.primary)
+                            .foregroundColor(Color(hex: "#3A3D40"))
                         
                         Spacer()
                     }
@@ -688,7 +695,7 @@ struct CustomTabBar: View {
                         Text(tabTitle(for: index))
                             .font(.caption)
                     }
-                    .foregroundColor(selectedTab == index ? .blue : .gray)
+                    .foregroundColor(selectedTab == index ? .teal : .gray)
                 }
                 .frame(height: 50)
                 Spacer()
@@ -837,5 +844,32 @@ struct SymptomCheckerTabView: View {
                 showingSymptomChecker = true
             }
         }
+    }
+}
+
+// Add color extension at the end of the file
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }

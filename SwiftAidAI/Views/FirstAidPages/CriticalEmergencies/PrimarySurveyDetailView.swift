@@ -13,6 +13,7 @@ struct PrimarySurveyStep: Identifiable {
 
 struct PrimarySurveyDetailView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         PrimarySurveyStep(
@@ -107,6 +108,18 @@ struct PrimarySurveyDetailView: View {
         }
         .navigationTitle("Primary Survey (DR ABC)")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -124,7 +137,7 @@ struct IntroductionCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.blue.opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -145,7 +158,7 @@ struct PrimarySurveyStepCard: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.blue)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -162,7 +175,7 @@ struct PrimarySurveyStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.red)
                 }
             }
             
@@ -257,20 +270,12 @@ struct EmergencyActionsCard: View {
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showingRecoveryPosition) {
-            NavigationStack {
-                RecoveryPositionView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingRecoveryPosition = false
-                    })
-            }
+            RecoveryPositionView()
+                .presentationDragIndicator(.visible)
         }
     }
 }
@@ -287,7 +292,7 @@ struct ActionItem: View {
                 .foregroundColor(color)
             
             Text(text)
-                .foregroundColor(isLink ? .blue : .primary)
+                .foregroundColor(isLink ? .red : .primary)
                 .underline(isLink)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -308,11 +313,11 @@ struct AttributionFooter: View {
                 HStack(spacing: 4) {
                     Text("St John Ambulance")
                         .font(.footnote)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
                     
                     Image(systemName: "link")
                         .font(.footnote)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
                 }
             }
             

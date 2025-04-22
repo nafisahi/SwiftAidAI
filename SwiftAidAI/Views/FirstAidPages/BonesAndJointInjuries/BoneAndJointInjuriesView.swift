@@ -17,8 +17,7 @@ enum BoneInjuryType {
 }
 
 struct BoneAndJointInjuriesView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let boneTopics = [
         // Broken Bones
@@ -40,67 +39,44 @@ struct BoneAndJointInjuriesView: View {
         )
     ]
     
-    var filteredTopics: [BoneInjury] {
-        if searchText.isEmpty {
-            return boneTopics
-        }
-        return boneTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search bone and joint injuries", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
+            VStack(spacing: 16) {
+                ForEach(boneTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .fracture:
+                            BrokenBonesGuidanceView()
+                        case .sprain:
+                            SprainsGuidanceView()
+                        case .dislocation:
+                            Text("Dislocation guidance coming soon")
+                                .padding()
+                        case .spinal:
+                            Text("Spinal injury guidance coming soon")
+                                .padding()
                         }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .padding()
-                
-                // Injury Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: {
-                            switch topic.type {
-                            case .fracture:
-                                BrokenBonesGuidanceView()
-                            case .sprain:
-                                SprainsGuidanceView()
-                            case .dislocation:
-                                Text("Dislocation guidance coming soon")
-                                    .padding()
-                            case .spinal:
-                                Text("Spinal injury guidance coming soon")
-                                    .padding()
-                            }
-                        }) {
-                            BoneInjuryCard(injury: topic)
-                        }
+                    }) {
+                        BoneInjuryCard(injury: topic)
                     }
                 }
-                .padding()
             }
+            .padding()
         }
         .navigationTitle("Bone & Joint Injuries")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.purple)
+                }
+            }
+        }
     }
 }
 
@@ -125,11 +101,14 @@ struct BoneInjuryCard: View {
                 Text(injury.title)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
                 
                 Text(injury.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Spacer()

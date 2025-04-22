@@ -12,6 +12,11 @@ struct RecoveryStep: Identifiable {
 
 struct RecoveryPositionView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.presentationMode) private var presentationMode
+    
+    // Add a parameter to determine if this is shown from critical emergencies
+    var isFromCriticalEmergencies: Bool = false
     
     let steps = [
         RecoveryStep(
@@ -19,7 +24,7 @@ struct RecoveryPositionView: View {
             title: "Initial Assessment",
             icon: "checklist",
             instructions: [
-                "Perform Primary Survey (DR ABC) to assess the casualty",
+                "Perform primary survey to assess the casualty",
                 "Ensure they are breathing normally",
                 "Check for any injuries that may be worsened by movement"
             ],
@@ -119,8 +124,21 @@ struct RecoveryPositionView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Unresponsive but Breathing (Recovery Position)")
+        .navigationTitle("Unresponsive but Breathing")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
+        .presentationDragIndicator(.visible)
     }
 }
 
@@ -139,7 +157,7 @@ struct RecoveryIntroductionCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.orange.opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -161,7 +179,7 @@ struct RecoveryStepCard: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.orange)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -178,7 +196,7 @@ struct RecoveryStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.red)
                 }
                 
                 Spacer()
@@ -199,17 +217,19 @@ struct RecoveryStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        if step.number == 1 && instruction.contains("Primary Survey") {
+                        if step.number == 1 && instruction.contains("primary survey") {
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
                                     .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
                                     .font(.system(size: 20))
                                 
-                                (Text(instruction.replacingOccurrences(of: "Primary Survey", with: ""))
+                                (Text("Perform ")
                                     .foregroundColor(.primary) +
-                                Text("Primary Survey")
-                                    .foregroundColor(.blue)
-                                    .underline())
+                                Text("primary survey")
+                                    .foregroundColor(.red)
+                                    .underline() +
+                                Text(" to assess the casualty")
+                                    .foregroundColor(.primary))
                                     .font(.subheadline)
                                     .onTapGesture {
                                         showingPrimarySurvey = true
@@ -255,14 +275,14 @@ struct RecoveryStepCard: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.red.opacity(0.2), lineWidth: 1)
+        )
         .padding(.horizontal)
         .sheet(isPresented: $showingPrimarySurvey) {
-            NavigationStack {
-                PrimarySurveyDetailView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingPrimarySurvey = false
-                    })
-            }
+            PrimarySurveyDetailView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

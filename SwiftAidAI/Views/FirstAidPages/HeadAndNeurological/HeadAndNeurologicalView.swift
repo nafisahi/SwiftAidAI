@@ -15,8 +15,7 @@ enum HeadInjuryType {
 }
 
 struct HeadAndNeurologicalView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let headTopics = [
         HeadInjury(
@@ -36,54 +35,38 @@ struct HeadAndNeurologicalView: View {
         )
     ]
     
-    var filteredTopics: [HeadInjury] {
-        if searchText.isEmpty {
-            return headTopics
-        }
-        return headTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
+            VStack(spacing: 16) {
+                ForEach(headTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .headInjury:
+                            HeadInjuryGuidanceView()
+                        case .seizure:
+                            SeizureGuidanceView()
+                        }
+                    }) {
+                        HeadInjuryCard(injury: topic)
+                    }
+                }
+            }
+            .padding()
+        }
+        .navigationTitle("Head & Brain")
+        .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
                     HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search head injuries", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
-                        }
+                        Image(systemName: "chevron.left")
+                        Text("Back")
                     }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
                 }
-                .padding()
-                
-                // Head Injury Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: HeadInjuryDetailView(injury: topic)) {
-                            HeadInjuryCard(injury: topic)
-                        }
-                    }
-                }
-                .padding()
             }
         }
-        .navigationTitle("Head & Neurological")
-        .navigationBarTitleDisplayMode(.large)
     }
 }
 
@@ -108,11 +91,14 @@ struct HeadInjuryCard: View {
                 Text(injury.title)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
                 
                 Text(injury.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Spacer()

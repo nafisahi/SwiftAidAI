@@ -1,127 +1,113 @@
 import SwiftUI
 
-struct MedicalCondition: Identifiable {
+struct MedicalEmergency: Identifiable {
     let id = UUID()
     let title: String
     let icon: String
     let color: Color
     let description: String
-    let type: MedicalConditionType
+    let type: MedicalEmergencyType
 }
 
-enum MedicalConditionType {
+enum MedicalEmergencyType {
     case diabetic
     case foodPoisoning
     case alcoholPoisoning
 }
 
 struct MedicalAndPoisoningView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let medicalTopics = [
-        MedicalCondition(
+        MedicalEmergency(
             title: "Diabetic Emergencies",
-            icon: "drop.fill",
+            icon: "cross.case.fill",
             color: .green,
             description: "Managing high and low blood sugar emergencies",
             type: .diabetic
         ),
-        
-        MedicalCondition(
+        MedicalEmergency(
             title: "Food Poisoning",
             icon: "exclamationmark.triangle.fill",
-            color: .orange,
-            description: "Response to foodborne illness",
+            color: .green,
+            description: "Treating food poisoning symptoms",
             type: .foodPoisoning
         ),
-        
-        MedicalCondition(
+        MedicalEmergency(
             title: "Alcohol Poisoning",
-            icon: "exclamationmark.triangle.fill",
-            color: .purple,
-            description: "Managing severe alcohol intoxication",
+            icon: "wineglass",
+            color: .green,
+            description: "Recognizing and managing alcohol poisoning",
             type: .alcoholPoisoning
         )
     ]
     
-    var filteredTopics: [MedicalCondition] {
-        if searchText.isEmpty {
-            return medicalTopics
-        }
-        return medicalTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search medical conditions", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
+            VStack(spacing: 16) {
+                ForEach(medicalTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .diabetic:
+                            DiabeticEmergencyView()
+                        case .foodPoisoning:
+                            FoodPoisoningView()
+                        case .alcoholPoisoning:
+                            AlcoholPoisoningView()
                         }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .padding()
-                
-                // Medical Condition Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: MedicalConditionDetailView(condition: topic)) {
-                            MedicalConditionCard(condition: topic)
-                        }
+                    }) {
+                        MedicalEmergencyCard(emergency: topic)
                     }
                 }
-                .padding()
             }
+            .padding()
         }
         .navigationTitle("Medical & Poisoning")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.green)
+                }
+            }
+        }
     }
 }
 
-struct MedicalConditionCard: View {
-    let condition: MedicalCondition
+struct MedicalEmergencyCard: View {
+    let emergency: MedicalEmergency
     
     var body: some View {
         HStack(spacing: 16) {
             // Icon Circle
             ZStack {
                 Circle()
-                    .fill(condition.color.opacity(0.1))
+                    .fill(emergency.color.opacity(0.1))
                     .frame(width: 56, height: 56)
                 
-                Image(systemName: condition.icon)
+                Image(systemName: emergency.icon)
                     .font(.system(size: 24))
-                    .foregroundColor(condition.color)
+                    .foregroundColor(emergency.color)
             }
             
             // Content
             VStack(alignment: .leading, spacing: 4) {
-                Text(condition.title)
+                Text(emergency.title)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
                 
-                Text(condition.description)
+                Text(emergency.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Spacer()
@@ -139,23 +125,8 @@ struct MedicalConditionCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(condition.color.opacity(0.2), lineWidth: 1)
+                .stroke(emergency.color.opacity(0.2), lineWidth: 1)
         )
-    }
-}
-
-struct MedicalConditionDetailView: View {
-    let condition: MedicalCondition
-    
-    var body: some View {
-        switch condition.type {
-        case .diabetic:
-            DiabeticEmergencyView()
-        case .foodPoisoning:
-            FoodPoisoningView()
-        case .alcoholPoisoning:
-            AlcoholPoisoningView()
-        }
     }
 }
 

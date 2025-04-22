@@ -11,12 +11,13 @@ struct CriticalEmergency: Identifiable {
 struct CriticalEmergenciesView: View {
     @State private var searchText = ""
     @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let criticalTopics = [
         CriticalEmergency(
             title: "Primary Survey (DR ABC)",
             icon: "checklist",
-            color: .blue,
+            color: .red,
             description: "Danger, Response, Airway, Breathing, Circulation"
         ),
         CriticalEmergency(
@@ -28,13 +29,13 @@ struct CriticalEmergenciesView: View {
         CriticalEmergency(
             title: "Unresponsive but Breathing",
             icon: "bed.double.fill",
-            color: .orange,
+            color: .red,
             description: "Recovery Position guidance"
         ),
         CriticalEmergency(
             title: "Choking",
             icon: "lungs.fill",
-            color: .purple,
+            color: .red,
             description: "Choking response and back blows"
         ),
         CriticalEmergency(
@@ -46,7 +47,7 @@ struct CriticalEmergenciesView: View {
         CriticalEmergency(
             title: "Shock",
             icon: "waveform.path.ecg",
-            color: .pink,
+            color: .red,
             description: "Recognizing and treating shock"
         ),
         CriticalEmergency(
@@ -58,13 +59,13 @@ struct CriticalEmergenciesView: View {
         CriticalEmergency(
             title: "Stroke",
             icon: "brain.head.profile",
-            color: .purple,
+            color: .red,
             description: "FAST assessment and action"
         ),
         CriticalEmergency(
             title: "Anaphylaxis",
             icon: "allergens",
-            color: .orange,
+            color: .red,
             description: "Severe allergic reaction response"
         )
     ]
@@ -80,7 +81,7 @@ struct CriticalEmergenciesView: View {
                         case "Unresponsive and Not Breathing (CPR)":
                             CPRGuidanceView()
                         case "Unresponsive but Breathing":
-                            RecoveryPositionView()
+                            RecoveryPositionView(isFromCriticalEmergencies: true)
                         case "Choking":
                             ChokingGuidanceView()
                         case "Severe Bleeding":
@@ -109,6 +110,18 @@ struct CriticalEmergenciesView: View {
         .navigationTitle("Critical Emergencies")
         .navigationBarTitleDisplayMode(.large)
         .searchable(text: $searchText, prompt: "Search critical emergencies")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
     
     var filteredTopics: [CriticalEmergency] {

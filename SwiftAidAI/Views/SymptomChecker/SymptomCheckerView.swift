@@ -76,7 +76,7 @@ struct SymptomCheckerView: View {
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                                .stroke(Color.teal.opacity(0.2), lineWidth: 1)
                         )
                         .padding(.horizontal)
                     }
@@ -114,7 +114,7 @@ struct SymptomCheckerView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 25)
-                                .fill(Color.blue)
+                                .fill(Color.teal)
                         )
                         .padding(.horizontal)
                     }
@@ -133,7 +133,7 @@ struct SymptomCheckerView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { showingHistory.toggle() }) {
                         Image(systemName: "clock.arrow.circlepath")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.teal)
                     }
                 }
                 
@@ -213,14 +213,14 @@ struct SymptomChip: View {
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(Color.blue.opacity(0.1))
+                        .fill(Color.teal.opacity(0.1))
                 )
                 .overlay(
                     Capsule()
-                        .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                        .stroke(Color.teal.opacity(0.2), lineWidth: 1)
                 )
         }
-        .foregroundColor(.blue)
+        .foregroundColor(.teal)
     }
 }
 
@@ -290,12 +290,12 @@ struct MessageInputToolbar: View {
                     // Stop button
                     Button(action: onStop) {
                         Circle()
-                            .fill(Color.blue.opacity(0.1))
+                            .fill(Color.teal.opacity(0.1))
                             .frame(width: 44, height: 44)
                             .overlay {
                                 Image(systemName: "stop.fill")
                                     .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.teal)
                                     .imageScale(.medium)
                             }
                     }
@@ -304,7 +304,7 @@ struct MessageInputToolbar: View {
                 // Send button
                 Button(action: onSend) {
                     Circle()
-                        .fill(text.isEmpty || isLoading || isTyping ? Color(.systemGray4) : Color.blue)
+                        .fill(text.isEmpty || isLoading || isTyping ? Color(.systemGray4) : Color.teal)
                         .frame(width: 44, height: 44)
                         .overlay {
                             if isLoading {
@@ -388,7 +388,7 @@ struct SymptomChatView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { showingHistory.toggle() }) {
                         Image(systemName: "clock.arrow.circlepath")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.teal)
                     }
                 }
                 
@@ -396,7 +396,7 @@ struct SymptomChatView: View {
                     Button("Close") {
                         dismiss()
                     }
-                    .foregroundColor(.blue)
+                    .foregroundColor(.teal)
                 }
             }
             .sheet(isPresented: $showingHistory) {
@@ -508,7 +508,7 @@ struct MessageView: View {
                         .foregroundColor(.white)
                         .background(
                             RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.blue)
+                                .fill(Color.teal)
                         )
                         .shadow(color: Color.black.opacity(0.05), radius: 3, x: 0, y: 2)
                 } else {
@@ -536,7 +536,7 @@ struct AvatarView: View {
     
     var body: some View {
         Image(systemName: systemName)
-            .foregroundStyle(.blue)
+            .foregroundStyle(.teal)
             .font(.system(size: 28, weight: .regular))
             .symbolRenderingMode(.multicolor)
             .frame(width: 36, height: 36)

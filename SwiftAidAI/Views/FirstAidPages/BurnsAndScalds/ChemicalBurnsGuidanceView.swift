@@ -49,7 +49,7 @@ struct ChemicalBurnStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.red)
+                        .fill(Color.orange)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -64,7 +64,7 @@ struct ChemicalBurnStepCard: View {
                 
                 Image(systemName: step.icon)
                     .font(.headline)
-                    .foregroundColor(.red)
+                    .foregroundColor(.orange)
             }
             
             // Add the image if present
@@ -117,7 +117,7 @@ struct ChemicalBurnStepCard: View {
                                     timeRemaining = 1200  // Reset to 20 minutes
                                     startTimer()
                                 },
-                                timerColor: .red,
+                                timerColor: .orange,
                                 labelText: "Cooling Timer: "
                             )
                             .padding(.leading, 28)
@@ -160,7 +160,7 @@ struct ChemicalBurnStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
     }
@@ -255,7 +255,7 @@ struct ChemicalBurnIntroCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.red.opacity(0.1))
+                .fill(Color.orange.opacity(0.1))
         )
         .padding(.horizontal)
     }

@@ -10,6 +10,7 @@ struct ShockStep: Identifiable {
 }
 
 struct ShockGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -105,6 +106,18 @@ struct ShockGuidanceView: View {
         }
         .navigationTitle("Shock")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -189,12 +202,8 @@ struct ShockStepCard: View {
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

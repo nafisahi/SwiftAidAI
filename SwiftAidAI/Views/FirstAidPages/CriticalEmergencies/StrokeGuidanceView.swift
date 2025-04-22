@@ -11,6 +11,7 @@ struct StrokeStep: Identifiable {
 }
 
 struct StrokeGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -92,8 +93,22 @@ struct StrokeGuidanceView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Stroke (FAST)")
+        .navigationTitle("Stroke")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("Back")
+                            .fontWeight(.regular)
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -111,7 +126,7 @@ struct StrokeIntroCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.purple.opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -132,7 +147,7 @@ struct StrokeSymptomsCard: View {
                 "Headaches",
                 "Feeling or being sick"
             ],
-            accentColor: .purple,
+            accentColor: .red,
             warningNote: "Remember FAST: Face, Arms, Speech, Time to call 999"
         )
     }
@@ -153,7 +168,7 @@ struct StrokeStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.purple)
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -169,7 +184,7 @@ struct StrokeStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.red)
                 }
             }
             
@@ -187,17 +202,39 @@ struct StrokeStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        CheckboxRow(
-                            text: instruction,
-                            isChecked: completedSteps.contains(instruction),
-                            action: {
-                                if completedSteps.contains(instruction) {
-                                    completedSteps.remove(instruction)
-                                } else {
-                                    completedSteps.insert(instruction)
-                                }
+                        if instruction.contains("start CPR") {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                    .font(.system(size: 20))
+                                
+                                (Text("Be prepared to ")
+                                    .foregroundColor(.primary) +
+                                Text("start CPR")
+                                    .foregroundColor(.red)
+                                    .underline() +
+                                Text(" if they become unresponsive")
+                                    .foregroundColor(.primary))
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        showingCPR = true
+                                    }
+                                
+                                Spacer()
                             }
-                        )
+                        } else {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                        }
                         
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
@@ -210,7 +247,24 @@ struct StrokeStepCard: View {
             
             // Warning note
             if let warning = step.warningNote {
-                WarningNote(text: warning)
+                if warning.contains("CPR") {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        
+                        (Text("If they become unresponsive, ")
+                            .foregroundColor(.orange) +
+                        Text("start CPR")
+                            .foregroundColor(.red)
+                            .underline())
+                            .font(.subheadline)
+                            .onTapGesture {
+                                showingCPR = true
+                            }
+                    }
+                } else {
+                    WarningNote(text: warning)
+                }
                 if hasEmergencyNumbers(warning) {
                     SharedEmergencyCallButtons()
                         .padding(.top, 4)
@@ -225,16 +279,12 @@ struct StrokeStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+                .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

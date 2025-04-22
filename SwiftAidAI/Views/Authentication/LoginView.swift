@@ -53,7 +53,7 @@ struct LoginView: View {
     // MARK: - View Components
     
     private var backgroundGradient: some View {
-        LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]),
+        LinearGradient(gradient: Gradient(colors: [Color.teal.opacity(0.3), Color.white]),
                       startPoint: .top,
                       endPoint: .bottom)
             .ignoresSafeArea()
@@ -63,7 +63,7 @@ struct LoginView: View {
         Image("namelogo")
             .resizable()
             .scaledToFit()
-            .frame(width: 200, height: 200)
+            .frame(width: 275, height: 275)
             .padding(.bottom, 5)
     }
     
@@ -123,7 +123,7 @@ struct LoginView: View {
             }) {
                 Text("Forgot Password?")
                     .font(.subheadline)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.teal)
             }
         }
         .padding(.horizontal)
@@ -163,7 +163,7 @@ struct LoginView: View {
                 .foregroundColor(.white)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(isFormValid ? Color.blue : Color.gray)
+                .background(isFormValid ? Color.teal : Color.gray)
                 .cornerRadius(10)
                 .shadow(color: .black.opacity(0.2), radius: 5)
                 .padding(.horizontal)
@@ -215,11 +215,11 @@ struct LoginView: View {
         NavigationLink(destination: SignUpView()) {
             Text("Don't have an account? ")
                 .font(.subheadline)
-                .foregroundColor(.blue) +
+                .foregroundColor(.teal) +
             Text("Create one now!")
                 .font(.subheadline)
                 .bold()
-                .foregroundColor(.blue)
+                .foregroundColor(.teal)
         }
     }
     
@@ -271,7 +271,7 @@ struct ForgotPasswordSheet: View {
             VStack(spacing: 20) {
                 Image(systemName: "lock.rotation")
                     .font(.system(size: 50))
-                    .foregroundColor(.blue)
+                    .foregroundColor(.teal)
                     .padding(.top, 30)
                 
                 Text("Reset Password")
@@ -335,7 +335,7 @@ struct ForgotPasswordSheet: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.blue)
+                .background(Color.teal)
                 .cornerRadius(10)
         }
         .padding(.horizontal)

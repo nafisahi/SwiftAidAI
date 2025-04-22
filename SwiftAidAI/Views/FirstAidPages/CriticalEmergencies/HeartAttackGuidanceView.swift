@@ -11,6 +11,7 @@ struct HeartAttackStep: Identifiable {
 }
 
 struct HeartAttackGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
     let steps = [
@@ -83,6 +84,18 @@ struct HeartAttackGuidanceView: View {
         }
         .navigationTitle("Heart Attack")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -176,17 +189,39 @@ struct HeartAttackStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        CheckboxRow(
-                            text: instruction,
-                            isChecked: completedSteps.contains(instruction),
-                            action: {
-                                if completedSteps.contains(instruction) {
-                                    completedSteps.remove(instruction)
-                                } else {
-                                    completedSteps.insert(instruction)
-                                }
+                        if instruction.contains("start CPR") {
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                    .font(.system(size: 20))
+                                
+                                (Text("Be prepared to ")
+                                    .foregroundColor(.primary) +
+                                Text("start CPR")
+                                    .foregroundColor(.red)
+                                    .underline() +
+                                Text(" if they become unresponsive and stop breathing normally")
+                                    .foregroundColor(.primary))
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        showingCPR = true
+                                    }
+                                
+                                Spacer()
                             }
-                        )
+                        } else {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                        }
                         
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
@@ -197,9 +232,29 @@ struct HeartAttackStepCard: View {
                 }
             }
             
-            // Warning note
+            // Warning note if present
             if let warning = step.warningNote {
-                WarningNote(text: warning)
+                if warning.contains("CPR") {
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                        
+                        (Text("If they become unresponsive and not breathing normally, ")
+                            .foregroundColor(.orange) +
+                        Text("start CPR")
+                            .foregroundColor(.red)
+                            .underline())
+                            .font(.subheadline)
+                            .onTapGesture {
+                                showingCPR = true
+                            }
+                    }
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(8)
+                } else {
+                    WarningNote(text: warning)
+                }
                 if hasEmergencyNumbers(warning) {
                     SharedEmergencyCallButtons()
                         .padding(.top, 4)
@@ -218,12 +273,8 @@ struct HeartAttackStepCard: View {
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

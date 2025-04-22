@@ -12,6 +12,7 @@ struct CPRStep: Identifiable {
 
 struct CPRGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         CPRStep(
@@ -19,11 +20,11 @@ struct CPRGuidanceView: View {
             title: "Check for Breathing",
             icon: "lungs.fill",
             instructions: [
-                "Ensure it's safe to approach",
+                "Ensure it's safe to approach.",
                 "Check responsiveness by gently shaking their shoulders and loudly asking, 'Are you OK?'",
-                "If no response, shout for help",
-                "Open the airway by gently tilting their head back and lifting the chin",
-                "Look, listen, and feel for normal breathing for up to 10 seconds"
+                "If no response, shout for help.",
+                "Open the airway by gently tilting their head back and lifting the chin.",
+                "Look, listen, and feel for normal breathing for up to 10 seconds."
             ],
             warningNote: "Ignore occasional gasps—these are not normal breathing",
             imageName: "adult-step-1-cpr"
@@ -33,9 +34,9 @@ struct CPRGuidanceView: View {
             title: "Call for Help",
             icon: "phone.fill",
             instructions: [
-                "Immediately ask someone to call 999 or 112",
-                "Ask someone else to bring a defibrillator (AED), if available",
-                "Put the phone on speaker if alone, allowing hands-free communication with emergency services"
+                "Immediately ask someone to call 999 or 112.",
+                "Ask someone else to bring a defibrillator (AED), if available.",
+                "Put the phone on speaker if alone, allowing hands-free communication with emergency services."
             ],
             warningNote: nil,
             imageName: "call-help2"
@@ -45,12 +46,12 @@ struct CPRGuidanceView: View {
             title: "Start Chest Compressions",
             icon: "heart.fill",
             instructions: [
-                "Place the heel of one hand in the center of their chest",
-                "Place your other hand on top and interlock your fingers",
-                "Keep your arms straight and position your shoulders above your hands",
-                "Press down hard and fast, at least 5-6cm deep",
-                "Allow complete chest recoil after each compression",
-                "Aim for a rate of 100-120 compressions per minute"
+                "Place the heel of one hand in the center of their chest.",
+                "Place your other hand on top and interlock your fingers.",
+                "Keep your arms straight and position your shoulders above your hands.",
+                "Press down hard and fast, at least 5-6cm deep.",
+                "Allow complete chest recoil after each compression.",
+                "Aim for a rate of 100-120 compressions per minute."
             ],
             warningNote: "Maintain the correct rhythm—about 2 compressions per second",
             imageName: "cpr-step-3"
@@ -60,13 +61,13 @@ struct CPRGuidanceView: View {
             title: "Give Rescue Breaths",
             icon: "wind",
             instructions: [
-                "After 30 compressions, give 2 rescue breaths",
-                "Tilt their head back gently and lift the chin",
-                "Pinch their nose closed",
-                "Take a normal breath and seal your mouth around theirs",
-                "Blow steadily for about 1 second",
-                "Watch for their chest to rise",
-                "Give a second breath and return to compressions"
+                "After 30 compressions, give 2 rescue breaths.",
+                "Tilt their head back gently and lift the chin.",
+                "Pinch their nose closed.",
+                "Take a normal breath and seal your mouth around theirs.",
+                "Blow steadily for about 1 second.",
+                "Watch for their chest to rise.",
+                "Give a second breath and return to compressions."
             ],
             warningNote: "If you're unable or unwilling to give rescue breaths, continue chest compressions only",
             imageName: "cpr-step-3"
@@ -92,8 +93,20 @@ struct CPRGuidanceView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Unresponsive and Not Breathing (CPR)")
-        .navigationBarTitleDisplayMode(.automatic)
+        .navigationTitle("Unresponsive and Not Breathing")
+        .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
@@ -216,10 +229,10 @@ struct ContinueUntilCard: View {
                 .font(.headline)
             
             VStack(alignment: .leading, spacing: 12) {
-                ContinueUntilItem(text: "Emergency services arrive")
-                ContinueUntilItem(text: "The casualty shows signs of life or normal breathing")
-                ContinueUntilItem(text: "You are physically unable to continue (swap with someone else if possible, every 1-2 minutes)")
-                ContinueUntilItem(text: "A defibrillator is ready for use")
+                ContinueUntilItem(text: "Emergency services arrive.")
+                ContinueUntilItem(text: "The casualty shows signs of life or normal breathing.")
+                ContinueUntilItem(text: "You are physically unable to continue (swap with someone else if possible, every 1-2 minutes).")
+                ContinueUntilItem(text: "A defibrillator is ready for use.")
             }
         }
         .padding()

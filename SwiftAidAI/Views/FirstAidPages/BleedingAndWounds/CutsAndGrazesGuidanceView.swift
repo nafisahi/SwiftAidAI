@@ -11,6 +11,7 @@ struct CutGrazeStep: Identifiable {
 }
 
 struct CutsAndGrazesGuidanceView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     @State private var showingSevereBleedingSheet = false
     
@@ -74,6 +75,18 @@ struct CutsAndGrazesGuidanceView: View {
         }
         .navigationTitle("Cuts and Grazes")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                }
+            }
+        }
         .sheet(isPresented: $showingSevereBleedingSheet) {
             NavigationStack {
                 SevereBleedingGuidanceView()

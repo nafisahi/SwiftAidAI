@@ -25,7 +25,7 @@ struct SignUpView: View {
         NavigationStack {
             ZStack {
                 // Background gradient
-                LinearGradient(gradient: Gradient(colors: [Color.blue.opacity(0.3), Color.white]), 
+                LinearGradient(gradient: Gradient(colors: [Color.teal.opacity(0.3), Color.white]), 
                                startPoint: .top, 
                                endPoint: .bottom)
                     .ignoresSafeArea()
@@ -36,7 +36,7 @@ struct SignUpView: View {
                             Text("Create Account")
                                 .font(.largeTitle)
                                 .bold()
-                                .foregroundColor(.blue)
+                                .foregroundColor(.teal)
                                 .padding(.top, 20)
 
                             // First name and surname in horizontal arrangement
@@ -181,7 +181,7 @@ struct SignUpView: View {
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(maxWidth: .infinity)
-                                    .background(isFormValid ? Color.blue : Color.gray)
+                                    .background(isFormValid ? Color.teal : Color.gray)
                                     .cornerRadius(10)
                                     .shadow(color: .black.opacity(0.1), radius: 5)
                             }

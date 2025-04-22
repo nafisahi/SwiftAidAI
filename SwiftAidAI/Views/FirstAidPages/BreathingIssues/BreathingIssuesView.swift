@@ -15,8 +15,7 @@ enum BreathingIssueType {
 }
 
 struct BreathingIssuesView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let breathingTopics = [
         // Asthma Attacks
@@ -38,61 +37,38 @@ struct BreathingIssuesView: View {
         )
     ]
     
-    var filteredTopics: [BreathingIssue] {
-        if searchText.isEmpty {
-            return breathingTopics
-        }
-        return breathingTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search breathing issues", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
+            VStack(spacing: 16) {
+                ForEach(breathingTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .asthma:
+                            AsthmaGuidanceView()
+                        case .hyperventilation:
+                            HyperventilationGuidanceView()
                         }
-                    }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .padding()
-                
-                // Breathing Issue Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: {
-                            switch topic.type {
-                            case .asthma:
-                                AsthmaGuidanceView()
-                            case .hyperventilation:
-                                HyperventilationGuidanceView()
-                            }
-                        }) {
-                            BreathingIssueCard(issue: topic)
-                        }
+                    }) {
+                        BreathingIssueCard(issue: topic)
                     }
                 }
-                .padding()
             }
+            .padding()
         }
         .navigationTitle("Breathing Issues")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.blue)
+                }
+            }
+        }
     }
 }
 

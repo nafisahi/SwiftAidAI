@@ -9,14 +9,13 @@ struct BleedingWound: Identifiable {
 }
 
 struct BleedingAndWoundsView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let bleedingTopics = [
         BleedingWound(
             title: "Severe Bleeding",
             icon: "drop.fill",
-            color: .red,
+            color: Color(red: 0.8, green: 0.2, blue: 0.2),
             description: "Life-threatening bleeding and hemorrhage control."
         ),
         BleedingWound(
@@ -28,31 +27,21 @@ struct BleedingAndWoundsView: View {
         BleedingWound(
             title: "Nosebleeds",
             icon: "nose.fill",
-            color: Color(red: 0.9, green: 0.3, blue: 0.3),
+            color: Color(red: 0.8, green: 0.2, blue: 0.2),
             description: "Managing and stopping nose bleeds."
         ),
         BleedingWound(
             title: "Blisters",
             icon: "bandage.fill",
-            color: Color(red: 0.7, green: 0.1, blue: 0.1),
+            color: Color(red: 0.8, green: 0.2, blue: 0.2),
             description: "Care and treatment for skin blisters."
         )
     ]
     
-    var filteredTopics: [BleedingWound] {
-        if searchText.isEmpty {
-            return bleedingTopics
-        }
-        return bleedingTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                ForEach(filteredTopics) { wound in
+                ForEach(bleedingTopics) { wound in
                     NavigationLink(destination: {
                         switch wound.title {
                         case "Severe Bleeding":
@@ -76,7 +65,18 @@ struct BleedingAndWoundsView: View {
         }
         .navigationTitle("Bleeding & Wounds")
         .navigationBarTitleDisplayMode(.large)
-        .searchable(text: $searchText, prompt: "Search bleeding & wounds")
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                }
+            }
+        }
     }
 }
 

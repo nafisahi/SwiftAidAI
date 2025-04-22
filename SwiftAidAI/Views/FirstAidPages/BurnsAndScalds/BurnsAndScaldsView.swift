@@ -17,8 +17,7 @@ enum BurnType {
 }
 
 struct BurnsAndScaldsView: View {
-    @State private var searchText = ""
-    @State private var isSearching = false
+    @Environment(\.dismiss) private var dismiss
     
     let burnTopics = [
         BurnInjury(
@@ -26,14 +25,14 @@ struct BurnsAndScaldsView: View {
             title: "Chemical Burns",
             description: "Burns caused by strong acids, alkalis or other chemicals",
             icon: "flask.fill",
-            color: .red
+            color: .orange
         ),
         BurnInjury(
             type: .severe,
             title: "Severe Burns",
             description: "Deep or large burns requiring immediate medical attention",
             icon: "flame.fill",
-            color: .red
+            color: .orange
         ),
         BurnInjury(
             type: .minor,
@@ -51,67 +50,42 @@ struct BurnsAndScaldsView: View {
         )
     ]
     
-    var filteredTopics: [BurnInjury] {
-        if searchText.isEmpty {
-            return burnTopics
-        }
-        return burnTopics.filter { 
-            $0.title.localizedCaseInsensitiveContains(searchText) ||
-            $0.description.localizedCaseInsensitiveContains(searchText)
-        }
-    }
-    
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // Search Bar
-                HStack {
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                        
-                        TextField("Search burns and scalds", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button(action: { searchText = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
+            VStack(spacing: 16) {
+                ForEach(burnTopics) { topic in
+                    NavigationLink(destination: {
+                        switch topic.type {
+                        case .chemical:
+                            ChemicalBurnsGuidanceView()
+                        case .severe:
+                            SevereBurnsGuidanceView()
+                        case .minor:
+                            MinorBurnsGuidanceView()
+                        case .sunburn:
+                            SunburnGuidanceView()
                         }
+                    }) {
+                        BurnInjuryCard(burn: topic)
                     }
-                    .padding(8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .padding()
-                
-                // Burns Cards
-                LazyVStack(spacing: 16) {
-                    ForEach(filteredTopics) { topic in
-                        NavigationLink(destination: getBurnGuidanceView(for: topic)) {
-                            BurnInjuryCard(burn: topic)
-                        }
-                    }
-                }
-                .padding()
             }
+            .padding()
         }
         .navigationTitle("Burns & Scalds")
         .navigationBarTitleDisplayMode(.large)
-    }
-    
-    @ViewBuilder
-    func getBurnGuidanceView(for burn: BurnInjury) -> some View {
-        switch burn.type {
-            case .chemical:
-                ChemicalBurnsGuidanceView()
-            case .severe:
-                SevereBurnsGuidanceView()
-            case .minor:
-                MinorBurnsGuidanceView()
-            case .sunburn:
-                SunburnGuidanceView()
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.orange)
+                }
+            }
         }
     }
 }
@@ -137,11 +111,14 @@ struct BurnInjuryCard: View {
                 Text(burn.title)
                     .font(.headline)
                     .foregroundColor(.primary)
+                    .multilineTextAlignment(.leading)
                 
                 Text(burn.description)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                     .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             Spacer()
