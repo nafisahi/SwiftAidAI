@@ -1,4 +1,6 @@
 import SwiftUI
+
+// Data structure for shock step information
 struct ShockStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -9,6 +11,7 @@ struct ShockStep: Identifiable {
     let imageName: String
 }
 
+// Main view for shock guidance with step-by-step instructions
 struct ShockGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -19,13 +22,13 @@ struct ShockGuidanceView: View {
             title: "Treat Primary Cause",
             icon: "cross.fill",
             instructions: [
-                "Check for and treat visible causes of shock",
-                "Look for severe bleeding",
-                "Check for signs of heart problems",
-                "Look for signs of dehydration",
-                "Check for allergic reactions"
+                "Check for and treat visible causes of shock.",
+                "Look for severe bleeding.",
+                "Check for signs of heart problems.",
+                "Look for signs of dehydration.",
+                "Check for allergic reactions."
             ],
-            warningNote: "Shock can rapidly become life-threatening - act quickly",
+            warningNote: "Shock can rapidly become life-threatening - act quickly.",
             imageName: "shock1"
         ),
         ShockStep(
@@ -33,9 +36,9 @@ struct ShockGuidanceView: View {
             title: "Position the Casualty",
             icon: "person.fill",
             instructions: [
-                "Help them lie down flat",
-                "Raise and support their legs on a chair",
-                "Place them on a rug or blanket if available"
+                "Help them lie down flat.",
+                "Raise and support their legs on a chair.",
+                "Place them on a rug or blanket if available."
             ],
             warningNote: "This position helps improve blood supply to vital organs",
             imageName: "shock2"
@@ -45,9 +48,9 @@ struct ShockGuidanceView: View {
             title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 for emergency help",
-                "Tell them you suspect shock",
-                "Explain the likely cause if known"
+                "Call 999 or 112 for emergency help.",
+                "Tell them you suspect shock.",
+                "Explain the likely cause if known."
             ],
             warningNote: nil,
             imageName: "shock3"
@@ -57,11 +60,11 @@ struct ShockGuidanceView: View {
             title: "Loosen Clothing",
             icon: "person.crop.circle",
             instructions: [
-                "Loosen any tight clothing around the neck",
-                "Loosen clothing around the chest",
-                "Loosen clothing around the waist"
+                "Loosen any tight clothing around the neck.",
+                "Loosen clothing around the chest.",
+                "Loosen clothing around the waist."
             ],
-            warningNote: "This helps maintain blood circulation",
+            warningNote: "This helps maintain blood circulation.",
             imageName: "shock 4"
         ),
         ShockStep(
@@ -69,11 +72,11 @@ struct ShockGuidanceView: View {
             title: "Keep Warm",
             icon: "thermometer.sun.fill",
             instructions: [
-                "Cover them with a coat or blanket",
-                "Keep them protected from the cold",
-                "Maintain a comfortable temperature"
+                "Cover them with a coat or blanket.",
+                "Keep them protected from the cold.",
+                "Maintain a comfortable temperature."
             ],
-            warningNote: "Avoid overheating the casualty",
+            warningNote: "Avoid overheating the casualty.",
             imageName: "shock-step-5"
         ),
         ShockStep(
@@ -81,24 +84,28 @@ struct ShockGuidanceView: View {
             title: "Monitor and Reassure",
             icon: "heart.text.square.fill",
             instructions: [
-                "Keep checking their level of response",
-                "Reassure them and keep them calm",
-                "Try to reduce fear and pain"
+                "Keep checking their level of response.",
+                "Reassure them and keep them calm.",
+                "Try to reduce fear and pain."
             ],
-            warningNote: "If they become unresponsive, prepare to start CPR",
+            warningNote: "If they become unresponsive, prepare to start CPR.",
             imageName: "shock-final-step"
         )
     ]
     
+    // Main view body showing shock guidance steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining shock
                 ShockIntroductionCard()
                 
+                // Display each shock step
                 ForEach(steps) { step in
                     ShockStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -121,7 +128,9 @@ struct ShockGuidanceView: View {
     }
 }
 
+// Introduction card explaining what shock is
 struct ShockIntroductionCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("What is Shock?")
@@ -135,12 +144,13 @@ struct ShockIntroductionCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.pink.opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
 }
 
+// Card component for each shock step with instructions and completion tracking
 struct ShockStepCard: View {
     let step: ShockStep
     @Binding var completedSteps: Set<String>
@@ -150,11 +160,13 @@ struct ShockStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            // Header with step number and title
             StepHeader(step: step)
             
-            // Add the image if present
+            // Step image if available
             if let uiImage = UIImage(named: step.imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -164,20 +176,22 @@ struct ShockStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions section
+            // Instructions section with special handling for emergency calls
             if step.number == 3 {
+                // Emergency call instructions with special formatting
                 EmergencyInstructions(
                     instructions: step.instructions,
                     completedSteps: $completedSteps
                 )
             } else {
+                // Regular instructions with standard formatting
                 RegularInstructions(
                     instructions: step.instructions,
                     completedSteps: $completedSteps
                 )
             }
             
-            // Warning note if present
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
                     CPRWarningNote(showingCPR: $showingCPR)
@@ -190,6 +204,7 @@ struct ShockStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -201,6 +216,7 @@ struct ShockStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
                 .presentationDragIndicator(.visible)
@@ -208,7 +224,7 @@ struct ShockStepCard: View {
     }
 }
 
-// Break down into smaller components
+// Component for step header with number and title
 private struct StepHeader: View {
     let step: ShockStep
     
@@ -238,6 +254,7 @@ private struct StepHeader: View {
     }
 }
 
+// Component for emergency call instructions with special formatting
 private struct EmergencyInstructions: View {
     let instructions: [String]
     @Binding var completedSteps: Set<String>
@@ -273,6 +290,7 @@ private struct EmergencyInstructions: View {
     }
 }
 
+// Component for regular instructions with standard formatting
 private struct RegularInstructions: View {
     let instructions: [String]
     @Binding var completedSteps: Set<String>

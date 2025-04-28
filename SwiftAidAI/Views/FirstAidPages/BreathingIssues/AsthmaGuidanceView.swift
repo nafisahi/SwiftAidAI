@@ -13,6 +13,7 @@ struct AsthmaStep: Identifiable {
 
 struct AsthmaGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         AsthmaStep(
@@ -85,6 +86,21 @@ struct AsthmaGuidanceView: View {
         }
         .navigationTitle("Asthma Attack")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.blue)
+                        Text("Back")
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+        }
     }
 }
 

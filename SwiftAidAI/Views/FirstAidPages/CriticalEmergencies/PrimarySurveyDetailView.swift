@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Model for each step in the primary survey process
 struct PrimarySurveyStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,10 +12,12 @@ struct PrimarySurveyStep: Identifiable {
     let imageName: String
 }
 
+// Main view for displaying the primary survey steps
 struct PrimarySurveyDetailView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Define all steps in the primary survey 
     let steps = [
         PrimarySurveyStep(
             number: 1,
@@ -22,7 +25,8 @@ struct PrimarySurveyDetailView: View {
             title: "Danger",
             icon: "exclamationmark.triangle.fill",
             instructions: [
-                "Always check that the area is safe before approaching"
+                "Before approaching the casualty, always make sure the area is safe.",
+                "Check for any hazards that could put you or the casualty at risk."
             ],
             warningNote: nil,
             imageName: "danger 1"
@@ -33,15 +37,15 @@ struct PrimarySurveyDetailView: View {
             title: "Response",
             icon: "person.wave.2.fill",
             instructions: [
-                "Approach the casualty carefully and introduce yourself clearly",
-                "Kneel next to their chest, gently shake their shoulders",
+                "As you approach, introduce yourself clearly.",
+                "Kneel next to their chest and gently shake their shoulders.",
                 "Ask clearly: 'Are you OK?', 'Can you open your eyes?'",
-                "If they respond (open eyes, gestures), they are responsive",
-                "If no response, they are unresponsive—seek help immediately",
-                "Check for catastrophic bleeding (heavy bleeding)",
-                "Apply direct pressure immediately if present and call 999 or 112"
+                "If they open their eyes or give another gesture, they are responsive.",
+                "If they do not respond in any way, they are unresponsive.",
+                "Check for catastrophic bleeding (massive amounts of blood pouring, gushing, or spurting).",
+                "If catastrophic bleeding is present, apply direct pressure immediately and call 999 or 112."
             ],
-            warningNote: nil,
+            warningNote: "Catastrophic bleeding must be treated before moving on to the airway",
             imageName: "response 2"
         ),
         PrimarySurveyStep(
@@ -50,9 +54,9 @@ struct PrimarySurveyDetailView: View {
             title: "Airway",
             icon: "wind",
             instructions: [
-                "Check if the airway is clear",
-                "Gently tilt the head back using one hand on the forehead",
-                "Lift the chin using two fingers from your other hand"
+                "Check that the airway is open and clear.",
+                "Place one hand on the forehead to tilt the head back.",
+                "Use two fingers from the other hand to lift the chin."
             ],
             warningNote: nil,
             imageName: "airway 3"
@@ -63,12 +67,13 @@ struct PrimarySurveyDetailView: View {
             title: "Breathing",
             icon: "lungs.fill",
             instructions: [
-                "With the airway open, place your ear near their mouth, watching their chest",
-                "Look, listen, and feel for normal breathing for no more than 10 seconds",
-                "If unresponsive and not breathing normally, immediately call 999/112",
-                "Start CPR and ask someone to get a defibrillator (AED)"
+                "Keep the airway held open.",
+                "Place your ear above their mouth and look down at their chest.",
+                "Listen for sounds of breathing and feel for breath on your cheek.",
+                "Watch to see if their chest moves.",
+                "Do this for no more than 10 seconds."
             ],
-            warningNote: "Note: 'Agonal gasping' (slow, noisy gasps) is not normal breathing—this is a sign of cardiac arrest",
+            warningNote: "During cardiac arrest, about half of casualties will show 'agonal gasping' (slow, noisy gasps) - this is not normal breathing and indicates cardiac arrest",
             imageName: "breathing 4"
         ),
         PrimarySurveyStep(
@@ -77,9 +82,8 @@ struct PrimarySurveyDetailView: View {
             title: "Circulation",
             icon: "heart.fill",
             instructions: [
-                "Check quickly for severe bleeding",
-                "If severe bleeding, apply direct pressure immediately and call 999/112",
-                "If unresponsive but breathing normally and no severe bleeding, place in recovery position"
+                "If severe bleeding is present, apply direct pressure to the wound and call 999 or 112.",
+                "If unresponsive but breathing normally with no bleeding, place in recovery position and call 999 or 112."
             ],
             warningNote: nil,
             imageName: "circulation 5"
@@ -89,18 +93,15 @@ struct PrimarySurveyDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Introduction Card
+                // Display introduction card
                 IntroductionCard()
                 
-                // Steps
+                // Display each step in the survey
                 ForEach(steps) { step in
                     PrimarySurveyStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                // Emergency Actions Card
-                EmergencyActionsCard()
-                
-                // Attribution Footer
+                // Display attribution footer
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -123,6 +124,7 @@ struct PrimarySurveyDetailView: View {
     }
 }
 
+// Card showing introduction to the primary survey
 struct IntroductionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -143,9 +145,12 @@ struct IntroductionCard: View {
     }
 }
 
+// Card displaying a single step in the primary survey
 struct PrimarySurveyStepCard: View {
     let step: PrimarySurveyStep
     @Binding var completedSteps: Set<String>
+    @State private var showingSevereBurns = false
+    @State private var showingRecoveryPosition = false
     
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
@@ -153,7 +158,7 @@ struct PrimarySurveyStepCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Step header with number, letter, title and icon
             HStack(spacing: 16) {
                 // Step Number Circle
                 ZStack {
@@ -179,7 +184,7 @@ struct PrimarySurveyStepCard: View {
                 }
             }
             
-            // Add the image
+            // Display step image if available
             if let uiImage = UIImage(named: step.imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -189,32 +194,93 @@ struct PrimarySurveyStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // List of instructions for this primary survey step, with handling for severe bleeding and recovery position
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        CheckboxRow(
-                            text: instruction,
-                            isChecked: completedSteps.contains(instruction),
-                            action: {
-                                if completedSteps.contains(instruction) {
-                                    completedSteps.remove(instruction)
-                                } else {
-                                    completedSteps.insert(instruction)
+                        if step.number == 5 {
+                            if instruction.contains("severe bleeding") {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                        .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                        .font(.system(size: 20))
+                                    
+                                    (Text("If ")
+                                        .foregroundColor(.primary) +
+                                    Text("severe bleeding")
+                                        .foregroundColor(.red)
+                                        .underline() +
+                                    Text(" is present, apply direct pressure to the wound and call 999 or 112.")
+                                        .foregroundColor(.primary))
+                                        .font(.subheadline)
+                                        .onTapGesture {
+                                            showingSevereBurns = true
+                                        }
+                                    
+                                    Spacer()
                                 }
+                            } else if instruction.contains("recovery position") {
+                                HStack(alignment: .top, spacing: 8) {
+                                    Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                        .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                        .font(.system(size: 20))
+                                    
+                                    (Text("If unresponsive but breathing normally with no bleeding, place in ")
+                                        .foregroundColor(.primary) +
+                                    Text("recovery position")
+                                        .foregroundColor(.red)
+                                        .underline() +
+                                    Text(" and call 999 or 112.")
+                                        .foregroundColor(.primary))
+                                        .font(.subheadline)
+                                        .onTapGesture {
+                                            showingRecoveryPosition = true
+                                        }
+                                    
+                                    Spacer()
+                                }
+                            } else {
+                                CheckboxRow(
+                                    text: instruction,
+                                    isChecked: completedSteps.contains(instruction),
+                                    action: {
+                                        if completedSteps.contains(instruction) {
+                                            completedSteps.remove(instruction)
+                                        } else {
+                                            completedSteps.insert(instruction)
+                                        }
+                                    }
+                                )
                             }
-                        )
-                        
-                        if hasEmergencyNumbers(instruction) {
-                            SharedEmergencyCallButtons()
-                                .padding(.leading, 28)
-                                .padding(.top, 4)
+                        } else {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                            // Only show emergency call buttons for non step 5 instructions
+                            if hasEmergencyNumbers(instruction) {
+                                SharedEmergencyCallButtons()
+                                    .padding(.leading, 28)
+                                    .padding(.top, 4)
+                            }
                         }
                     }
                 }
             }
+            // Show emergency call buttons only once for step 5, after both checkboxes
+            if step.number == 5 {
+                SharedEmergencyCallButtons()
+                    .padding(.top, 4)
+            }
             
-            // Warning note if present
+            // Display warning note if present
             if let warning = step.warningNote {
                 WarningNote(text: warning)
                 if hasEmergencyNumbers(warning) {
@@ -230,9 +296,18 @@ struct PrimarySurveyStepCard: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
         )
         .padding(.horizontal)
+        .sheet(isPresented: $showingSevereBurns) {
+            SevereBurnsGuidanceView()
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showingRecoveryPosition) {
+            RecoveryPositionView()
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
+// Card showing emergency actions to take
 struct EmergencyActionsCard: View {
     @State private var showingCPR = false
     @State private var showingRecoveryPosition = false
@@ -243,15 +318,17 @@ struct EmergencyActionsCard: View {
                 .font(.headline)
             
             VStack(alignment: .leading, spacing: 12) {
+                // Button to show CPR guidance
                 Button(action: { showingCPR = true }) {
                     ActionItem(
                         icon: "xmark.circle.fill",
                         color: .red,
-                        text: "If casualty is not breathing, immediately start CPR",
+                        text: "If casualty is not breathing, immediately start CPR.",
                         isLink: true
                     )
                 }
                 
+                // Button to show recovery position guidance
                 Button(action: { showingRecoveryPosition = true }) {
                     ActionItem(
                         icon: "checkmark.circle.fill",
@@ -269,10 +346,12 @@ struct EmergencyActionsCard: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
         )
         .padding(.horizontal)
+        // Present CPR guidance sheet
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
                 .presentationDragIndicator(.visible)
         }
+        // Present recovery position guidance sheet
         .sheet(isPresented: $showingRecoveryPosition) {
             RecoveryPositionView()
                 .presentationDragIndicator(.visible)
@@ -280,6 +359,7 @@ struct EmergencyActionsCard: View {
     }
 }
 
+// View for displaying an action item with icon and text
 struct ActionItem: View {
     let icon: String
     let color: Color
@@ -299,6 +379,7 @@ struct ActionItem: View {
     }
 }
 
+// Footer showing source attribution
 struct AttributionFooter: View {
     var body: some View {
         VStack(spacing: 8) {

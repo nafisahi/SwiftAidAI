@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for recovery position step information
 struct RecoveryStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +11,7 @@ struct RecoveryStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for recovery position guidance with step-by-step instructions
 struct RecoveryPositionView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
@@ -107,18 +109,19 @@ struct RecoveryPositionView: View {
             imageName: "calling-for-help---male-2"
         )
     ]
-    
+    // Main view body showing recovery position steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining recovery position
                 RecoveryIntroductionCard()
                 
-                // Steps
+                // Display each recovery position step
                 ForEach(steps) { step in
                     RecoveryStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                // Attribution Footer
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -142,6 +145,7 @@ struct RecoveryPositionView: View {
     }
 }
 
+// Introduction card explaining when to use recovery position
 struct RecoveryIntroductionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -163,6 +167,7 @@ struct RecoveryIntroductionCard: View {
     }
 }
 
+// Card component for each recovery position step with instructions and completion tracking
 struct RecoveryStepCard: View {
     let step: RecoveryStep
     @Binding var completedSteps: Set<String>
@@ -171,12 +176,11 @@ struct RecoveryStepCard: View {
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Main container for step content
             HStack(alignment: .center, spacing: 16) {
-                // Step Number Circle
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -188,7 +192,7 @@ struct RecoveryStepCard: View {
                         .foregroundColor(.white)
                 }
                 
-                // Title and Icon
+                // Step title and icon
                 HStack(spacing: 8) {
                     Text(step.title)
                         .font(.headline)
@@ -213,11 +217,13 @@ struct RecoveryStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Special handling for primary survey instruction in step 1
                         if step.number == 1 && instruction.contains("primary survey") {
+                            // Custom row with tappable "primary survey" text that opens detail sheet
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
                                     .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
@@ -238,6 +244,7 @@ struct RecoveryStepCard: View {
                                 Spacer()
                             }
                         } else {
+                            // Standard checkbox row for other instructions
                             CheckboxRow(
                                 text: instruction,
                                 isChecked: completedSteps.contains(instruction),
@@ -250,6 +257,7 @@ struct RecoveryStepCard: View {
                                 }
                             )
                             
+                            // Show emergency call buttons if instruction contains emergency numbers
                             if hasEmergencyNumbers(instruction) {
                                 SharedEmergencyCallButtons()
                                     .padding(.leading, 28)
@@ -260,7 +268,7 @@ struct RecoveryStepCard: View {
                 }
             }
             
-            // Warning note if present
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 WarningNote(text: warning)
                 if hasEmergencyNumbers(warning) {
@@ -269,6 +277,7 @@ struct RecoveryStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -280,6 +289,7 @@ struct RecoveryStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for primary survey details
         .sheet(isPresented: $showingPrimarySurvey) {
             PrimarySurveyDetailView()
                 .presentationDragIndicator(.visible)
@@ -287,7 +297,7 @@ struct RecoveryStepCard: View {
     }
 }
 
-// Add this utility struct to handle programmatic navigation
+// Utility for programmatic navigation between views
 struct NavigationUtil {
     static func navigate(to view: some View) {
         let keyWindow = UIApplication.shared.connectedScenes

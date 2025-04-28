@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for severe bleeding step information
 struct BleedingStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +11,7 @@ struct BleedingStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for severe bleeding guidance with step-by-step instructions
 struct SevereBleedingGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -21,10 +23,10 @@ struct SevereBleedingGuidanceView: View {
             title: "Wear Protective Gloves",
             icon: "hand.raised.fill",
             instructions: [
-                "Wear protective first aid gloves if available",
-                "This helps prevent infection passing between you both"
+                "Wear protective first aid gloves if available.",
+                "This helps prevent infection passing between you both."
             ],
-            warningNote: "With open wounds there's a risk of infection",
+            warningNote: "With open wounds there's a risk of infection.",
             imageName: "step1-bleed"
         ),
         BleedingStep(
@@ -32,12 +34,12 @@ struct SevereBleedingGuidanceView: View {
             title: "Stop Bleeding",
             icon: "hand.point.down.fill",
             instructions: [
-                "Apply direct firm pressure to the wound",
-                "Use sterile dressing or clean non-fluffy cloth",
-                "Ask casualty to apply pressure if no dressing available",
-                "Remove or cut clothing to uncover wound if needed"
+                "Apply direct firm pressure to the wound.",
+                "Use sterile dressing or clean non-fluffy cloth.",
+                "Ask casualty to apply pressure if no dressing available.",
+                "Remove or cut clothing to uncover wound if needed."
             ],
-            warningNote: "If there's an object in the wound, don't pull it out - apply pressure on either side to push edges together",
+            warningNote: "If there's an object in the wound, don't pull it out - apply pressure on either side to push edges together.",
             imageName: "step2-bleed"
         ),
         BleedingStep(
@@ -45,9 +47,9 @@ struct SevereBleedingGuidanceView: View {
             title: "Call for Help",
             icon: "phone.fill",
             instructions: [
-                "Ask helper to call 999 or 112 for emergency help",
-                "Describe wound location and extent of bleeding",
-                "If alone, use phone's speaker while treating casualty"
+                "Ask helper to call 999 or 112 for emergency help.",
+                "Describe wound location and extent of bleeding.",
+                "If alone, use phone's speaker while treating casualty."
             ],
             warningNote: nil,
             imageName: "step3-bleed"
@@ -57,11 +59,11 @@ struct SevereBleedingGuidanceView: View {
             title: "Secure Dressing",
             icon: "bandage.fill",
             instructions: [
-                "Firmly secure dressing with bandage",
-                "Maintain pressure on the wound",
-                "Ensure bandage isn't restricting circulation"
+                "Firmly secure dressing with bandage.",
+                "Maintain pressure on the wound.",
+                "Ensure bandage isn't restricting circulation."
             ],
-            warningNote: "Bandage should be firm but not too tight",
+            warningNote: "Bandage should be firm but not too tight.",    
             imageName: "step4-bleed"
         ),
         BleedingStep(
@@ -69,11 +71,11 @@ struct SevereBleedingGuidanceView: View {
             title: "Check Circulation",
             icon: "hand.point.up.fill",
             instructions: [
-                "Press nail or skin beyond bandage for five seconds until pale",
-                "Release pressure and check color returns within two seconds",
-                "If color doesn't return quickly, loosen and reapply bandage"
+                "Press nail or skin beyond bandage for five seconds until pale.",
+                "Release pressure and check color returns within two seconds.",
+                "If color doesn't return quickly, loosen and reapply bandage."
             ],
-            warningNote: "Slow color return indicates bandage is too tight",
+            warningNote: "Slow color return indicates bandage is too tight.",
             imageName: "step5-bleed"
         ),
         BleedingStep(
@@ -81,11 +83,11 @@ struct SevereBleedingGuidanceView: View {
             title: "Replace Soaked Dressing",
             icon: "arrow.triangle.2.circlepath",
             instructions: [
-                "If blood comes through, remove dressing",
-                "Apply new dressing with firm pressure",
-                "Secure with bandage, tying knot over wound"
+                "If blood comes through, remove dressing.",
+                "Apply new dressing with firm pressure.",
+                "Secure with bandage, tying knot over wound."
             ],
-            warningNote: "Maintain pressure control during dressing change",
+            warningNote: "Maintain pressure control during dressing change.",
             imageName: "step6-bleed"
         ),
         BleedingStep(
@@ -93,10 +95,10 @@ struct SevereBleedingGuidanceView: View {
             title: "Support and Monitor",
             icon: "figure.arms.open",
             instructions: [
-                "Support injured part with sling or bandage",
-                "Check circulation beyond bandage every 10 minutes"
+                "Support injured part with sling or bandage.",
+                "Check circulation beyond bandage every 10 minutes."
             ],
-            warningNote: "Regular circulation checks are essential",
+            warningNote: "Regular circulation checks are essential.",
             imageName: "step7-bleed"
         ),
         BleedingStep(
@@ -104,24 +106,28 @@ struct SevereBleedingGuidanceView: View {
             title: "Monitor Response",
             icon: "heart.text.square.fill",
             instructions: [
-                "Keep monitoring their level of response",
-                "Watch for any changes in condition",
-                "Follow emergency service instructions if given"
+                "Keep monitoring their level of response.",
+                "Watch for any changes in condition.",
+                "Follow emergency service instructions if given."
             ],
             warningNote: "If they become unresponsive, prepare to start CPR. Emergency services may instruct you to improvise a tourniquet using items like a triangular bandage, belt, or tie - follow their instructions carefully.",
             imageName: "step8-bleed"
         )
     ]
     
+    // Main view body showing bleeding guidance steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining severe bleeding
                 BleedingIntroductionCard()
                 
+                // Display each bleeding step
                 ForEach(steps) { step in
                     BleedingStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -137,14 +143,16 @@ struct SevereBleedingGuidanceView: View {
                         Image(systemName: "chevron.left")
                         Text("Back")
                     }
-                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                    .foregroundColor(Color.red)
                 }
             }
         }
     }
 }
 
+// Introduction card explaining importance of immediate action
 struct BleedingIntroductionCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Why Immediate Action Matters")
@@ -158,12 +166,13 @@ struct BleedingIntroductionCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.1))
+                .fill(Color.red.opacity(0.1))
         )
         .padding(.horizontal)
     }
 }
 
+// Card component for each bleeding step with instructions and completion tracking
 struct BleedingStepCard: View {
     let step: BleedingStep
     @Binding var completedSteps: Set<String>
@@ -173,13 +182,15 @@ struct BleedingStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator
                 ZStack {
                     Circle()
-                        .fill(Color(red: 0.8, green: 0.2, blue: 0.2))
+                        .fill(Color.red)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -188,6 +199,7 @@ struct BleedingStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -195,11 +207,11 @@ struct BleedingStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                        .foregroundColor(.red)
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -209,10 +221,11 @@ struct BleedingStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Special handling for CPR instruction
                         if instruction.contains("start CPR") {
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
@@ -222,7 +235,7 @@ struct BleedingStepCard: View {
                                 (Text("Be prepared to ")
                                     .foregroundColor(.primary) +
                                 Text("start CPR")
-                                    .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                                    .foregroundColor(.red)
                                     .underline() +
                                 Text(" if they become unresponsive")
                                     .foregroundColor(.primary))
@@ -234,6 +247,7 @@ struct BleedingStepCard: View {
                                 Spacer()
                             }
                         } else {
+                            // Standard checkbox row for instructions
                             CheckboxRow(
                                 text: instruction,
                                 isChecked: completedSteps.contains(instruction),
@@ -247,6 +261,7 @@ struct BleedingStepCard: View {
                             )
                         }
                         
+                        // Show emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
@@ -256,7 +271,7 @@ struct BleedingStepCard: View {
                 }
             }
             
-            // Warning note
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
                     HStack(alignment: .top, spacing: 8) {
@@ -266,7 +281,7 @@ struct BleedingStepCard: View {
                         (Text("If they become unresponsive, ")
                             .foregroundColor(.orange) +
                         Text("start CPR")
-                            .foregroundColor(Color(red: 0.8, green: 0.2, blue: 0.2))
+                            .foregroundColor(.red)
                             .underline())
                             .font(.subheadline)
                             .onTapGesture {
@@ -282,6 +297,7 @@ struct BleedingStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -290,9 +306,10 @@ struct BleedingStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.2), lineWidth: 1)
+                .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
                 .presentationDragIndicator(.visible)

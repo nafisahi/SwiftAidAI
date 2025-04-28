@@ -46,7 +46,7 @@ struct SunburnStepCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with numbered circle
-            HStack(spacing: 16) {
+            HStack(alignment: .center, spacing: 16) {
                 ZStack {
                     Circle()
                         .fill(Color.orange)
@@ -66,6 +66,7 @@ struct SunburnStepCard: View {
                     .font(.headline)
                     .foregroundColor(.orange)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             // Instructions as checklist
             VStack(alignment: .leading, spacing: 8) {
@@ -152,6 +153,7 @@ struct SunburnStepCard: View {
 
 struct SunburnGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         SunburnStep(
@@ -217,10 +219,25 @@ struct SunburnGuidanceView: View {
                     .padding(.bottom, 32)
             }
             .padding(.vertical)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle("Sunburn")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.orange)
+                        Text("Back")
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -231,9 +248,11 @@ struct SunburnIntroCard: View {
                 Text("What is Sunburn?")
                     .font(.title2)
                     .bold()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Text("Sunburn is skin damage caused by ultraviolet (UV) rays. The skin becomes red, warm, sore and tender. It may start to flake and peel after a few days. In some cases it can be severe and require medical treatment.")
                     .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()

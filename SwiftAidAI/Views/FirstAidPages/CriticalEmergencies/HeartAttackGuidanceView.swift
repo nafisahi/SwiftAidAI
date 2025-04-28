@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for heart attack step information
 struct HeartAttackStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +11,7 @@ struct HeartAttackStep: Identifiable {
     let imageName: String
 }
 
+// Main view for heart attack guidance with step-by-step instructions
 struct HeartAttackGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -20,11 +22,11 @@ struct HeartAttackGuidanceView: View {
             title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 immediately",
-                "Tell them you suspect a heart attack",
-                "Stay on the line for further instructions"
+                "Call 999 or 112 immediately.",
+                "Tell them you suspect a heart attack.",
+                "Stay on the line for further instructions."
             ],
-            warningNote: "Don't delay calling - early treatment is crucial",
+            warningNote: "Don't delay calling - early treatment is crucial.",
             imageName: "heart-attack-1"
         ),
         HeartAttackStep(
@@ -32,10 +34,10 @@ struct HeartAttackGuidanceView: View {
             title: "Position & Comfort",
             icon: "person.fill",
             instructions: [
-                "Help them into a comfortable position on the floor",
-                "Bend their knees for support",
-                "Support their head and shoulders with cushions",
-                "Keep them calm and reassured"
+                "Help them into a comfortable position on the floor.",
+                "Bend their knees for support.",
+                "Support their head and shoulders with cushions.",
+                "Keep them calm and reassured."
             ],
             warningNote: nil,
             imageName: "heart-attack-2"
@@ -45,10 +47,10 @@ struct HeartAttackGuidanceView: View {
             title: "Medication",
             icon: "pills.fill",
             instructions: [
-                "Give one 300mg aspirin tablet to chew slowly",
-                "Help them take their own angina medication if they have it"
+                "Give one 300mg aspirin tablet to chew slowly.",
+                "Help them take their own angina medication if they have it."
             ],
-            warningNote: "Do not give aspirin to anyone under 16 or allergic to it",
+            warningNote: "Do not give aspirin to anyone under 16 or allergic to it.",
             imageName: "heart-attack-3"
         ),
         HeartAttackStep(
@@ -56,27 +58,30 @@ struct HeartAttackGuidanceView: View {
             title: "Monitor",
             icon: "waveform.path.ecg",
             instructions: [
-                "Keep monitoring their level of response",
-                "Stay with them until help arrives",
-                "Be prepared to start CPR if they become unresponsive and stop breathing normally"
+                "Keep monitoring their level of response.",
+                "Stay with them until help arrives.",
+                "Be prepared to start CPR if they become unresponsive and stop breathing normally."
             ],
-            warningNote: "If they become unresponsive and not breathing normally, start CPR immediately",
+            warningNote: nil,
             imageName: "heart-attack-5"
         )
     ]
     
+    // Main view body showing heart attack guidance steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining heart attack
                 HeartAttackIntroCard()
+                // Card showing heart attack symptoms
                 HeartAttackSymptomsCard()
                 
-                // Steps
+                // Display each heart attack step
                 ForEach(steps) { step in
                     HeartAttackStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                // Attribution Footer
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -99,7 +104,9 @@ struct HeartAttackGuidanceView: View {
     }
 }
 
+// Introduction card explaining what a heart attack is
 struct HeartAttackIntroCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("What is a Heart Attack?")
@@ -119,7 +126,9 @@ struct HeartAttackIntroCard: View {
     }
 }
 
+// Card showing heart attack symptoms and signs
 struct HeartAttackSymptomsCard: View {
+    // Main container for symptoms content
     var body: some View {
         SymptomsCard(
             title: "Signs and Symptoms",
@@ -140,6 +149,7 @@ struct HeartAttackSymptomsCard: View {
     }
 }
 
+// Card component for each heart attack step with instructions and completion tracking
 struct HeartAttackStepCard: View {
     let step: HeartAttackStep
     @Binding var completedSteps: Set<String>
@@ -149,10 +159,12 @@ struct HeartAttackStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -164,6 +176,7 @@ struct HeartAttackStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -175,7 +188,7 @@ struct HeartAttackStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let uiImage = UIImage(named: step.imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -185,10 +198,11 @@ struct HeartAttackStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Special handling for CPR instruction
                         if instruction.contains("start CPR") {
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
@@ -210,6 +224,7 @@ struct HeartAttackStepCard: View {
                                 Spacer()
                             }
                         } else {
+                            // Standard checkbox row for instructions
                             CheckboxRow(
                                 text: instruction,
                                 isChecked: completedSteps.contains(instruction),
@@ -223,6 +238,7 @@ struct HeartAttackStepCard: View {
                             )
                         }
                         
+                        // Show emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
@@ -232,7 +248,7 @@ struct HeartAttackStepCard: View {
                 }
             }
             
-            // Warning note if present
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
                     HStack(alignment: .top, spacing: 8) {
@@ -261,6 +277,7 @@ struct HeartAttackStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -272,6 +289,7 @@ struct HeartAttackStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
                 .presentationDragIndicator(.visible)

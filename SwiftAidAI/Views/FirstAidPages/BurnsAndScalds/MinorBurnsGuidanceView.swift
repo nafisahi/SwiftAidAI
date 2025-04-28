@@ -14,6 +14,7 @@ struct MinorBurnStep: Identifiable {
 struct MinorBurnsGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         MinorBurnStep(
@@ -84,6 +85,21 @@ struct MinorBurnsGuidanceView: View {
         }
         .navigationTitle("Minor Burns and Scalds")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.orange)
+                        Text("Back")
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+        }
     }
 }
 

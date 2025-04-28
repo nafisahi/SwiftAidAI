@@ -12,6 +12,7 @@ struct HeatstrokeStep: Identifiable {
 
 struct HeatstrokeGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         HeatstrokeStep(
@@ -80,6 +81,21 @@ struct HeatstrokeGuidanceView: View {
         }
         .navigationTitle("Heatstroke")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.teal)
+                        Text("Back")
+                            .foregroundColor(.teal)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -98,7 +114,7 @@ struct HeatstrokeIntroductionCard: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.red.opacity(0.1))
+                    .fill(Color.teal.opacity(0.1))
             )
             
             HeatstrokeSymptomsCard()
@@ -119,7 +135,7 @@ struct HeatstrokeSymptomsCard: View {
                 "Full bounding pulse",
                 "Body temperature above 40°C (104°F)"
             ],
-            accentColor: .red,
+            accentColor: .teal,
             warningNote: "Heatstroke is a medical emergency - call 999/112"
         )
     }
@@ -141,7 +157,7 @@ struct HeatstrokeStepCard: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.red)
+                        .fill(Color.teal)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -158,7 +174,7 @@ struct HeatstrokeStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.red)
+                        .foregroundColor(.teal)
                 }
             }
             
@@ -214,6 +230,10 @@ struct HeatstrokeStepCard: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 8, y: 2)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.teal.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {

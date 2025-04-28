@@ -13,6 +13,7 @@ struct FoodPoisoningStep: Identifiable {
 
 struct FoodPoisoningView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         FoodPoisoningStep(
@@ -105,6 +106,21 @@ struct FoodPoisoningView: View {
         }
         .navigationTitle("Food Poisoning")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.green)
+                        Text("Back")
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -123,7 +139,7 @@ struct FoodPoisoningIntroCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.orange.opacity(0.1))
+                .fill(Color.green.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -176,7 +192,7 @@ struct FoodPoisoningStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.orange)
+                        .fill(Color.green)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -192,7 +208,7 @@ struct FoodPoisoningStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.orange)
+                        .foregroundColor(.green)
                 }
             }
             
@@ -258,7 +274,7 @@ struct FoodPoisoningStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
+                .stroke(Color.green.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
     }

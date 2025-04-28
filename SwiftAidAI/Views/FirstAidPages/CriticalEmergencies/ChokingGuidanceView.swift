@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for choking step information
 struct ChokingStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +11,7 @@ struct ChokingStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for choking guidance with step-by-step instructions
 struct ChokingGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
@@ -79,17 +81,18 @@ struct ChokingGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining choking
                 ChokingIntroductionCard()
                 
-                // Steps
+                // Display each choking step
                 ForEach(steps) { step in
                     ChokingStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                // Continue Until Card
+                // Card showing when to continue treatment
                 ContinueUntilCard()
                 
-                // Attribution Footer
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -112,7 +115,9 @@ struct ChokingGuidanceView: View {
     }
 }
 
+// Introduction card explaining what choking is and its symptoms
 struct ChokingIntroductionCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(spacing: 16) {
             // What is Choking explanation
@@ -138,6 +143,7 @@ struct ChokingIntroductionCard: View {
     }
 }
 
+// Card showing choking symptoms and signs
 struct ChokingSymptomsCard: View {
     var body: some View {
         SymptomsCard(
@@ -153,6 +159,7 @@ struct ChokingSymptomsCard: View {
     }
 }
 
+// Card component for each choking step with instructions and completion tracking
 struct ChokingStepCard: View {
     let step: ChokingStep
     @Binding var completedSteps: Set<String>
@@ -162,11 +169,12 @@ struct ChokingStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
-                // Step Number Circle
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -178,7 +186,7 @@ struct ChokingStepCard: View {
                         .foregroundColor(.white)
                 }
                 
-                // Title and Icon
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -190,7 +198,7 @@ struct ChokingStepCard: View {
                 }
             }
             
-            // Add the image if available
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -200,10 +208,11 @@ struct ChokingStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Standard checkbox row for instructions
                         CheckboxRow(
                             text: instruction,
                             isChecked: completedSteps.contains(instruction),
@@ -216,6 +225,7 @@ struct ChokingStepCard: View {
                             }
                         )
                         
+                        // Show emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
@@ -224,6 +234,7 @@ struct ChokingStepCard: View {
                     }
                 }
                 
+                // Warning note section with emergency call buttons if needed
                 if let warning = step.warningNote {
                     if step.number == 5 {
                         CPRWarningNote(showingCPR: $showingCPR)
@@ -237,6 +248,7 @@ struct ChokingStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -248,6 +260,7 @@ struct ChokingStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
         }

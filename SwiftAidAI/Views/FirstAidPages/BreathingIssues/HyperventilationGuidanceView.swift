@@ -13,6 +13,7 @@ struct HyperventilationStep: Identifiable {
 
 struct HyperventilationGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         HyperventilationStep(
@@ -86,6 +87,21 @@ struct HyperventilationGuidanceView: View {
         }
         .navigationTitle("Hyperventilation")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.blue)
+                        Text("Back")
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for anaphylaxis step information
 struct AnaphylaxisStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,6 +12,7 @@ struct AnaphylaxisStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for anaphylaxis guidance with step-by-step instructions
 struct AnaphylaxisGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -34,7 +36,7 @@ struct AnaphylaxisGuidanceView: View {
             icon: "phone.fill",
             instructions: [
                 "Call 999 or 112 immediately.",
-                "State that you suspect ANAPHYLAXIS.",
+                "State that you suspect anaphylaxis.",
                 "Give details about any known allergies."
             ],
             warningNote: nil,
@@ -67,16 +69,21 @@ struct AnaphylaxisGuidanceView: View {
         )
     ]
     
+    // Main view body showing anaphylaxis guidance steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining anaphylaxis
                 AnaphylaxisIntroCard()
+                // Card showing anaphylaxis symptoms
                 AnaphylaxisSymptomsCard()
                 
+                // Display each anaphylaxis step
                 ForEach(steps) { step in
                     AnaphylaxisStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -84,10 +91,24 @@ struct AnaphylaxisGuidanceView: View {
         }
         .navigationTitle("Anaphylaxis")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+        }
     }
 }
 
+// Introduction card explaining what anaphylaxis is
 struct AnaphylaxisIntroCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("What is Anaphylaxis?")
@@ -108,21 +129,23 @@ struct AnaphylaxisIntroCard: View {
     }
 }
 
+// Card showing anaphylaxis symptoms and signs
 struct AnaphylaxisSymptomsCard: View {
+    // Main container for symptoms content
     var body: some View {
         SymptomsCard(
             title: "Signs and Symptoms",
             symptoms: [
                 "Mild/Moderate Signs:",
-                "• Red, itchy rash or raised skin (hives), especially on face/neck",
-                "• Red, itchy, watery eyes",
-                "• Swelling of hands, feet, or face",
-                "• Abdominal pain, vomiting, or diarrhea",
+                "Red, itchy rash or raised skin (hives), especially on face/neck",
+                "Red, itchy, watery eyes",
+                "Swelling of hands, feet, or face",
+                "Abdominal pain, vomiting, or diarrhea",
                 "Severe Signs:",
-                "• Difficulty breathing with wheezing",
-                "• Swelling of tongue and throat",
-                "• Confusion and agitation",
-                "• Signs of shock leading to collapse"
+                "Difficulty breathing with wheezing",
+                "Swelling of tongue and throat",
+                "Confusion and agitation",
+                "Signs of shock leading to collapse"
             ],
             accentColor: .red,
             warningNote: "Severe symptoms can develop rapidly - act quickly."
@@ -130,6 +153,7 @@ struct AnaphylaxisSymptomsCard: View {
     }
 }
 
+// Card component for each anaphylaxis step with instructions and completion tracking
 struct AnaphylaxisStepCard: View {
     let step: AnaphylaxisStep
     @Binding var completedSteps: Set<String>
@@ -137,7 +161,6 @@ struct AnaphylaxisStepCard: View {
     // States for timer functionality
     @State private var timeRemaining = 300 // 5 minutes in seconds
     @State private var timerIsRunning = false
-    @State private var showTimer = false
     @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
     @State private var timerCancellable: Cancellable? = nil
     
@@ -159,9 +182,8 @@ struct AnaphylaxisStepCard: View {
         return String(format: "%02d:%02d", minutes, seconds)
     }
     
-    // Start the timer
+    // Start the timer for next dose countdown
     private func startTimer() {
-        timeRemaining = 300 // Reset to 5 minutes
         timer = Timer.publish(every: 1, on: .main, in: .common)
         timerCancellable = timer.connect()
         timerIsRunning = true
@@ -177,10 +199,12 @@ struct AnaphylaxisStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -192,6 +216,7 @@ struct AnaphylaxisStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -203,7 +228,7 @@ struct AnaphylaxisStepCard: View {
                 }
             }
             
-            // Image if present
+            // Step image if available
             if let uiImage = UIImage(named: step.imageName ?? "") {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -213,10 +238,67 @@ struct AnaphylaxisStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Add timer button for second dose step
+            if step.number == 4 {
+                // Show start button only when timer hasn't started and is at initial value
+                if !timerIsRunning && timeRemaining == 300 {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            startTimer()
+                        }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 22, weight: .bold))
+                                Text("Start Timer")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(height: 44)
+                            .padding(.horizontal, 18)
+                            .foregroundColor(.white)
+                            .background(Color.red)
+                            .cornerRadius(12)
+                        }
+                        .accessibilityLabel("Start Timer")
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                }
+                
+                // Show timer display when started or when time has been modified
+                if timerIsRunning || timeRemaining < 300 {
+                    SharedTimerView(
+                        timeRemaining: $timeRemaining,
+                        timeRemainingFormatted: timeRemainingFormatted,
+                        timerIsRunning: $timerIsRunning,
+                        onStart: { startTimer() },
+                        onStop: { stopTimer() },
+                        onReset: {
+                            stopTimer()
+                            timeRemaining = 300
+                            startTimer()
+                        },
+                        timerColor: .red,
+                        labelText: "Next Dose Timer: "
+                    )
+                    .padding(.leading, 28)
+                    .padding(.vertical, 8)
+                    .onReceive(timer) { _ in
+                        if timerIsRunning && timeRemaining > 0 {
+                            timeRemaining -= 1
+                        } else if timeRemaining == 0 {
+                            stopTimer()
+                        }
+                    }
+                }
+            }
+            
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Standard checkbox row for instructions
                         CheckboxRow(
                             text: instruction,
                             isChecked: completedSteps.contains(instruction),
@@ -227,19 +309,11 @@ struct AnaphylaxisStepCard: View {
                                     if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = nil
                                     }
-                                    if instruction.contains("second dose") {
-                                        showTimer = false
-                                        stopTimer()
-                                    }
                                 } else {
                                     completedSteps.insert(instruction)
                                     // Set injection time if checking the note time instruction
                                     if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = Date()
-                                    }
-                                    if instruction.contains("second dose") {
-                                        showTimer = true
-                                        startTimer()
                                     }
                                 }
                             }
@@ -251,7 +325,7 @@ struct AnaphylaxisStepCard: View {
                                 .padding(.top, 4)
                         }
                         
-                        // Show injection time message if this is the note time instruction and it's checked
+                        // Show injection time message if this is the note time instruction
                         if instruction.lowercased().contains("note") && 
                            instruction.lowercased().contains("time") && 
                            completedSteps.contains(instruction) {
@@ -269,38 +343,11 @@ struct AnaphylaxisStepCard: View {
                             .padding(.top, 4)
                             .transition(.slide)
                         }
-                        
-                        // Show timer after the second dose instruction if checked
-                        if instruction.contains("second dose") && showTimer {
-                            SharedTimerView(
-                                timeRemaining: $timeRemaining,
-                                timeRemainingFormatted: timeRemainingFormatted,
-                                timerIsRunning: $timerIsRunning,
-                                onStart: { startTimer() },
-                                onStop: { stopTimer() },
-                                onReset: {
-                                    stopTimer()
-                                    timeRemaining = 300
-                                    startTimer()
-                                },
-                                timerColor: .red,
-                                labelText: "Next Dose Timer: "
-                            )
-                            .padding(.leading, 28)
-                            .padding(.vertical, 8)
-                            .onReceive(timer) { _ in
-                                if timerIsRunning && timeRemaining > 0 {
-                                    timeRemaining -= 1
-                                } else if timeRemaining == 0 {
-                                    stopTimer()
-                                }
-                            }
-                        }
                     }
                 }
             }
             
-            // Warning note if present
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
                     CPRWarningNote(showingCPR: $showingCPR)
@@ -313,6 +360,7 @@ struct AnaphylaxisStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -324,13 +372,10 @@ struct AnaphylaxisStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

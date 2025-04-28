@@ -13,6 +13,7 @@ struct HypothermiaStep: Identifiable {
 struct HypothermiaGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         HypothermiaStep(
@@ -97,6 +98,21 @@ struct HypothermiaGuidanceView: View {
         }
         .navigationTitle("Hypothermia")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.teal)
+                        Text("Back")
+                            .foregroundColor(.teal)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -115,7 +131,7 @@ struct HypothermiaIntroductionCard: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.blue.opacity(0.1))
+                    .fill(Color.teal.opacity(0.1))
             )
             
             HypothermiaSymptomsCard()
@@ -136,7 +152,7 @@ struct HypothermiaSymptomsCard: View {
                 "Slow and shallow breathing",
                 "Slow and weakening pulse"
             ],
-            accentColor: .blue,
+            accentColor: .teal,
             warningNote: "Hypothermia is a medical emergency - call 999/112"
         )
     }
@@ -158,7 +174,7 @@ struct HypothermiaStepCard: View {
                 // Step Number Circle
                 ZStack {
                     Circle()
-                        .fill(Color.blue)
+                        .fill(Color.teal)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -175,7 +191,7 @@ struct HypothermiaStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
                 }
             }
             
@@ -234,7 +250,7 @@ struct HypothermiaStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.blue.opacity(0.2), lineWidth: 1)
+                .stroke(Color.teal.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {

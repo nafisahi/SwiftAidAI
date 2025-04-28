@@ -14,6 +14,7 @@ struct AlcoholPoisoningStep: Identifiable {
 struct AlcoholPoisoningView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         AlcoholPoisoningStep(
@@ -87,6 +88,21 @@ struct AlcoholPoisoningView: View {
         }
         .navigationTitle("Alcohol Poisoning")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.green)
+                        Text("Back")
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $showingCPR) {
             NavigationStack {
                 CPRGuidanceView()
@@ -113,7 +129,7 @@ struct AlcoholPoisoningIntroCard: View {
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.purple.opacity(0.1))
+                .fill(Color.green.opacity(0.1))
         )
         .padding(.horizontal)
     }
@@ -189,7 +205,7 @@ struct AlcoholPoisoningStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.purple)
+                        .fill(Color.green)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -205,7 +221,7 @@ struct AlcoholPoisoningStepCard: View {
                     
                     Image(systemName: step.icon)
                         .font(.headline)
-                        .foregroundColor(.purple)
+                        .foregroundColor(.green)
                 }
             }
             
@@ -273,7 +289,7 @@ struct AlcoholPoisoningStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.purple.opacity(0.2), lineWidth: 1)
+                .stroke(Color.green.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingRecoveryPosition) {

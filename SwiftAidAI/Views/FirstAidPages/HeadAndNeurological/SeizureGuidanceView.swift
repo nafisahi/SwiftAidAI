@@ -14,6 +14,7 @@ struct SeizureStep: Identifiable {
 struct SeizureGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         SeizureStep(
@@ -100,6 +101,21 @@ struct SeizureGuidanceView: View {
         }
         .navigationTitle("Seizures/Epilepsy")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                        Text("Back")
+                            .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $showingCPR) {
             NavigationStack {
                 CPRGuidanceView()

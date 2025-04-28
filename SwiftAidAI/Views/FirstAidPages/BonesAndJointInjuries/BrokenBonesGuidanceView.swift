@@ -13,6 +13,7 @@ struct FractureStep: Identifiable {
 
 struct BrokenBonesGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         FractureStep(
@@ -116,6 +117,21 @@ struct BrokenBonesGuidanceView: View {
         }
         .navigationTitle("Broken Bones (Fractures)")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.purple)
+                        Text("Back")
+                            .foregroundColor(.purple)
+                    }
+                }
+            }
+        }
     }
 }
 

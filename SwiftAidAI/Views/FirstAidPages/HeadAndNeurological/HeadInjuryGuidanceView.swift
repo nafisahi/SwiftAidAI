@@ -12,6 +12,7 @@ struct HeadInjuryStep: Identifiable {
 
 struct HeadInjuryGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         HeadInjuryStep(
@@ -110,6 +111,21 @@ struct HeadInjuryGuidanceView: View {
         }
         .navigationTitle("Head Injury")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                        Text("Back")
+                            .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                    }
+                }
+            }
+        }
     }
 }
 

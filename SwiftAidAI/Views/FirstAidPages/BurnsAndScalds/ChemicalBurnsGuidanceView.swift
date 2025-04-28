@@ -168,6 +168,7 @@ struct ChemicalBurnStepCard: View {
 
 struct ChemicalBurnsGuidanceView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         ChemicalBurnStep(
@@ -238,6 +239,21 @@ struct ChemicalBurnsGuidanceView: View {
         }
         .navigationTitle("Chemical Burns")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.orange)
+                        Text("Back")
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+        }
     }
 }
 

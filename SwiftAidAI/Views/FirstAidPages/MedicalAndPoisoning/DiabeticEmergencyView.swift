@@ -13,6 +13,7 @@ struct DiabeticStep: Identifiable {
 
 struct DiabeticEmergencyView: View {
     @State private var completedSteps: Set<String> = []
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         DiabeticStep(
@@ -87,6 +88,21 @@ struct DiabeticEmergencyView: View {
         }
         .navigationTitle("Diabetic Emergencies")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.green)
+                        Text("Back")
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+        }
     }
 }
 

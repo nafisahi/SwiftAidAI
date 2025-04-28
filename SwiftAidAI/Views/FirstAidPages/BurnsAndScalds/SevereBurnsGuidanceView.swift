@@ -46,7 +46,7 @@ struct SevereBurnStepCard: View {
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
-                        .fill(Color.red)
+                        .fill(Color.orange)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
@@ -61,10 +61,10 @@ struct SevereBurnStepCard: View {
                 
                 Image(systemName: step.icon)
                     .font(.headline)
-                    .foregroundColor(.red)
+                    .foregroundColor(.orange)
             }
             
-            // Add the image if present (moved up)
+            // Add the image if present
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -79,17 +79,17 @@ struct SevereBurnStepCard: View {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: completedSteps.contains("\(step.id)-\(instruction)") ? "checkmark.square.fill" : "square")
-                                .foregroundColor(completedSteps.contains("\(step.id)-\(instruction)") ? .green : .gray)
+                            Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
                                 .onTapGesture {
-                                    if completedSteps.contains("\(step.id)-\(instruction)") {
-                                        completedSteps.remove("\(step.id)-\(instruction)")
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
                                         if instruction.contains("Start cooling the burn immediately with cool running water") {
                                             showTimer = false
                                             stopTimer()
                                         }
                                     } else {
-                                        completedSteps.insert("\(step.id)-\(instruction)")
+                                        completedSteps.insert(instruction)
                                         if instruction.contains("Start cooling the burn immediately with cool running water") {
                                             showTimer = true
                                             startTimer()
@@ -114,11 +114,11 @@ struct SevereBurnStepCard: View {
                                     timeRemaining = 1200
                                     startTimer()
                                 },
-                                timerColor: .red,
-                                labelText: "Cool burn for: "
+                                timerColor: .orange,
+                                labelText: "Cooling Timer: "
                             )
+                            .padding(.leading, 28)
                             .padding(.vertical, 8)
-                            .padding(.leading, 32)
                             .onReceive(timer) { _ in
                                 if timerIsRunning && timeRemaining > 0 {
                                     timeRemaining -= 1
@@ -157,7 +157,7 @@ struct SevereBurnStepCard: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.red.opacity(0.2), lineWidth: 1)
+                .stroke(Color.orange.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
     }
@@ -165,7 +165,7 @@ struct SevereBurnStepCard: View {
 
 struct SevereBurnsGuidanceView: View {
     @State private var completedSteps: Set<String> = []
-    @State private var showingCPR = false
+    @Environment(\.dismiss) private var dismiss
     
     let steps = [
         SevereBurnStep(
@@ -236,27 +236,40 @@ struct SevereBurnsGuidanceView: View {
         }
         .navigationTitle("Severe Burns")
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .foregroundColor(.orange)
+                        Text("Back")
+                            .foregroundColor(.orange)
+                    }
+                }
+            }
+        }
     }
 }
 
 struct SevereBurnIntroCard: View {
     var body: some View {
-        VStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("What is a Severe Burn?")
-                    .font(.title2)
-                    .bold()
-                
-                Text("Burns and scalds are caused by damage to the skin when it comes in contact with heat. Your priority is to cool the burn as quickly as possible. If someone has a severe burn they may develop shock which is a life-threatening condition.")
-                    .foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.red.opacity(0.1))
-            )
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What is a Severe Burn?")
+                .font(.title2)
+                .bold()
+            
+            Text("Burns and scalds are caused by damage to the skin when it comes in contact with heat. Your priority is to cool the burn as quickly as possible. If someone has a severe burn they may develop shock which is a life-threatening condition.")
+                .foregroundColor(.secondary)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.orange.opacity(0.1))
+        )
         .padding(.horizontal)
     }
 }
@@ -272,7 +285,7 @@ struct SevereBurnSymptomsCard: View {
                 "White or charred skin",
                 "Signs of shock may develop"
             ],
-            accentColor: .red,
+            accentColor: .orange,
             warningNote: "Severe burns can be life-threatening and require immediate medical attention"
         )
     }

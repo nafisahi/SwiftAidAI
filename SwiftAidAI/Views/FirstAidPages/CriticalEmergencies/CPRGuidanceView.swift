@@ -1,5 +1,31 @@
 import SwiftUI
+import AVFoundation
 
+// Audio player class for CPR beat guidance
+class CPRBeatPlayer: ObservableObject {
+    private var player: AVAudioPlayer?
+
+    func startBeat() {
+        if let url = Bundle.main.url(forResource: "cpr_beat", withExtension: "mp3") {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
+                try AVAudioSession.sharedInstance().setActive(true)
+                player = try AVAudioPlayer(contentsOf: url)
+                player?.numberOfLoops = -1 // Loop forever
+                player?.prepareToPlay()
+                player?.play()
+            } catch {
+                print("Error loading beat sound: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    func stopBeat() {
+        player?.stop()
+    }
+}
+
+// Data structure for CPR step information
 struct CPRStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +36,7 @@ struct CPRStep: Identifiable {
     let imageName: String
 }
 
+// Main view for CPR guidance with step-by-step instructions
 struct CPRGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
@@ -26,7 +53,7 @@ struct CPRGuidanceView: View {
                 "Open the airway by gently tilting their head back and lifting the chin.",
                 "Look, listen, and feel for normal breathing for up to 10 seconds."
             ],
-            warningNote: "Ignore occasional gasps—these are not normal breathing",
+            warningNote: "Ignore occasional gasps, these are not normal breathing",
             imageName: "adult-step-1-cpr"
         ),
         CPRStep(
@@ -53,7 +80,7 @@ struct CPRGuidanceView: View {
                 "Allow complete chest recoil after each compression.",
                 "Aim for a rate of 100-120 compressions per minute."
             ],
-            warningNote: "Maintain the correct rhythm—about 2 compressions per second",
+            warningNote: "Maintain the correct rhythm, about 2 compressions per second",
             imageName: "cpr-step-3"
         ),
         CPRStep(
@@ -73,21 +100,24 @@ struct CPRGuidanceView: View {
             imageName: "cpr-step-3"
         )
     ]
+    // State object to manage CPR beat/rhythm playback
+    @StateObject private var beatPlayer = CPRBeatPlayer()
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining CPR
                 CPRIntroductionCard()
                 
-                // Steps
+                // Display each CPR step card
                 ForEach(steps) { step in
-                    CPRStepCard(step: step, completedSteps: $completedSteps)
+                    CPRStepCard(step: step, completedSteps: $completedSteps, beatPlayer: beatPlayer)
                 }
                 
-                // Continue Until Card
+                // Card showing when to stop CPR
                 ContinueUntilCard()
                 
-                // Attribution Footer
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -107,9 +137,13 @@ struct CPRGuidanceView: View {
                 }
             }
         }
+        .onDisappear {
+            beatPlayer.stopBeat()
+        }
     }
 }
 
+// Introduction card explaining what CPR is
 struct CPRIntroductionCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -130,9 +164,12 @@ struct CPRIntroductionCard: View {
     }
 }
 
+// Card component for each CPR step with instructions and completion tracking
 struct CPRStepCard: View {
     let step: CPRStep
     @Binding var completedSteps: Set<String>
+    @ObservedObject var beatPlayer: CPRBeatPlayer
+    @State private var isPlayingBeat = false
     
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
@@ -198,6 +235,36 @@ struct CPRStepCard: View {
                     }
                 }
             }
+            // Show the Start/Stop Beat button on Step 3
+            if step.number == 3 {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        isPlayingBeat.toggle()
+                        if isPlayingBeat {
+                            beatPlayer.startBeat()
+                        } else {
+                            beatPlayer.stopBeat()
+                        }
+                    }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: isPlayingBeat ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.system(size: 22, weight: .bold))
+                            Text(isPlayingBeat ? "Stop CPR Beat" : "Start CPR Beat")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                        }
+                        .frame(height: 38)
+                        .padding(.horizontal, 18)
+                        .foregroundColor(.white)
+                        .background(Color.red)
+                        .cornerRadius(12)
+                    }
+                    .padding(.top, 10)
+                    .accessibilityLabel(isPlayingBeat ? "Stop CPR Beat" : "Start CPR Beat")
+                    Spacer()
+                }
+            }
             
             // Warning note if present
             if let warning = step.warningNote {
@@ -222,6 +289,7 @@ struct CPRStepCard: View {
     }
 }
 
+// Card showing when to continue CPR
 struct ContinueUntilCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -245,6 +313,7 @@ struct ContinueUntilCard: View {
     }
 }
 
+// Individual item in the Continue Until list
 struct ContinueUntilItem: View {
     let text: String
     

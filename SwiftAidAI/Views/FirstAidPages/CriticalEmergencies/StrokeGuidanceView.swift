@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for stroke step information
 struct StrokeStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,6 +11,7 @@ struct StrokeStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for stroke guidance with step-by-step instructions
 struct StrokeGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -20,9 +22,9 @@ struct StrokeGuidanceView: View {
             title: "Face (F)",
             icon: "face.smiling",
             instructions: [
-                "Look at their face for signs of weakness",
-                "Check if their mouth or eyes are droopy",
-                "Ask them to smile - check if it's uneven"
+                "Look at their face for signs of weakness.",
+                "Check if their mouth or eyes are droopy.",
+                "Ask them to smile - check if it's uneven."
             ],
             warningNote: nil,
             imageName: "face"
@@ -32,9 +34,9 @@ struct StrokeGuidanceView: View {
             title: "Arms (A)",
             icon: "figure.arms.open",
             instructions: [
-                "Ask them to raise both arms",
-                "Check if they can keep both arms raised",
-                "Note if one arm drifts downward"
+                "Ask them to raise both arms.",
+                "Check if they can keep both arms raised.",
+                "Note if one arm drifts downward."
             ],
             warningNote: nil,
             imageName: "arm"
@@ -44,9 +46,9 @@ struct StrokeGuidanceView: View {
             title: "Speech (S)",
             icon: "text.bubble.fill",
             instructions: [
-                "Ask them simple questions (e.g., 'What is your name?')",
-                "Check if they can speak clearly",
-                "Note if they have trouble understanding you"
+                "Ask them simple questions (e.g., 'What is your name?').",
+                "Check if they can speak clearly.",
+                "Note if they have trouble understanding you."
             ],
             warningNote: nil,
             imageName: "speech"
@@ -56,11 +58,11 @@ struct StrokeGuidanceView: View {
             title: "Time to Call (T)",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 immediately",
-                "Tell them you suspect a stroke",
-                "Explain the FAST symptoms you observed"
+                "Call 999 or 112 immediately.",
+                "Tell them you suspect a stroke.",
+                "Explain the FAST symptoms you observed."
             ],
-            warningNote: "Every minute counts - don't delay calling for help",
+            warningNote: "Every minute counts - don't delay calling for help.",
             imageName: "time"
         ),
         StrokeStep(
@@ -68,26 +70,31 @@ struct StrokeGuidanceView: View {
             title: "Care While Waiting",
             icon: "heart.circle.fill",
             instructions: [
-                "Keep them comfortable and supported",
-                "Provide reassurance",
-                "Do not give them food or drink",
-                "Monitor their level of response"
+                "Keep them comfortable and supported.",
+                "Provide reassurance.",
+                "Do not give them food or drink.",
+                "Monitor their level of response."
             ],
-            warningNote: "If they become unresponsive, prepare to start CPR",
+            warningNote: "If they become unresponsive, prepare to start CPR.",
             imageName: nil
         )
     ]
     
+    // Main view body showing stroke guidance steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining stroke
                 StrokeIntroCard()
+                // Card showing stroke symptoms
                 StrokeSymptomsCard()
                 
+                // Display each stroke step
                 ForEach(steps) { step in
                     StrokeStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -112,7 +119,9 @@ struct StrokeGuidanceView: View {
     }
 }
 
+// Introduction card explaining what a stroke is
 struct StrokeIntroCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("What is a Stroke?")
@@ -132,7 +141,9 @@ struct StrokeIntroCard: View {
     }
 }
 
+// Card showing stroke symptoms and signs
 struct StrokeSymptomsCard: View {
+    // Main container for symptoms content
     var body: some View {
         SymptomsCard(
             title: "Signs and Symptoms",
@@ -153,6 +164,7 @@ struct StrokeSymptomsCard: View {
     }
 }
 
+// Card component for each stroke step with instructions and completion tracking
 struct StrokeStepCard: View {
     let step: StrokeStep
     @Binding var completedSteps: Set<String>
@@ -162,10 +174,12 @@ struct StrokeStepCard: View {
         text.contains("999") || text.contains("112")
     }
     
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -177,6 +191,7 @@ struct StrokeStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -188,7 +203,7 @@ struct StrokeStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -198,10 +213,11 @@ struct StrokeStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
+                        // Special handling for CPR instruction
                         if instruction.contains("start CPR") {
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
@@ -223,6 +239,7 @@ struct StrokeStepCard: View {
                                 Spacer()
                             }
                         } else {
+                            // Standard checkbox row for instructions
                             CheckboxRow(
                                 text: instruction,
                                 isChecked: completedSteps.contains(instruction),
@@ -236,6 +253,7 @@ struct StrokeStepCard: View {
                             )
                         }
                         
+                        // Show emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
@@ -245,7 +263,7 @@ struct StrokeStepCard: View {
                 }
             }
             
-            // Warning note
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
                     HStack(alignment: .top, spacing: 8) {
@@ -271,6 +289,7 @@ struct StrokeStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -282,6 +301,7 @@ struct StrokeStepCard: View {
                 .stroke(Color.red.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for CPR guidance if needed
         .sheet(isPresented: $showingCPR) {
             CPRGuidanceView()
                 .presentationDragIndicator(.visible)
