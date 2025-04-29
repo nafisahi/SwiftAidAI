@@ -13,9 +13,48 @@ class HealthManager {
     private var stepCountObserver: HKObserverQuery?
     private var heartRateTimer: Timer?
     
+    // Callback for heart rate updates
+    var onHeartRateUpdate: ((Double) -> Void)?
+    
+    // Reference to AlertViewModel for checking autoAlertEnabled
+    weak var alertViewModel: AlertViewModel?
+    
+    // Thresholds for heart rate alerts
+    let highHeartRateThreshold: Double = 100
+    let lowHeartRateThreshold: Double = 50
+    
+    // Notification cooldown management
+    private var lastNotificationTime: Date?
+    private let notificationCooldown: TimeInterval = 300 // 5 minutes cooldown
+    
+    init(alertViewModel: AlertViewModel) {
+        self.alertViewModel = alertViewModel
+    }
+    
     // Clean up resources when the manager is deallocated
     deinit {
         stopObserving()
+    }
+    
+    // Check if enough time has passed since the last notification
+    private func canSendNotification() -> Bool {
+        guard let lastTime = lastNotificationTime else { return true }
+        return Date().timeIntervalSince(lastTime) >= notificationCooldown
+    }
+    
+    // Check if notifications are enabled
+    private func shouldSendNotifications() -> Bool {
+        return alertViewModel?.autoAlertEnabled == true
+    }
+    
+    // Check heart rate status
+    private func checkHeartRateStatus(_ bpm: Double) -> HeartRateStatus {
+        if bpm > highHeartRateThreshold {
+            return .high(bpm)
+        } else if bpm < lowHeartRateThreshold {
+            return .low(bpm)
+        }
+        return .normal(bpm)
     }
     
     // Request user authorization to access health data
@@ -38,7 +77,11 @@ class HealthManager {
         // Heart Rate Observer - triggers when new heart rate data is available
         let heartRateObserver = HKObserverQuery(sampleType: heartRateType, predicate: nil) { [weak self] _, _, error in
             if error == nil {
-                self?.fetchLatestHeartRate { _ in }
+                self?.fetchLatestHeartRate { bpm in
+                    if let bpm = bpm {
+                        self?.onHeartRateUpdate?(bpm)
+                    }
+                }
             }
         }
         healthStore.execute(heartRateObserver)
@@ -59,7 +102,11 @@ class HealthManager {
         
         // Backup timer for heart rate updates in case observer fails
         heartRateTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            self?.fetchLatestHeartRate { _ in }
+            self?.fetchLatestHeartRate { bpm in
+                if let bpm = bpm {
+                    self?.onHeartRateUpdate?(bpm)
+                }
+            }
         }
     }
     
@@ -86,7 +133,7 @@ class HealthManager {
         let query = HKSampleQuery(sampleType: heartRateType, 
                                 predicate: predicate,
                                 limit: 1,
-                                sortDescriptors: [sort]) { _, samples, error in
+                                sortDescriptors: [sort]) { [weak self] _, samples, error in
             DispatchQueue.main.async {
                 if error != nil {
                     completion(nil)
@@ -99,6 +146,21 @@ class HealthManager {
                 }
                 
                 let bpm = sample.quantity.doubleValue(for: .init(from: "count/min"))
+                
+                // Check heart rate status and send notification if needed
+                if self?.shouldSendNotifications() == true && self?.canSendNotification() == true {
+                    switch self?.checkHeartRateStatus(bpm) {
+                    case .high:
+                        NotificationManager.shared.sendHighHeartRateNotification(current: bpm)
+                        self?.lastNotificationTime = Date()
+                    case .low:
+                        NotificationManager.shared.sendLowHeartRateNotification(current: bpm)
+                        self?.lastNotificationTime = Date()
+                    default:
+                        break
+                    }
+                }
+                
                 completion(bpm)
             }
         }
@@ -125,4 +187,10 @@ class HealthManager {
         }
         healthStore.execute(query)
     }
+}
+
+enum HeartRateStatus {
+    case normal(Double)
+    case high(Double)
+    case low(Double)
 } 

@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Contacts
+import UserNotifications
 
 // Stores health data like heart rate and steps
 struct HealthMetrics {
@@ -17,7 +18,13 @@ class AlertViewModel: ObservableObject {
     @Published var alertStatus = AlertStatus(isLocationShared: false, contactsNotified: 0)
     
     // Settings for automatic alerts
-    @Published var autoAlertEnabled = false
+    @Published var autoAlertEnabled = false {
+        didSet {
+            if autoAlertEnabled {
+                NotificationManager.shared.requestPermission()
+            }
+        }
+    }
     
     // UI state flags
     @Published var showingAlertConfirmation = false
@@ -40,17 +47,32 @@ class AlertViewModel: ObservableObject {
     let maxContacts = 3
     
     // Services for health data and contact management
-    private let healthManager = HealthManager()
+    private lazy var healthManager: HealthManager = {
+        let manager = HealthManager(alertViewModel: self)
+        return manager
+    }()
     private let contactService = EmergencyContactService()
     
     // Load saved contacts when view model is created
     init() {
         loadContacts()
+        setupHealthMonitoring()
+        setupNotificationHandling()
     }
     
     // Clean up when view model is destroyed
     deinit {
         healthManager.stopObserving()
+    }
+    
+    // Set up health monitoring and callbacks
+    private func setupHealthMonitoring() {
+        healthManager.onHeartRateUpdate = { [weak self] bpm in
+            DispatchQueue.main.async {
+                self?.healthMetrics.heartRate = bpm
+            }
+        }
+        requestHealthData()
     }
     
     // Request access to health data
@@ -162,5 +184,28 @@ class AlertViewModel: ObservableObject {
                 self?.emergencyContacts = contacts
             }
         }
+    }
+    
+    // Set up notification handling
+    private func setupNotificationHandling() {
+        UNUserNotificationCenter.current().delegate = NotificationDelegate.shared
+        NotificationDelegate.shared.onEmergencyAlert = { [weak self] in
+            self?.sendEmergencyAlert()
+        }
+    }
+}
+
+// Notification delegate to handle notification actions
+class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    static let shared = NotificationDelegate()
+    var onEmergencyAlert: (() -> Void)?
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                              didReceive response: UNNotificationResponse,
+                              withCompletionHandler completionHandler: @escaping () -> Void) {
+        if response.actionIdentifier == "SEND_EMERGENCY_ALERT" {
+            onEmergencyAlert?()
+        }
+        completionHandler()
     }
 } 
