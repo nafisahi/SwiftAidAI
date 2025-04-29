@@ -5,14 +5,17 @@ import FirebaseFirestore
 import GoogleSignIn
 import GoogleSignInSwift
 
+// Main authentication view model for handling user authentication and management
 @MainActor
 class AuthViewModel: ObservableObject {
+    // Published properties for managing authentication state
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
     @Published var errorMessage: String = ""
     @Published var isVerificationRequired: Bool = false
     @Published var tempUser: FirebaseAuth.User?
     
+    // Initialize and check for existing session and verification status
     init() {
         self.userSession = Auth.auth().currentUser
         Task {
@@ -30,6 +33,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Sign in with email and password, initiate verification process
     func signIn(withEmail email: String, password: String) async throws {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
@@ -46,8 +50,10 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Verify the email verification code
     func verifyCode(_ code: String) async throws {
         if let tempUser = tempUser {
+            // Handle verification for existing users
             let doc = try await Firestore.firestore().collection("emailVerifications").document(tempUser.email ?? "").getDocument()
             
             guard let data = doc.data(),
@@ -72,6 +78,7 @@ class AuthViewModel: ObservableObject {
                 throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid verification code"])
             }
         } else {
+            // Handle verification for new users
             let tempUsers = try await Firestore.firestore().collection("tempUsers").getDocuments()
             guard let email = tempUsers.documents.last?.documentID else {
                 throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No pending verification found"])
@@ -94,6 +101,7 @@ class AuthViewModel: ObservableObject {
                     throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user data"])
                 }
                 
+                // Create new user account
                 let result = try await Auth.auth().createUser(withEmail: email, password: password)
                 self.userSession = result.user
                 
@@ -108,6 +116,7 @@ class AuthViewModel: ObservableObject {
                 let encodedUser = try Firestore.Encoder().encode(user)
                 try await Firestore.firestore().collection("users").document(user.id).setData(encodedUser)
                 
+                // Clean up temporary data
                 try await Firestore.firestore().collection("tempUsers").document(email).delete()
                 try await Firestore.firestore().collection("emailVerifications").document(email).delete()
                 
@@ -121,6 +130,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Create a new user account with email verification
     func createUser(withEmail email: String, password: String, fullname: String) async throws {
         do {
             let tempUserData: [String: Any] = [
@@ -146,6 +156,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Sign out the current user
     func signOut() {
         do {
             try Auth.auth().signOut()
@@ -157,6 +168,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Delete the current user's account and associated data
     func deleteAccount() async throws {
         guard let user = Auth.auth().currentUser else { return }
         
@@ -178,6 +190,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Fetch current user data from Firestore
     func fetchUser() async {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
@@ -188,6 +201,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // Send password reset email
     func resetPassword(withEmail email: String) async throws {
         do {
             try await Auth.auth().sendPasswordReset(withEmail: email)
@@ -196,11 +210,14 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    // Helper functions for verification code
+    // MARK: - Verification Code Helpers
+    
+    // Generate a 6-digit verification code
     public func generateVerificationCode() -> String {
         return String(format: "%06d", Int.random(in: 0...999999))
     }
     
+    // Store verification code in Firestore with expiration
     public func storeVerificationCode(email: String, code: String) async throws {
         let expiry = Date().addingTimeInterval(600) // 10 mins
         try await Firestore.firestore().collection("emailVerifications").document(email).setData([
@@ -209,6 +226,7 @@ class AuthViewModel: ObservableObject {
         ])
     }
     
+    // Send verification code via Brevo (Sendinblue) email service
     public func sendVerificationCodeWithBrevo(to email: String, code: String) {
         guard let url = URL(string: "https://api.brevo.com/v3/smtp/email") else { return }
         
@@ -239,6 +257,7 @@ class AuthViewModel: ObservableObject {
         URLSession.shared.dataTask(with: request) { _, _, _ in }.resume()
     }
     
+    // Sign in with Google account
     func signInWithGoogle() async throws {
         // 1. Get client ID from Firebase config
         guard let clientID = FirebaseApp.app()?.options.clientID else {

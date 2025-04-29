@@ -7,7 +7,7 @@ struct HospitalLocation: Identifiable, Equatable {
     let name: String
     let coordinate: CLLocationCoordinate2D
     let mapItem: MKMapItem
-    
+    // Compares hospital locations by their unique IDs
     static func == (lhs: HospitalLocation, rhs: HospitalLocation) -> Bool {
         lhs.id == rhs.id
     }

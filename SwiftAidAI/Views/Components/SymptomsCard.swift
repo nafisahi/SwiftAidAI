@@ -1,6 +1,8 @@
 import SwiftUI
 
+// A card component for displaying symptoms of a medical condition
 struct SymptomsCard: View {
+    // Card properties
     let title: String
     let symptoms: [String]
     let accentColor: Color
@@ -8,7 +10,7 @@ struct SymptomsCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Title with warning icon
+            // Title section with warning icon
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.title2)
@@ -19,11 +21,11 @@ struct SymptomsCard: View {
                     .bold()
             }
             
-            // Symptoms list
+            // List of symptoms with bullet points
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(symptoms, id: \.self) { symptom in
                     HStack(alignment: .top, spacing: 12) {
-                        // Bullet point
+                        // Custom bullet point
                         Circle()
                             .fill(accentColor)
                             .frame(width: 6, height: 6)
@@ -36,7 +38,7 @@ struct SymptomsCard: View {
                 }
             }
             
-            // Warning note if present
+            // Optional warning note at the bottom
             if let warning = warningNote {
                 Text(warning)
                     .font(.subheadline)

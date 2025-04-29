@@ -7,7 +7,7 @@ struct ChatMessage: Identifiable, Codable {
     let isUser: Bool    // True if sent by user, false if AI
     let timestamp: Date // When message was created
 
-    /// Initializes a new chat message
+    // Initialises a new chat message
     init(id: String = UUID().uuidString, text: String, isUser: Bool, timestamp: Date = Date()) {
         self.id = id
         self.text = text

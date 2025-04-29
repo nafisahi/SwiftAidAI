@@ -1,33 +1,41 @@
 import SwiftUI
 
+// Main login view that handles user authentication
 struct LoginView: View {
+    // User input fields
     @State private var email: String = ""
     @State private var password: String = ""
     
-    // Validation states
+    // Form validation states
     @State private var emailError: String = ""
     @State private var passwordError: String = ""
     @State private var isFormValid: Bool = false
     
-    // State to track login status
+    // Login status tracking
     @State private var isLoggedIn: Bool = false
     
+    // Authentication view model
     @EnvironmentObject var authViewModel: AuthViewModel
     
+    // Error handling states
     @State private var showLoginError = false
     @State private var loginErrorMessage = ""
     @State private var showVerificationView = false
     
+    // Password reset states
     @State private var showForgotPasswordSheet = false
     @State private var resetEmailSent = false
     @State private var resetEmail: String = ""
     @State private var resetEmailError: String = ""
     
+    // Main view body
     var body: some View {
         NavigationStack {
             ZStack {
+                // Background gradient
                 backgroundGradient
                 
+                // Main content container
                 VStack(spacing: 25) {
                     logoSection
                     loginFormSection
@@ -50,8 +58,7 @@ struct LoginView: View {
         }
     }
     
-    // MARK: - View Components
-    
+    // Background gradient view
     private var backgroundGradient: some View {
         LinearGradient(gradient: Gradient(colors: [Color.teal.opacity(0.3), Color.white]),
                       startPoint: .top,
@@ -59,6 +66,7 @@ struct LoginView: View {
             .ignoresSafeArea()
     }
     
+    // App logo section
     private var logoSection: some View {
         Image("namelogo")
             .resizable()
@@ -67,6 +75,7 @@ struct LoginView: View {
             .padding(.bottom, 5)
     }
     
+    // Login form fields container
     private var loginFormSection: some View {
         VStack(spacing: 20) {
             emailField
@@ -74,6 +83,7 @@ struct LoginView: View {
         }
     }
     
+    // Email input field with validation
     private var emailField: some View {
         VStack(alignment: .leading, spacing: 4) {
             TextField("Email", text: $email)
@@ -95,6 +105,7 @@ struct LoginView: View {
         .padding(.horizontal)
     }
     
+    // Password input field with validation
     private var passwordField: some View {
         VStack(alignment: .leading, spacing: 4) {
             SecureField("Password", text: $password)
@@ -114,6 +125,7 @@ struct LoginView: View {
         .padding(.horizontal)
     }
     
+    // Forgot password section with reset functionality
     private var forgotPasswordSection: some View {
         HStack {
             Spacer()
@@ -138,6 +150,7 @@ struct LoginView: View {
         }
     }
     
+    // Container for all action buttons
     private var buttonsSection: some View {
         VStack(spacing: 15) {
             loginButton
@@ -146,6 +159,7 @@ struct LoginView: View {
         }
     }
     
+    // Main login button with validation
     private var loginButton: some View {
         Button(action: {
             Task {
@@ -178,6 +192,7 @@ struct LoginView: View {
         }
     }
     
+    // Google sign-in button
     private var googleSignInButton: some View {
         Button(action: {
             Task {
@@ -211,6 +226,7 @@ struct LoginView: View {
         .padding(.horizontal)
     }
     
+    // Navigation link to sign up view
     private var signUpLink: some View {
         NavigationLink(destination: SignUpView()) {
             Text("Don't have an account? ")
@@ -223,8 +239,7 @@ struct LoginView: View {
         }
     }
     
-    // MARK: - Validation Functions
-    
+    // Email validation function
     private func validateEmail() {
         let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
         let emailPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
@@ -240,6 +255,7 @@ struct LoginView: View {
         validateForm()
     }
     
+    // Password validation function
     private func validatePassword() {
         if password.isEmpty {
             passwordError = "Please enter your password"
@@ -252,13 +268,13 @@ struct LoginView: View {
         validateForm()
     }
     
+    // Overall form validation function
     private func validateForm() {
         isFormValid = emailError.isEmpty && passwordError.isEmpty && !email.isEmpty && !password.isEmpty
     }
 }
 
-// MARK: - Supporting Views
-
+// Forgot password sheet view
 struct ForgotPasswordSheet: View {
     @Binding var resetEmail: String
     @Binding var resetEmailError: String
@@ -298,6 +314,7 @@ struct ForgotPasswordSheet: View {
         }
     }
     
+    // Email input field for password reset
     private var resetEmailField: some View {
         VStack(alignment: .leading, spacing: 4) {
             TextField("Email", text: $resetEmail)
@@ -319,6 +336,7 @@ struct ForgotPasswordSheet: View {
         .padding(.horizontal)
     }
     
+    // Reset password button
     private var resetButton: some View {
         Button(action: {
             Task {
@@ -341,6 +359,7 @@ struct ForgotPasswordSheet: View {
         .padding(.horizontal)
     }
     
+    // Success message after reset email is sent
     private var successMessage: some View {
         Group {
             if resetEmailSent {

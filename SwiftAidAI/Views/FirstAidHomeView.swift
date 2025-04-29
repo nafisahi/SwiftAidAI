@@ -2,13 +2,14 @@ import SwiftUI
 import Network
 import UserNotifications
 
+// Main view for the First Aid application that handles tab-based navigation
 struct FirstAidHomeView: View {
     @State private var selectedTab = 0
     @State private var showingNotificationPermission = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            // First Aid Tab
+            // First Aid Tab - Main home screen with emergency categories
             NavigationStack {
                 HomeContentView()
             }
@@ -18,7 +19,7 @@ struct FirstAidHomeView: View {
             .tag(0)
             .tint(.teal)
             
-            // Symptoms Tab
+            // Symptoms Tab - AI-powered symptom checker
             SymptomCheckerTabView(selectedTab: $selectedTab)
                 .tabItem {
                     Label("Symptoms", systemImage: "stethoscope")
@@ -26,7 +27,7 @@ struct FirstAidHomeView: View {
                 .tag(1)
                 .tint(.teal)
             
-            // Alert Tab
+            // Alert Tab - Emergency alerts and notifications
             AlertView()
                 .tabItem {
                     Label("Alert", systemImage: "bell.fill")
@@ -35,20 +36,17 @@ struct FirstAidHomeView: View {
                 .tint(.teal)
         }
         .onAppear {
-            // Set tab bar appearance
+            // Configure tab bar appearance with teal accent color
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
             appearance.backgroundColor = .systemBackground
             
-            // Set the selected item color to teal
             appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.teal)
             appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor(Color.teal)]
             
-            // Use this appearance for both normal and scrolling
             UITabBar.appearance().standardAppearance = appearance
             UITabBar.appearance().scrollEdgeAppearance = appearance
             
-            // Request notification permissions
             requestNotificationPermissions()
         }
         .alert("Enable Notifications", isPresented: $showingNotificationPermission) {
@@ -63,6 +61,7 @@ struct FirstAidHomeView: View {
         }
     }
     
+    // Request user permission for sending notifications
     private func requestNotificationPermissions() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -82,21 +81,23 @@ struct FirstAidHomeView: View {
     }
 }
 
+// Main content view for the First Aid tab, displaying emergency categories and search functionality
 struct HomeContentView: View {
     @State private var searchText = ""
     @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var showingProfile = false
     
-    // Grid layout
+    // Two-column grid layout for emergency topics
     let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
     
-    // All first aid topics with their subtopics
+    // Comprehensive list of first aid topics with their subtopics and search keywords
     let allFirstAidTopics: [FirstAidTopic] = [
         // Critical Emergencies
         FirstAidTopic(
+            id: UUID(),
             category: .critical,
             title: "Critical Emergencies",
             subtitle: "Life-threatening situations",
@@ -128,6 +129,7 @@ struct HomeContentView: View {
         
         // Bleeding & Wounds
         FirstAidTopic(
+            id: UUID(),
             category: .wounds,
             title: "Bleeding & Wounds",
             subtitle: "Cuts, wounds, and severe bleeding",
@@ -149,6 +151,7 @@ struct HomeContentView: View {
         
         // Burns & Scalds
         FirstAidTopic(
+            id: UUID(),
             category: .burns,
             title: "Burns & Scalds",
             subtitle: "Thermal, chemical, and electrical burns",
@@ -170,6 +173,7 @@ struct HomeContentView: View {
         
         // Bone & Joint Injuries
         FirstAidTopic(
+            id: UUID(),
             category: .bones,
             title: "Bone & Joint Injuries",
             subtitle: "Fractures, sprains, and strains",
@@ -191,6 +195,7 @@ struct HomeContentView: View {
         
         // Breathing Issues
         FirstAidTopic(
+            id: UUID(),
             category: .breathing,
             title: "Breathing Issues",
             subtitle: "Respiratory emergencies",
@@ -208,6 +213,7 @@ struct HomeContentView: View {
         
         // Head & Brain
         FirstAidTopic(
+            id: UUID(),
             category: .head,
             title: "Head & Brain",
             subtitle: "Concussion and head injuries",
@@ -227,6 +233,7 @@ struct HomeContentView: View {
         
         // Medical & Poisoning
         FirstAidTopic(
+            id: UUID(),
             category: .medical,
             title: "Medical & Poisoning",
             subtitle: "Conditions and toxic exposure",
@@ -246,6 +253,7 @@ struct HomeContentView: View {
         
         // Environmental
         FirstAidTopic(
+            id: UUID(),
             category: .environmental,
             title: "Environmental",
             subtitle: "Heat, cold, and natural hazards",
@@ -262,6 +270,7 @@ struct HomeContentView: View {
         )
     ]
     
+    // Search result model for displaying filtered topics and subtopics
     struct SearchResult: Identifiable {
         let id = UUID()
         let mainTopic: FirstAidTopic
@@ -273,6 +282,7 @@ struct HomeContentView: View {
         let isSubtopic: Bool
     }
     
+    // Computed property that filters topics based on search text
     var searchResults: [SearchResult] {
         if searchText.isEmpty {
             return allFirstAidTopics.map { topic in
@@ -292,7 +302,7 @@ struct HomeContentView: View {
         let searchTerms = searchText.lowercased().split(separator: " ")
         
         for topic in allFirstAidTopics {
-            // Check if main topic matches
+            // Match main topics
             let matchesMainTopic = topic.title.lowercased().contains(searchText.lowercased()) ||
                                  topic.subtitle.lowercased().contains(searchText.lowercased())
             
@@ -308,7 +318,7 @@ struct HomeContentView: View {
                 ))
             }
             
-            // Check subtopics and their keywords
+            // Match subtopics and their keywords
             for (subtopic, keywords) in topic.subtopicKeywords {
                 let matchesSubtopic = subtopic.lowercased().contains(searchText.lowercased()) ||
                                     searchTerms.allSatisfy { term in
@@ -341,7 +351,7 @@ struct HomeContentView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Top navigation area with blur effect
+                // Header with profile button and offline mode banner
                 VStack(spacing: 0) {
                     HStack {
                         Button {
@@ -366,7 +376,7 @@ struct HomeContentView: View {
                         ProfileView()
                     }
                     
-                    // Offline Mode Banner
+                    // Display offline mode banner when no internet connection
                     if !networkMonitor.isConnected {
                         HStack(spacing: 8) {
                             Image(systemName: "wifi.slash")
@@ -395,7 +405,7 @@ struct HomeContentView: View {
                 
                 ScrollView {
                     VStack(spacing: 20) {
-                        // Search Bar
+                        // Search bar with clear button
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundColor(.gray)
@@ -417,20 +427,22 @@ struct HomeContentView: View {
                         .padding(.horizontal)
                         .padding(.top, 16)
                         
-                        // Topics Grid
+                        // Grid of topics or search results
                         LazyVGrid(columns: columns, spacing: 16) {
                             ForEach(searchResults) { result in
                                 NavigationLink(destination: destinationView(for: result)) {
                                     if result.isSubtopic {
                                         SubtopicCard(result: result)
                                     } else {
-                                        EmergencyTopicCard(topic: EmergencyTopic(
-                                            id: 1,
+                                        TopicCard(topic: FirstAidTopic(
+                                            id: UUID(),
+                                            category: result.category,
                                             title: result.title,
                                             subtitle: result.subtitle,
                                             icon: result.icon,
                                             color: result.color,
-                                            category: result.category
+                                            subtopics: [],
+                                            subtopicKeywords: [:]
                                         ))
                                     }
                                 }
@@ -444,11 +456,11 @@ struct HomeContentView: View {
         }
     }
     
+    // Navigate to appropriate view based on selected topic or subtopic
     private func destinationView(for result: SearchResult) -> some View {
         if result.isSubtopic {
-            // Direct navigation to specific guidance views for subtopics
+            // Return specific guidance view based on subtopic
             switch result.title {
-            // Critical Emergencies subtopics
             case "Primary Survey (DR ABC)":
                 return AnyView(PrimarySurveyDetailView())
             case "Unresponsive and Not Breathing (CPR)":
@@ -468,7 +480,6 @@ struct HomeContentView: View {
             case "Anaphylaxis":
                 return AnyView(AnaphylaxisGuidanceView())
                 
-            // Bleeding & Wounds subtopics
             case "Minor Cuts and Grazes":
                 return AnyView(CutsAndGrazesGuidanceView())
             case "Nosebleeds":
@@ -476,7 +487,6 @@ struct HomeContentView: View {
             case "Blisters":
                 return AnyView(BlisterGuidanceView())
                 
-            // Burns & Scalds subtopics
             case "Chemical Burns":
                 return AnyView(ChemicalBurnsGuidanceView())
             case "Severe Burns":
@@ -486,19 +496,16 @@ struct HomeContentView: View {
             case "Sunburn":
                 return AnyView(SunburnGuidanceView())
                 
-            // Bone & Joint Injuries subtopics
             case "Broken Bones":
                 return AnyView(BrokenBonesGuidanceView())
             case "Sprains":
                 return AnyView(SprainsGuidanceView())
                 
-            // Breathing Issues subtopics
             case "Asthma Attacks":
                 return AnyView(AsthmaGuidanceView())
             case "Hyperventilation":
                 return AnyView(HyperventilationGuidanceView())
                 
-            // Medical & Poisoning subtopics
             case "Diabetic Emergencies":
                 return AnyView(DiabeticEmergencyView())
             case "Food Poisoning":
@@ -506,7 +513,6 @@ struct HomeContentView: View {
             case "Alcohol Poisoning":
                 return AnyView(AlcoholPoisoningView())
                 
-            // Environmental subtopics
             case "Heatstroke":
                 return AnyView(HeatstrokeGuidanceView())
             case "Hypothermia":
@@ -516,11 +522,12 @@ struct HomeContentView: View {
                 return AnyView(destinationView(for: result.mainTopic))
             }
         } else {
-            // For main topics, show the category view
+            // Return category view for main topics
             return AnyView(destinationView(for: result.mainTopic))
         }
     }
     
+    // Navigate to appropriate category view
     private func destinationView(for topic: FirstAidTopic) -> some View {
         Group {
             switch topic.category {
@@ -545,6 +552,7 @@ struct HomeContentView: View {
     }
 }
 
+// Card view for displaying subtopics
 struct SubtopicCard: View {
     let result: HomeContentView.SearchResult
     
@@ -606,9 +614,9 @@ struct SubtopicCard: View {
     }
 }
 
-// First Aid Topic with subtopics
+// Data model for first aid topics
 struct FirstAidTopic: Identifiable {
-    let id = UUID()
+    let id: UUID
     let category: EmergencyCategory
     let title: String
     let subtitle: String
@@ -618,9 +626,9 @@ struct FirstAidTopic: Identifiable {
     let subtopicKeywords: [String: [String]]
 }
 
-// Emergency Card Component
-struct EmergencyTopicCard: View {
-    let topic: EmergencyTopic
+// Card view for displaying main topics
+struct TopicCard: View {
+    let topic: FirstAidTopic
     
     var body: some View {
         let screenWidth = UIScreen.main.bounds.width
@@ -680,64 +688,7 @@ struct EmergencyTopicCard: View {
     }
 }
 
-// Custom Tab Bar
-struct CustomTabBar: View {
-    @Binding var selectedTab: Int
-    
-    var body: some View {
-        HStack {
-            ForEach(0..<3) { index in // Changed from 4 to 3 tabs
-                Spacer()
-                Button(action: { selectedTab = index }) {
-                    VStack {
-                        Image(systemName: tabIcon(for: index))
-                            .font(.system(size: 22))
-                        Text(tabTitle(for: index))
-                            .font(.caption)
-                    }
-                    .foregroundColor(selectedTab == index ? .teal : .gray)
-                }
-                .frame(height: 50)
-                Spacer()
-            }
-        }
-        .background(
-            Color(.systemBackground)
-                .shadow(color: .black.opacity(0.1), radius: 5, y: -5)
-                .ignoresSafeArea(edges: .bottom)
-        )
-    }
-    
-    private func tabIcon(for index: Int) -> String {
-        switch index {
-        case 0: return "cross.case.fill"
-        case 1: return "stethoscope"
-        case 2: return "bell.fill"
-        default: return ""
-        }
-    }
-    
-    private func tabTitle(for index: Int) -> String {
-        switch index {
-        case 0: return "First Aid"
-        case 1: return "Symptoms"
-        case 2: return "Alert"
-        default: return ""
-        }
-    }
-}
-
-// Data Model
-struct EmergencyTopic: Identifiable {
-    let id: Int
-    let title: String
-    let subtitle: String
-    let icon: String
-    let color: Color
-    let category: EmergencyCategory
-}
-
-// Add categories enum
+// Categories for organizing first aid topics
 enum EmergencyCategory {
     case critical
     case wounds
@@ -749,17 +700,7 @@ enum EmergencyCategory {
     case environmental
 }
 
-// Placeholder for Emergency Detail View
-struct EmergencyDetailView: View {
-    let topic: EmergencyTopic
-    
-    var body: some View {
-        Text("Detail view for \(topic.title)")
-            .navigationTitle(topic.title)
-    }
-}
-
-// Add NetworkMonitor class
+// Network connectivity monitor
 class NetworkMonitor: ObservableObject {
     static let shared = NetworkMonitor()
     @Published private(set) var isConnected = true
@@ -780,10 +721,12 @@ class NetworkMonitor: ObservableObject {
     }
 }
 
+// Preview provider
 #Preview {
     FirstAidHomeView()
 }
 
+// View for the Symptom Checker tab
 struct SymptomCheckerTabView: View {
     @State private var showingSymptomChecker = false
     @Binding var selectedTab: Int
@@ -792,7 +735,7 @@ struct SymptomCheckerTabView: View {
     var body: some View {
         Group {
             if networkMonitor.isConnected {
-                // Keep a clear background but immediately show sheet when connected
+                // Show symptom checker when connected
                 Color.clear
                     .sheet(isPresented: $showingSymptomChecker) {
                         SymptomCheckerView()
@@ -806,7 +749,7 @@ struct SymptomCheckerTabView: View {
                             }
                     }
             } else {
-                // Offline message
+                // Show offline message when not connected
                 VStack(spacing: 20) {
                     Image(systemName: "wifi.slash")
                         .font(.system(size: 60))
@@ -826,19 +769,17 @@ struct SymptomCheckerTabView: View {
                 .background(Color(.systemBackground))
             }
         }
-        // Handle tab selection
+        // Handle tab selection and network state changes
         .onChange(of: selectedTab) { oldValue, newValue in
             if newValue == 1 && networkMonitor.isConnected {
                 showingSymptomChecker = true
             }
         }
-        // Handle network state changes
         .onChange(of: networkMonitor.isConnected) { wasConnected, isConnected in
             if isConnected && selectedTab == 1 {
                 showingSymptomChecker = true
             }
         }
-        // Ensure sheet is shown when view appears if we're on the symptoms tab and connected
         .onAppear {
             if selectedTab == 1 && networkMonitor.isConnected {
                 showingSymptomChecker = true

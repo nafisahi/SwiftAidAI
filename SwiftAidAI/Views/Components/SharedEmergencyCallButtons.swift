@@ -1,13 +1,15 @@
 import SwiftUI
 
+// A component that displays emergency call buttons for 999 and 112
 struct SharedEmergencyCallButtons: View {
+    // State variables for managing the call alert
     @State private var showingCallAlert = false
     @State private var selectedNumber = ""
     @State private var alertMessage = ""
     
     var body: some View {
         HStack(spacing: 20) {
-            // 999 Button
+            // 999 emergency button
             SharedEmergencyCallButton(
                 number: "999",
                 icon: "phone.fill",
@@ -17,7 +19,7 @@ struct SharedEmergencyCallButtons: View {
                 alertMessage: $alertMessage
             )
             
-            // 112 Button
+            // 112 emergency button
             SharedEmergencyCallButton(
                 number: "112",
                 icon: "phone.fill",
@@ -30,6 +32,7 @@ struct SharedEmergencyCallButtons: View {
         .padding(.horizontal)
         .padding(.vertical, 8)
         .background(.clear)
+        // Alert dialog for confirming emergency calls
         .alert("Emergency Call", isPresented: $showingCallAlert) {
             Button("Call \(selectedNumber)", role: .destructive) {
                 if let url = URL(string: "tel://\(selectedNumber)") {
@@ -43,7 +46,9 @@ struct SharedEmergencyCallButtons: View {
     }
 }
 
+// Private component for individual emergency call buttons
 private struct SharedEmergencyCallButton: View {
+    // Button properties
     let number: String
     let icon: String
     let color: Color
@@ -53,6 +58,7 @@ private struct SharedEmergencyCallButton: View {
     
     var body: some View {
         Button(action: {
+            // Set up alert when button is tapped
             selectedNumber = number
             alertMessage = "Are you sure you want to call \(number)?"
             showingAlert = true

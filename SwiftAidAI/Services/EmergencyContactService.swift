@@ -11,11 +11,8 @@ class EmergencyContactService: ObservableObject {
     func saveContacts(_ contacts: [EmergencyContact]) {
         // Ensure the user is authenticated
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("No authenticated user found")
             return
         }
-        
-        print("👤 Saving contacts for user: \(userId)")
         
         // Map contacts to a dictionary format for Firestore
         let contactsData = contacts.map { contact -> [String: Any] in
@@ -42,9 +39,7 @@ class EmergencyContactService: ObservableObject {
         // Commit the batch write
         batch.commit { error in
             if let error = error {
-                print(" Error saving contacts: \(error.localizedDescription)")
-            } else {
-                print("Successfully saved contacts to Firebase")
+                // Handle error
             }
         }
     }
@@ -53,12 +48,9 @@ class EmergencyContactService: ObservableObject {
     func loadContacts(completion: @escaping ([EmergencyContact]) -> Void) {
         // Ensure the user is authenticated
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("No authenticated user found")
             completion([]) // Return empty array if not authenticated
             return
         }
-        
-        print("Loading contacts for user: \(userId)")
         
         // Fetch contacts document from Firestore
         db.collection("users")
@@ -67,7 +59,6 @@ class EmergencyContactService: ObservableObject {
             .document("contacts")
             .getDocument { snapshot, error in
                 if let error = error {
-                    print(" Error loading contacts: \(error.localizedDescription)")
                     completion([]) // Return empty array on error
                     return
                 }
@@ -75,7 +66,6 @@ class EmergencyContactService: ObservableObject {
                 // Check if contacts data exists
                 guard let data = snapshot?.data(),
                       let contactsData = data["contacts"] as? [[String: Any]] else {
-                    print("ℹNo contacts found for user")
                     completion([]) // Return empty array if no contacts
                     return
                 }
@@ -85,13 +75,11 @@ class EmergencyContactService: ObservableObject {
                     guard let name = contactData["name"] as? String,
                           let phoneNumber = contactData["phoneNumber"] as? String,
                           let isSelected = contactData["isSelected"] as? Bool else {
-                        print("Invalid contact data format")
                         return nil // Return nil for invalid data
                     }
                     return EmergencyContact(name: name, phoneNumber: phoneNumber, isSelected: isSelected)
                 }
                 
-                print("Successfully loaded \(contacts.count) contacts")
                 completion(contacts) // Return the loaded contacts
             }
     }

@@ -53,8 +53,8 @@ class LocationViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         case .restricted, .denied:
+            break
             // Handle denied case - could show an alert here
-            print("Location access denied")
         case .authorizedWhenInUse, .authorizedAlways:
             locationManager.requestLocation()
         @unknown default:
@@ -62,7 +62,7 @@ class LocationViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
 
-    // MARK: - CLLocationManagerDelegate
+   
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.first else { return }
 
@@ -96,7 +96,6 @@ class LocationViewModel: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     // Handles location errors
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location error: \(error.localizedDescription)")
     }
     
     // Updates authorization status and requests location if authorized

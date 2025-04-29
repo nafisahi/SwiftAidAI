@@ -1,21 +1,29 @@
 import SwiftUI
 
+// View for email verification code input and validation
 struct VerificationCodeView: View {
+    // Verification code input fields
     @State private var verificationCode: [String] = Array(repeating: "", count: 6)
     @State private var isCodeValid: Bool = false
     @State private var showError: Bool = false
     @State private var errorMessage: String = ""
+    
+    // Timer states for resend functionality
     @State private var timer: Timer?
     @State private var timeRemaining: Int = 60
     @State private var isResendEnabled: Bool = false
+    
+    // View state management
     @State private var showView: Bool = false
     @State private var showBackAlert: Bool = false
     @State private var isResending: Bool = false
     
+    // Properties passed from parent view
     let email: String
     let onVerificationComplete: () -> Void
     @Environment(\.dismiss) private var dismiss
     
+    // Authentication view model
     @EnvironmentObject var authViewModel: AuthViewModel
     @FocusState private var focusedField: Int?
     
@@ -29,7 +37,7 @@ struct VerificationCodeView: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 25) {
-                    // Title and description
+                    // Header section with title and email display
                     VStack(spacing: 10) {
                         Text("Verify Your Email")
                             .font(.largeTitle)
@@ -48,7 +56,7 @@ struct VerificationCodeView: View {
                     }
                     .padding(.top, 40)
                     
-                    // Verification code input fields
+                    // Verification code input grid
                     HStack(spacing: 15) {
                         ForEach(0..<6, id: \.self) { index in
                             TextField("", text: $verificationCode[index])
@@ -89,7 +97,7 @@ struct VerificationCodeView: View {
                     }
                     .padding(.horizontal)
                     
-                    // Error message
+                    // Error message display
                     if showError {
                         Text(errorMessage)
                             .foregroundColor(.red)
@@ -98,7 +106,7 @@ struct VerificationCodeView: View {
                             .transition(.opacity)
                     }
                     
-                    // Timer and resend button
+                    // Resend code section with timer
                     HStack {
                         if !isResendEnabled {
                             Text("Resend code in: \(timeRemaining)s")
@@ -156,6 +164,7 @@ struct VerificationCodeView: View {
             }
             .navigationBarBackButtonHidden(true)
             .toolbar {
+                // Custom back button with confirmation alert
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
                         showBackAlert = true
@@ -198,11 +207,13 @@ struct VerificationCodeView: View {
         }
     }
     
+    // Validate the verification code format
     private func validateCode() {
         let code = verificationCode.joined()
         isCodeValid = code.count == 6 && code.allSatisfy { $0.isNumber }
     }
     
+    // Verify the entered code with the server
     private func verifyCode() {
         let code = verificationCode.joined()
         Task {
@@ -228,6 +239,7 @@ struct VerificationCodeView: View {
         }
     }
     
+    // Handle resending verification code
     private func resendCode() {
         isResending = true
         Task {
@@ -264,6 +276,7 @@ struct VerificationCodeView: View {
         }
     }
     
+    // Start the countdown timer for resend functionality
     private func startTimer() {
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in

@@ -1,23 +1,28 @@
 import SwiftUI
 import Foundation
 
+// Service class for interacting with Google's Gemini AI API
 class GeminiService: ObservableObject {
+    // API configuration
     private let apiKey: String
     private let baseURL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
     
+    // Published properties for UI state management
     @Published var isProcessing = false
     @Published var lastError: String?
     
+    // Initialize with API key from Info.plist or provided key
     init(apiKey: String? = nil) {
         self.apiKey = apiKey ?? Bundle.main.object(forInfoDictionaryKey: "GEMINI_API_KEY") as? String ?? ""
     }
     
+    // Main function to analyze symptoms and generate health advice
     func analyzeSymptoms(_ input: String, previousMessages: [ChatMessage] = []) async throws -> String {
         isProcessing = true
         lastError = nil
         defer { isProcessing = false }
         
-        // Build conversation history
+        // Build conversation history for context
         var conversationContext = ""
         if !previousMessages.isEmpty {
             conversationContext = previousMessages.map { message in
@@ -25,6 +30,7 @@ class GeminiService: ObservableObject {
             }.joined(separator: "\n") + "\n"
         }
         
+        // Construct the prompt with conversation context and guidelines
         let prompt = """
         You are a helpful, empathetic, and safety-conscious virtual health assistant. Respond directly and naturally to the user, avoiding any meta-references to "the user's statement" or similar phrases. Start your response immediately with a warm, natural greeting or acknowledgment.
 
@@ -52,6 +58,7 @@ class GeminiService: ObservableObject {
         Avoid repeating obvious things or going into too much detail — keep it light and helpful.
         """
         
+        // Configure API request parameters
         let requestBody: [String: Any] = [
             "contents": [
                 [
@@ -88,6 +95,7 @@ class GeminiService: ObservableObject {
             ]
         ]
         
+        // Create and configure URL request
         guard let url = URL(string: "\(baseURL)?key=\(apiKey)") else {
             throw GeminiError.badURL
         }
@@ -98,6 +106,7 @@ class GeminiService: ObservableObject {
         request.timeoutInterval = 15
         
         do {
+            // Send request and handle response
             let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
             request.httpBody = jsonData
             
@@ -107,6 +116,7 @@ class GeminiService: ObservableObject {
                 throw GeminiError.badServerResponse
             }
             
+            // Handle HTTP errors
             if httpResponse.statusCode != 200 {
                 if let errorResponse = try? JSONDecoder().decode(GeminiErrorResponse.self, from: data) {
                     throw GeminiError.apiError(message: errorResponse.error.message)
@@ -114,6 +124,7 @@ class GeminiService: ObservableObject {
                 throw GeminiError.httpError(statusCode: httpResponse.statusCode)
             }
             
+            // Decode and process successful response
             let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
             
             guard let firstCandidate = geminiResponse.candidates.first,
@@ -122,6 +133,7 @@ class GeminiService: ObservableObject {
                 throw GeminiError.noValidResponse
             }
             
+            // Format and clean up the response text
             return firstPart.text
                 .replacingOccurrences(of: "\\*", with: "•")
                 .replacingOccurrences(of: "**", with: "")
@@ -136,12 +148,15 @@ class GeminiService: ObservableObject {
     }
 }
 
-// Response models
+// MARK: - Response Models
+
+// Main response structure from Gemini API
 struct GeminiResponse: Codable {
     let candidates: [Candidate]
     let usageMetadata: UsageMetadata
 }
 
+// Individual response candidate
 struct Candidate: Codable {
     let content: Content
     let finishReason: String
@@ -149,24 +164,29 @@ struct Candidate: Codable {
     let avgLogprobs: Double?
 }
 
+// Content of a response
 struct Content: Codable {
     let parts: [Part]
     let role: String
 }
 
+// Individual part of content (text)
 struct Part: Codable {
     let text: String
 }
 
+// Citation metadata for responses
 struct CitationMetadata: Codable {
     let citationSources: [CitationSource]?
 }
 
+// Source of a citation
 struct CitationSource: Codable {
     let startIndex: Int
     let endIndex: Int
 }
 
+// Token usage metadata
 struct UsageMetadata: Codable {
     let promptTokenCount: Int
     let candidatesTokenCount: Int
@@ -175,11 +195,13 @@ struct UsageMetadata: Codable {
     let candidatesTokensDetails: [TokenDetails]
 }
 
+// Details about token usage
 struct TokenDetails: Codable {
     let modality: String
     let tokenCount: Int
 }
 
+// Error response structure
 struct GeminiErrorResponse: Codable {
     let error: GeminiError
     
@@ -190,6 +212,7 @@ struct GeminiErrorResponse: Codable {
     }
 }
 
+// Custom error types for Gemini service
 enum GeminiError: Error {
     case badURL
     case badServerResponse

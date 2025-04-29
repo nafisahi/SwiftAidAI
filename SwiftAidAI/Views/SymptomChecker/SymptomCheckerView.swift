@@ -1,10 +1,10 @@
 import SwiftUI
-
-
 import FirebaseFirestore 
 import FirebaseAuth 
 
+// Main view for symptom checking functionality
 struct SymptomCheckerView: View {
+    // State variables for managing user input and UI state
     @State private var symptomText = ""
     @State private var showingChat = false
     @State private var isLoading = false
@@ -21,6 +21,7 @@ struct SymptomCheckerView: View {
         _geminiService = StateObject(wrappedValue: GeminiService())
     }
     
+    // Predefined list of common symptoms for quick selection
     let commonSymptoms = [
         "Chest Pain",
         "Bleeding",
@@ -36,7 +37,7 @@ struct SymptomCheckerView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // Header Section
+                    // Header section with title and description
                     VStack(spacing: 12) {
                         Text("Symptom Checker")
                             .font(.system(size: 28, weight: .bold))
@@ -50,7 +51,7 @@ struct SymptomCheckerView: View {
                     }
                     .padding(.top)
                     
-                    // Symptom Input Field
+                    // Symptom input field with clear button
                     VStack(spacing: 8) {
                         HStack {
                             TextField("Describe symptoms...", text: $symptomText)
@@ -81,7 +82,7 @@ struct SymptomCheckerView: View {
                         .padding(.horizontal)
                     }
                     
-                    // Common Symptoms Chips
+                    // Horizontal scrollable list of common symptoms
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
                             ForEach(commonSymptoms, id: \.self) { symptom in
@@ -93,7 +94,7 @@ struct SymptomCheckerView: View {
                         .padding(.horizontal)
                     }
                     
-                    // Start AI Check Button
+                    // Main action button to start symptom analysis
                     Button(action: {
                         Task {
                             await analyzeSymptoms()
@@ -121,6 +122,7 @@ struct SymptomCheckerView: View {
                     .disabled(symptomText.isEmpty || isLoading)
                     .opacity(symptomText.isEmpty || isLoading ? 0.6 : 1)
                     
+                    // Error message display
                     if let error = errorMessage {
                         Text(error)
                             .foregroundColor(.red)
@@ -130,6 +132,7 @@ struct SymptomCheckerView: View {
                 }
             }
             .toolbar {
+                // History button in navigation bar
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { showingHistory.toggle() }) {
                         Image(systemName: "clock.arrow.circlepath")
@@ -137,18 +140,22 @@ struct SymptomCheckerView: View {
                     }
                 }
                 
+                // Close button in navigation bar
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Close") {
                         dismiss()
                     }
                 }
             }
+            // Present chat history sidebar
             .sheet(isPresented: $showingHistory) {
                 ChatHistorySidebarView(selectedConversationId: $conversationId)
             }
+            // Present full-screen chat view
             .fullScreenCover(isPresented: $showingChat) {
                 SymptomChatView(initialMessage: ChatMessage(text: symptomText, isUser: true))
             }
+            // Load existing messages when view appears
             .onAppear {
                 chatHistory.loadMessages(conversationId: conversationId) { loaded in
                     self.messages = loaded
@@ -157,6 +164,7 @@ struct SymptomCheckerView: View {
         }
     }
     
+    // Analyze symptoms using AI service
     private func analyzeSymptoms() async {
         guard networkMonitor.isConnected else {
             errorMessage = "Please check your internet connection to use the Symptom Checker."
@@ -167,7 +175,7 @@ struct SymptomCheckerView: View {
         errorMessage = nil
         
         do {
-            // Just check if we can get a response, don't save anything
+            // Test AI service connection before proceeding
             _ = try await geminiService.analyzeSymptoms(symptomText)
             showingChat = true
         } catch {
@@ -177,6 +185,7 @@ struct SymptomCheckerView: View {
         isLoading = false
     }
     
+    // Send message to AI and handle response
     private func sendMessage() {
         let userMessage = ChatMessage(text: symptomText, isUser: true)
         messages.append(userMessage)
@@ -201,6 +210,7 @@ struct SymptomCheckerView: View {
     }
 }
 
+// Reusable chip component for common symptoms
 struct SymptomChip: View {
     let text: String
     let action: () -> Void
@@ -224,10 +234,11 @@ struct SymptomChip: View {
     }
 }
 
+// Custom text editor that expands based on content
 struct ExpandingTextEditor: View {
     @Binding var text: String
     let placeholder: String
-    @State private var textHeight: CGFloat = 36  // Slightly smaller initial height
+    @State private var textHeight: CGFloat = 36
     
     var body: some View {
         GeometryReader { geometry in
@@ -240,7 +251,7 @@ struct ExpandingTextEditor: View {
                 }
                 
                 TextEditor(text: $text)
-                    .frame(height: min(textHeight, 100))  // Reduced max height
+                    .frame(height: min(textHeight, 100))
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
                     .onChange(of: text) { _ in
@@ -261,6 +272,7 @@ struct ExpandingTextEditor: View {
     }
 }
 
+// Custom input toolbar for chat interface
 struct MessageInputToolbar: View {
     @Binding var text: String
     @Binding var isTyping: Bool
@@ -287,7 +299,7 @@ struct MessageInputToolbar: View {
                 }
                 
                 if isLoading || isTyping {
-                    // Stop button
+                    // Stop button for canceling current generation
                     Button(action: onStop) {
                         Circle()
                             .fill(Color.teal.opacity(0.1))
@@ -301,7 +313,7 @@ struct MessageInputToolbar: View {
                     }
                 }
                 
-                // Send button
+                // Send button with loading state
                 Button(action: onSend) {
                     Circle()
                         .fill(text.isEmpty || isLoading || isTyping ? Color(.systemGray4) : Color.teal)
@@ -328,6 +340,7 @@ struct MessageInputToolbar: View {
     }
 }
 
+// Chat interface for symptom analysis
 struct SymptomChatView: View {
     let initialMessage: ChatMessage
     @Environment(\.dismiss) var dismiss
@@ -408,6 +421,7 @@ struct SymptomChatView: View {
         }
     }
     
+    // Initialize conversation with initial message
     private func startConversation() {
         messages = [initialMessage]
         chatHistory.saveMessage(initialMessage, conversationId: conversationId)
@@ -438,11 +452,13 @@ struct SymptomChatView: View {
         }
     }
     
+    // Cancel current AI response generation
     private func cancelCurrentGeneration() {
         isLoading = false
         isTyping = false
     }
     
+    // Send user message and handle AI response
     private func sendMessage() {
         guard !userInput.isEmpty && !isLoading && !isTyping else { return }
         
@@ -480,6 +496,7 @@ struct SymptomChatView: View {
     }
 }
 
+// View for displaying individual chat messages
 struct MessageView: View {
     let message: ChatMessage
     let scrollProxy: ScrollViewProxy
@@ -531,6 +548,7 @@ struct MessageView: View {
     }
 }
 
+// Avatar view for chat participants
 struct AvatarView: View {
     let systemName: String
     
@@ -543,6 +561,7 @@ struct AvatarView: View {
     }
 }
 
+// Typewriter effect for AI responses
 struct TypewriterText: View {
     let text: String
     @State private var displayedText = ""
@@ -575,7 +594,6 @@ struct TypewriterText: View {
             } else {
                 timer.invalidate()
                 if currentIndex < text.count {
-                    // If stopped early, show all text
                     displayedText = text
                 }
             }
@@ -583,6 +601,7 @@ struct TypewriterText: View {
     }
 }
 
+// Formatted AI response with typewriter effect
 struct FormattedAIResponse: View {
     let text: String
     @Binding var isTyping: Bool
@@ -635,10 +654,8 @@ struct FormattedAIResponse: View {
             } else {
                 timer.invalidate()
                 if !isTyping {
-                    // If stopped, show partial text only
                     onStopTyping()
                 } else if currentIndex < formattedText.count {
-                    // If typing is complete, show all text
                     displayedText = formattedText
                 }
                 isTyping = false
@@ -648,8 +665,8 @@ struct FormattedAIResponse: View {
         RunLoop.current.add(timer!, forMode: .common)
     }
     
+    // Format text with proper spacing and list formatting
     private func formatText(_ text: String) -> String {
-        // Split the text into sections based on double newlines
         let sections = text.components(separatedBy: "\n\n")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
@@ -657,18 +674,14 @@ struct FormattedAIResponse: View {
         var formattedText = ""
         
         for (index, section) in sections.enumerated() {
-            // Handle bullet points and lists
             if section.contains("•") || section.contains("1.") || section.contains("2.") || section.contains("3.") {
-                // For bullet points and numbered lists, preserve original formatting
                 formattedText += section.components(separatedBy: "\n")
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .joined(separator: "\n")
             } else {
-                // For regular text, preserve original formatting
                 formattedText += section
             }
             
-            // Add spacing between sections
             if index < sections.count - 1 {
                 formattedText += "\n\n"
             }

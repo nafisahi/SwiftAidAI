@@ -25,9 +25,7 @@ class ChatHistoryService: ObservableObject {
             .collection("messages")
             .document(message.id)
             .setData(messageData) { error in
-                if let error = error {
-                    print("Error saving message: \(error.localizedDescription)")
-                }
+                // Remove print("Error saving message: \(error.localizedDescription)")
             }
     }
     
@@ -48,11 +46,7 @@ class ChatHistoryService: ObservableObject {
             .collection("conversations")
             .document(conversationId)
             .setData(metadata, merge: true) { error in
-                if let error = error {
-                    print("Error saving metadata: \(error.localizedDescription)")
-                } else {
-                    print("Successfully saved conversation metadata for ID: \(conversationId)")
-                }
+                // Remove print("Error saving metadata: \(error.localizedDescription)")
             }
     }
     
@@ -81,7 +75,7 @@ class ChatHistoryService: ObservableObject {
             .order(by: "timestamp")
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error loading messages: \(error.localizedDescription)")
+                    // Remove print("Error loading messages: \(error.localizedDescription)")
                     completion([])
                     return
                 }
@@ -116,7 +110,7 @@ class ChatHistoryService: ObservableObject {
             .order(by: "updated", descending: true)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error fetching conversation IDs: \(error.localizedDescription)")
+                    // Remove print("Error fetching conversation IDs: \(error.localizedDescription)")
                     completion([])
                     return
                 }

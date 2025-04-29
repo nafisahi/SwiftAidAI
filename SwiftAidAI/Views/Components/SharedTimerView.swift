@@ -1,6 +1,8 @@
 import SwiftUI
 
+// A reusable timer component with start, pause, and reset functionality
 struct SharedTimerView: View {
+    // Timer state bindings and properties
     @Binding var timeRemaining: Int
     var timeRemainingFormatted: String
     @Binding var timerIsRunning: Bool
@@ -12,15 +14,19 @@ struct SharedTimerView: View {
     
     var body: some View {
         VStack(spacing: 12) {
+            // Timer display section
             HStack {
+                // Timer icon
                 Image(systemName: "timer")
                     .foregroundColor(timerColor)
                     .font(.system(size: 18))
                 
+                // Timer label and time display
                 Text(labelText)
                     .font(.subheadline)
                     .bold()
                 
+                // Time remaining with color change for urgency
                 Text(timeRemainingFormatted)
                     .font(.title3)
                     .monospacedDigit()
@@ -30,7 +36,9 @@ struct SharedTimerView: View {
                 Spacer()
             }
             
+            // Timer control buttons
             HStack(spacing: 12) {
+                // Play/Pause button
                 Button(action: {
                     if timerIsRunning {
                         onStop()
@@ -50,6 +58,7 @@ struct SharedTimerView: View {
                     .cornerRadius(8)
                 }
                 
+                // Reset button
                 Button(action: onReset) {
                     HStack {
                         Image(systemName: "arrow.clockwise")

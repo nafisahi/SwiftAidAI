@@ -5,7 +5,7 @@ import Contacts
 import Foundation
 import MessageUI
 
-// MARK: - Models
+// Model for storing emergency contact information
 struct EmergencyContact: Identifiable, Codable {
     let id: UUID
     var name: String
@@ -20,13 +20,15 @@ struct EmergencyContact: Identifiable, Codable {
     }
 }
 
+// Model for tracking alert status
 struct AlertStatus {
     var isLocationShared: Bool
     var contactsNotified: Int
 }
 
-// MARK: - View
+// Main emergency alert view with health monitoring and contact management
 struct AlertView: View {
+    // View models and state management
     @StateObject private var viewModel = AlertViewModel()
     @StateObject private var locationViewModel = LocationViewModel()
     @StateObject private var messageHelper = EmergencyMessageHelper()
@@ -37,11 +39,12 @@ struct AlertView: View {
     
     var body: some View {
         ZStack {
+            // Background
             Color(.systemBackground)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Fixed Header
+                // Fixed Header with title and subtitle
                 VStack(spacing: 8) {
                     Text("Emergency Alert")
                         .font(.system(size: 32, weight: .bold))
@@ -65,14 +68,14 @@ struct AlertView: View {
                         )
                 )
                 
-                // Scrollable Content
+                // Main scrollable content
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Emergency Actions Section
+                        // Emergency Actions Section with call buttons and hospital finder
                         VStack(spacing: 16) {
-                            // Emergency Call Buttons
+                            // Emergency Call Buttons (999 and 112)
                             HStack(spacing: 12) {
-                                // 999 Button
+                                // 999 Emergency Button
                                 Button(action: {}) {
                                     HStack {
                                         Image(systemName: "phone.fill")
@@ -86,7 +89,7 @@ struct AlertView: View {
                                     .cornerRadius(12)
                                 }
                                 
-                                // 112 Button
+                                // 112 Emergency Button
                                 Button(action: {}) {
                                     HStack {
                                         Image(systemName: "phone.fill")
@@ -102,7 +105,7 @@ struct AlertView: View {
                             }
                             .padding(.horizontal)
                             
-                            // Hospital Button
+                            // Hospital Finder Button
                             VStack(alignment: .leading, spacing: 8) {
                                 Button(action: {
                                     locationViewModel.findHospitals()
@@ -131,7 +134,7 @@ struct AlertView: View {
                         .padding(.top, 32)
                         .padding(.bottom, 32)
                         
-                        // Health Status Section
+                        // Health Status Section with metrics
                         VStack(spacing: 16) {
                             Text("Health Status")
                                 .font(.title3)
@@ -143,6 +146,7 @@ struct AlertView: View {
                                 GridItem(.flexible()),
                                 GridItem(.flexible())
                             ], spacing: 16) {
+                                // Heart Rate Metric Card
                                 HealthMetricCard(
                                     title: "Heart Rate",
                                     value: "\(Int(viewModel.healthMetrics.heartRate))",
@@ -151,6 +155,7 @@ struct AlertView: View {
                                     status: viewModel.getHeartRateStatus(viewModel.healthMetrics.heartRate)
                                 )
                                 
+                                // Steps Metric Card
                                 HealthMetricCard(
                                     title: "Steps",
                                     value: "\(viewModel.healthMetrics.stepCount)",
@@ -162,7 +167,7 @@ struct AlertView: View {
                             .padding(.horizontal)
                         }
                         
-                        // Emergency Alert Button
+                        // Emergency Alert Button Section
                         VStack(spacing: 8) {
                             Button(action: {
                                 if viewModel.emergencyContacts.isEmpty {
@@ -202,6 +207,7 @@ struct AlertView: View {
                                 
                                 Spacer()
                                 
+                                // Add Contact Button
                                 if viewModel.canAddMoreContacts() {
                                     Button(action: {
                                         viewModel.requestContactPermission()
@@ -215,6 +221,7 @@ struct AlertView: View {
                             }
                             .padding(.horizontal)
                             
+                            // Empty State or Contact List
                             if viewModel.emergencyContacts.isEmpty {
                                 VStack(spacing: 12) {
                                     Image(systemName: "person.2.circle")
@@ -245,6 +252,7 @@ struct AlertView: View {
                                 .padding(.horizontal)
                             }
                             
+                            // Contact Count and Info
                             HStack {
                                 Text("\(viewModel.emergencyContacts.count)/\(viewModel.maxContacts) contacts")
                                     .font(.caption)
@@ -282,9 +290,11 @@ struct AlertView: View {
                 }
             }
         }
+        // View Lifecycle and Event Handlers
         .onAppear {
             viewModel.requestHealthData()
         }
+        // Emergency Alert Confirmation Dialog
         .alert("Send Emergency Alert", isPresented: $viewModel.showingAlertConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Send Alert", role: .destructive) {
@@ -300,11 +310,13 @@ struct AlertView: View {
         } message: {
             Text("This will send your location and vital signs to your emergency contacts.")
         }
+        // SMS Error Alert
         .alert("SMS Not Available", isPresented: $showingSMSError) {
             Button("OK", role: .cancel) { }
         } message: {
             Text("SMS messaging is not available on this device. Please check your settings.")
         }
+        // Message Sheet for Emergency Alert
         .fullScreenCover(isPresented: $showingMessageSheet) {
             if let vc = messageVC {
                 MessageSheetController(messageVC: vc, isPresented: $showingMessageSheet)
@@ -316,6 +328,7 @@ struct AlertView: View {
                 messageVC = nil
             }
         }
+        // Contacts Permission Alert
         .alert("Contacts Access Required", isPresented: $viewModel.showingPermissionAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Settings", role: .none) {
@@ -326,6 +339,7 @@ struct AlertView: View {
         } message: {
             Text("Please enable contacts access in Settings to add emergency contacts.")
         }
+        // Contact Picker Sheet
         .sheet(isPresented: $viewModel.showingContactPicker) {
             ContactPicker(
                 onSelect: { name, number in
@@ -335,9 +349,11 @@ struct AlertView: View {
                 selectedCount: viewModel.emergencyContacts.count
             )
         }
+        // Hospital Map Sheet
         .sheet(isPresented: $showingHospitalMap) {
             EmergencyAlertView()
         }
+        // Contact Deletion Confirmation
         .alert("Remove Contact", isPresented: $viewModel.showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) {
                 viewModel.contactToDelete = nil
@@ -350,6 +366,7 @@ struct AlertView: View {
                 Text("Are you sure you want to remove \(contact.name) from your emergency contacts?")
             }
         }
+        // No Contacts Alert
         .alert("No Emergency Contacts", isPresented: $viewModel.showingNoContactsAlert) {
             Button("Add Contacts", role: .none) {
                 viewModel.requestContactPermission()
@@ -361,7 +378,7 @@ struct AlertView: View {
     }
 }
 
-// MARK: - Supporting Views
+// Card for displaying health metrics
 struct HealthMetricCard: View {
     let title: String
     let value: String
@@ -396,6 +413,7 @@ struct HealthMetricCard: View {
     }
 }
 
+// Card for displaying alert status
 struct StatusCard: View {
     let isLocationShared: Bool
     let contactsNotified: Int
@@ -426,6 +444,7 @@ struct StatusCard: View {
     }
 }
 
+// Row for displaying status information
 struct StatusRow: View {
     let icon: String
     let title: String
@@ -444,6 +463,7 @@ struct StatusRow: View {
     }
 }
 
+// Row for displaying emergency contact information
 struct ContactRow: View {
     let contact: EmergencyContact
     let onDelete: () -> Void
@@ -486,6 +506,7 @@ struct ContactRow: View {
     }
 }
 
+// Enum for health status indicators
 enum HealthStatus {
     case critical, warning, normal
     
@@ -498,6 +519,7 @@ enum HealthStatus {
     }
 }
 
+// Header component for sections
 struct SectionHeader: View {
     let title: String
     let icon: String
