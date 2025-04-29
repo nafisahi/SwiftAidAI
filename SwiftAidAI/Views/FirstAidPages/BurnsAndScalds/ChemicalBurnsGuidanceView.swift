@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for chemical burn step information with unique ID, number, title, icon, instructions, warning note, and optional image
 struct ChemicalBurnStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,11 +12,12 @@ struct ChemicalBurnStep: Identifiable {
     let imageName: String?
 }
 
+// Card component for each chemical burn step with instructions, completion tracking, and timer functionality
 struct ChemicalBurnStepCard: View {
     let step: ChemicalBurnStep
     @Binding var completedSteps: Set<String>
     
-    // Add timer states
+    // Timer states for tracking the cooling period
     @State private var showTimer = false
     @State private var timeRemaining = 1200 // 20 minutes in seconds
     @State private var timerIsRunning = false
@@ -29,23 +31,38 @@ struct ChemicalBurnStepCard: View {
         return String(format: "%02d:%02d", minutes, seconds)
     }
     
-    // Start the timer
+    // Start the timer for cooling period
     private func startTimer() {
-        timeRemaining = 1200 // Reset to 20 minutes
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
+        if !timerIsRunning {
+            timer = Timer.publish(every: 1, on: .main, in: .common)
+            timerCancellable = timer.connect()
+            timerIsRunning = true
+        }
     }
     
     // Stop the timer
     private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
+        if timerIsRunning {
+            timerCancellable?.cancel()
+            timerIsRunning = false
+        }
+    }
+    
+    // Reset the timer to initial 20-minute duration
+    private func resetTimer() {
+        stopTimer()
+        timeRemaining = 1200 // Reset to 20 minutes
+    }
+    
+    // Restart the timer from the beginning
+    private func restartTimer() {
+        resetTimer()
+        startTimer()
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header with numbered circle
+            // Header with numbered circle, title, and icon
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -67,7 +84,7 @@ struct ChemicalBurnStepCard: View {
                     .foregroundColor(.orange)
             }
             
-            // Add the image if present
+            // Display the step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -77,7 +94,7 @@ struct ChemicalBurnStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions as checklist
+            // Instructions as interactive checklist
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
@@ -95,28 +112,50 @@ struct ChemicalBurnStepCard: View {
                                         completedSteps.insert(instruction)
                                         if instruction.contains("Flood with cool running water") {
                                             showTimer = true
-                                            startTimer()
                                         }
                                     }
                                 }
                             
                             Text(instruction)
+                                .font(.subheadline)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         
-                        // Show timer for cooling instruction
-                        if instruction.contains("Flood with cool running water") && showTimer {
+                        // Show start button for cooling instruction when timer hasn't started
+                        if instruction.contains("Flood with cool running water") && !timerIsRunning && timeRemaining == 1200 {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    startTimer()
+                                }) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 22, weight: .bold))
+                                        Text("Start Timer")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(height: 44)
+                                    .padding(.horizontal, 18)
+                                    .foregroundColor(.white)
+                                    .background(Color.orange)
+                                    .cornerRadius(12)
+                                }
+                                .accessibilityLabel("Start Timer")
+                                Spacer()
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        
+                        // Show timer for cooling instruction when active
+                        if instruction.contains("Flood with cool running water") && (timerIsRunning || timeRemaining < 1200) {
                             SharedTimerView(
                                 timeRemaining: $timeRemaining,
                                 timeRemainingFormatted: timeRemainingFormatted,
                                 timerIsRunning: $timerIsRunning,
                                 onStart: { startTimer() },
                                 onStop: { stopTimer() },
-                                onReset: {
-                                    stopTimer()
-                                    timeRemaining = 1200  // Reset to 20 minutes
-                                    startTimer()
-                                },
+                                onReset: { restartTimer() },
                                 timerColor: .orange,
                                 labelText: "Cooling Timer: "
                             )
@@ -131,7 +170,7 @@ struct ChemicalBurnStepCard: View {
                             }
                         }
                         
-                        // Show emergency call buttons
+                        // Show emergency call buttons for emergency number instructions
                         if instruction.contains("999") || instruction.contains("112") {
                             SharedEmergencyCallButtons()
                                 .padding(.top, 4)
@@ -141,6 +180,7 @@ struct ChemicalBurnStepCard: View {
                 }
             }
             
+            // Display warning note if present
             if let warning = step.warningNote {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -166,21 +206,23 @@ struct ChemicalBurnStepCard: View {
     }
 }
 
+// Main view for chemical burns guidance with instructions
 struct ChemicalBurnsGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of chemical burn treatment steps
     let steps = [
         ChemicalBurnStep(
             number: 1,
             title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 for emergency help",
-                "Pass on any details about the chemical to ambulance control",
-                "If possible, ask someone else to call so you can continue treatment"
+                "Call 999 or 112 for emergency help.",
+                "Pass on any details about the chemical to ambulance control.",
+                "If possible, ask someone else to call so you can continue treatment."
             ],
-            warningNote: "Chemical burns can be life-threatening - get help immediately",
+            warningNote: "Chemical burns can be life-threatening - get help immediately.",
             imageName: "chemical-burn-1"
         ),
         ChemicalBurnStep(
@@ -188,12 +230,12 @@ struct ChemicalBurnsGuidanceView: View {
             title: "Ensure Safety & Protection",
             icon: "hand.raised.fill",
             instructions: [
-                "Wear protective gloves if available",
-                "Use apron and eye protection if possible",
-                "Ventilate the area by opening windows/doors",
-                "Remove casualty from contaminated area if safe"
+                "Wear protective gloves if available.",
+                "Use apron and eye protection if possible.",
+                "Ventilate the area by opening windows/doors.",
+                "Remove casualty from contaminated area if safe."
             ],
-            warningNote: "Protect yourself to avoid chemical contact",
+            warningNote: "Protect yourself to avoid chemical contact.",
             imageName: "chemical-burn-2"
         ),
         ChemicalBurnStep(
@@ -201,11 +243,11 @@ struct ChemicalBurnsGuidanceView: View {
             title: "Remove Chemical",
             icon: "arrow.up.circle.fill",
             instructions: [
-                "Brush/pat off powder chemicals if present",
-                "Remove contaminated clothing",
-                "Seal chemical container if safe to do so"
+                "Brush/pat off powder chemicals if present.",
+                "Remove contaminated clothing.",
+                "Seal chemical container if safe to do so."
             ],
-            warningNote: "Do not touch chemicals directly",
+            warningNote: "Do not touch chemicals directly.",
             imageName: "chemical-burn-3"
         ),
         ChemicalBurnStep(
@@ -213,12 +255,12 @@ struct ChemicalBurnsGuidanceView: View {
             title: "Cool the Burn",
             icon: "drop.fill",
             instructions: [
-                "Flood with cool running water for at least 20 minutes",
-                "Pour water away from yourself to avoid splashes",
-                "Ensure contaminated water doesn't collect near casualty",
-                "Do not search for antidotes or try to neutralize chemicals"
+                "Flood with cool running water for at least 20 minutes.",
+                "Pour water away from yourself to avoid splashes.",
+                "Ensure contaminated water doesn't collect near casualty.",
+                "Do not search for antidotes or try to neutralize chemicals."
             ],
-            warningNote: "Never attempt to neutralize acids or alkalis unless trained",
+            warningNote: "Never attempt to neutralize acids or alkalis unless trained.",
             imageName: "chemical-burn-4"
         )
     ]
@@ -226,12 +268,15 @@ struct ChemicalBurnsGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction card explaining chemical burns
                 ChemicalBurnIntroCard()
                 
+                // Display each chemical burn treatment step
                 ForEach(steps) { step in
                     ChemicalBurnStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution information
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -249,6 +294,7 @@ struct ChemicalBurnsGuidanceView: View {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.orange)
                         Text("Back")
+                            .font(.subheadline)
                             .foregroundColor(.orange)
                     }
                 }
@@ -257,6 +303,7 @@ struct ChemicalBurnsGuidanceView: View {
     }
 }
 
+// Introduction card explaining what chemical burns are
 struct ChemicalBurnIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -265,6 +312,7 @@ struct ChemicalBurnIntroCard: View {
                 .bold()
             
             Text("A chemical burn occurs when strong acids or alkalis come into contact with the skin or eyes.")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

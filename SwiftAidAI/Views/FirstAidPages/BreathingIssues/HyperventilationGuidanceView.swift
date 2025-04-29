@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for hyperventilation step information
 struct HyperventilationStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,10 +12,12 @@ struct HyperventilationStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for hyperventilation guidance with instructions
 struct HyperventilationGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Define the sequence of steps for managing hyperventilation
     let steps = [
         HyperventilationStep(
             number: 1,
@@ -22,13 +25,13 @@ struct HyperventilationGuidanceView: View {
             icon: "checklist",
             instructions: [
                 "Look for:",
-                "- Abnormally fast or deep breathing",
-                "- Anxiety",
-                "- A fast pulse-rate",
+                "• Abnormally fast or deep breathing",
+                "• Anxiety",
+                "• A fast pulse-rate",
                 "Later signs may include:",
-                "- Dizziness or feeling faint",
-                "- Trembling, sweating and dry mouth",
-                "- Tingling and cramps in hands, feet and around the mouth"
+                "• Dizziness or feeling faint",
+                "• Trembling, sweating and dry mouth",
+                "• Tingling and cramps in hands, feet and around the mouth"
             ],
             warningNote: nil,
             imageName: nil
@@ -63,8 +66,8 @@ struct HyperventilationGuidanceView: View {
             icon: "phone.fill",
             instructions: [
                 "Call 999 or 112 if:",
-                "- They do not seem to improve",
-                "- You are worried about their condition"
+                "• They do not seem to improve",
+                "• You are worried about their condition"
             ],
             warningNote: nil,
             imageName: "call"
@@ -74,12 +77,15 @@ struct HyperventilationGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining hyperventilation
                 HyperventilationIntroCard()
                 
+                // Display each hyperventilation step
                 ForEach(steps) { step in
                     HyperventilationStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -105,6 +111,7 @@ struct HyperventilationGuidanceView: View {
     }
 }
 
+// Introduction card explaining what hyperventilation is
 struct HyperventilationIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -126,21 +133,24 @@ struct HyperventilationIntroCard: View {
     }
 }
 
+// Card component for each hyperventilation step with instructions and completion tracking
 struct HyperventilationStepCard: View {
     let step: HyperventilationStep
     @Binding var completedSteps: Set<String>
     
+    // Check if text contains emergency numbers
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
     
+    // Check if instruction is a header or bullet point
     private func isHeaderOrBulletPoint(_ instruction: String) -> Bool {
         instruction.hasSuffix(":") || instruction.hasPrefix("-")
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -164,7 +174,7 @@ struct HyperventilationStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Add the image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -174,21 +184,32 @@ struct HyperventilationStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section with special handling for headers and bullet points
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
-                    if instruction.hasPrefix("-") {
+                    if instruction.hasPrefix("•") {
                         Text(instruction)
+                            .font(.subheadline)
                             .foregroundColor(.primary)
                             .padding(.leading, 28)
                             .padding(.vertical, 2)
                     } else if instruction.hasSuffix(":") {
-                        Text(instruction)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    } else if isHeaderOrBulletPoint(instruction) {
+                        CheckboxRow(
+                            text: instruction,
+                            isChecked: completedSteps.contains(instruction),
+                            action: {
+                                if completedSteps.contains(instruction) {
+                                    completedSteps.remove(instruction)
+                                } else {
+                                    completedSteps.insert(instruction)
+                                }
+                            }
+                        )
+                    } else if instruction.hasPrefix("-") {
                         Text(instruction)
                             .foregroundColor(.primary)
+                            .padding(.leading, 28)
+                            .padding(.vertical, 2)
                     } else {
                         CheckboxRow(
                             text: instruction,
@@ -204,17 +225,19 @@ struct HyperventilationStepCard: View {
                     }
                 }
                 
+                // Add emergency call buttons if needed
                 if step.instructions.contains("Call 999 or 112 if:") {
                     SharedEmergencyCallButtons()
                         .padding(.top, 12)
                 }
             }
             
-            // Warning note if present
+            // Warning note section if present
             if let warning = step.warningNote {
                 WarningNote(text: warning)
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)

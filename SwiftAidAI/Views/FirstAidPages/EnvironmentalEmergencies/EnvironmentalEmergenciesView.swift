@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for environmental emergency types with unique ID, title, description, icon, and color
 struct EnvironmentalEmergency: Identifiable {
     let id = UUID()
     let title: String
@@ -9,14 +10,17 @@ struct EnvironmentalEmergency: Identifiable {
     let type: EnvironmentalEmergencyType
 }
 
+// Enum defining the different types of environmental emergencies available in the app
 enum EnvironmentalEmergencyType {
     case heatstroke
     case hypothermia
 }
 
+// Main view displaying a list of environmental emergency scenarios with navigation to detailed first aid guides
 struct EnvironmentalEmergenciesView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of environmental emergency scenarios with their visual identifiers and brief descriptions
     let environmentalTopics = [
         EnvironmentalEmergency(
             title: "Heatstroke",
@@ -37,8 +41,10 @@ struct EnvironmentalEmergenciesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through environmental topics and creates navigation links to their respective first aid guides
                 ForEach(environmentalTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected emergency type
                         switch topic.type {
                         case .heatstroke:
                             HeatstrokeGuidanceView()
@@ -69,12 +75,13 @@ struct EnvironmentalEmergenciesView: View {
     }
 }
 
+// Custom card view component that displays environmental emergency information with icon, title, description, and navigation indicator
 struct EnvironmentalEmergencyCard: View {
     let emergency: EnvironmentalEmergency
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with emergency-specific color and system icon
             ZStack {
                 Circle()
                     .fill(emergency.color.opacity(0.1))
@@ -85,7 +92,7 @@ struct EnvironmentalEmergencyCard: View {
                     .foregroundColor(emergency.color)
             }
             
-            // Content
+            // Text content section displaying the emergency title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(emergency.title)
                     .font(.headline)
@@ -102,7 +109,7 @@ struct EnvironmentalEmergencyCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -120,13 +127,14 @@ struct EnvironmentalEmergencyCard: View {
     }
 }
 
+// Placeholder view for displaying detailed information about a specific environmental emergency
 struct EnvironmentalEmergencyDetailView: View {
     let emergency: EnvironmentalEmergency
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
+                // Header section with icon and title
                 HStack {
                     Image(systemName: emergency.icon)
                         .font(.system(size: 40))
@@ -138,7 +146,7 @@ struct EnvironmentalEmergencyDetailView: View {
                 }
                 .padding()
                 
-                // Content placeholder
+                // Content placeholder for future implementation
                 Text("Detailed information about \(emergency.title) will be displayed here.")
                     .padding()
             }

@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for severe burn step information with unique ID, number, title, icon, instructions, warning note, and optional image
 struct SevereBurnStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,38 +12,57 @@ struct SevereBurnStep: Identifiable {
     let imageName: String?
 }
 
+// Card component for each severe burn step with instructions, completion tracking, and timer functionality
 struct SevereBurnStepCard: View {
     let step: SevereBurnStep
     @Binding var completedSteps: Set<String>
     
-    // States for timer functionality
+    // Timer states for tracking the cooling period
     @State private var showTimer = false
     @State private var timeRemaining = 1200 // 20 minutes
     @State private var timerIsRunning = false
     @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
     @State private var timerCancellable: Cancellable? = nil
     
+    // Format the remaining time as MM:SS
     private var timeRemainingFormatted: String {
         let minutes = timeRemaining / 60
         let seconds = timeRemaining % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
     
+    // Start the timer for cooling period
     private func startTimer() {
-        timeRemaining = 1200 // Reset to 20 minutes
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
+        if !timerIsRunning {
+            timer = Timer.publish(every: 1, on: .main, in: .common)
+            timerCancellable = timer.connect()
+            timerIsRunning = true
+        }
     }
     
+    // Stop the timer
     private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
+        if timerIsRunning {
+            timerCancellable?.cancel()
+            timerIsRunning = false
+        }
+    }
+    
+    // Reset the timer to initial 20-minute duration
+    private func resetTimer() {
+        stopTimer()
+        timeRemaining = 1200 // Reset to 20 minutes
+    }
+    
+    // Restart the timer from the beginning
+    private func restartTimer() {
+        resetTimer()
+        startTimer()
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header with numbered circle
+            // Header with numbered circle, title, and icon
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -64,7 +84,7 @@ struct SevereBurnStepCard: View {
                     .foregroundColor(.orange)
             }
             
-            // Add the image if present
+            // Display the step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -74,7 +94,7 @@ struct SevereBurnStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions as checklist
+            // Instructions as interactive checklist
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
@@ -84,36 +104,58 @@ struct SevereBurnStepCard: View {
                                 .onTapGesture {
                                     if completedSteps.contains(instruction) {
                                         completedSteps.remove(instruction)
-                                        if instruction.contains("Start cooling the burn immediately with cool running water") {
+                                        if instruction.contains("Continue cooling for at least 20 minutes") {
                                             showTimer = false
                                             stopTimer()
                                         }
                                     } else {
                                         completedSteps.insert(instruction)
-                                        if instruction.contains("Start cooling the burn immediately with cool running water") {
+                                        if instruction.contains("Continue cooling for at least 20 minutes") {
                                             showTimer = true
-                                            startTimer()
                                         }
                                     }
                                 }
                             
                             Text(instruction)
+                                .font(.subheadline)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         
-                        // Show timer for cooling instruction
-                        if instruction.contains("Start cooling the burn immediately with cool running water") && showTimer {
+                        // Show start button for cooling instruction when timer hasn't started
+                        if instruction.contains("Continue cooling for at least 20 minutes") && !timerIsRunning && timeRemaining == 1200 {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    startTimer()
+                                }) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 22, weight: .bold))
+                                        Text("Start Timer")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(height: 44)
+                                    .padding(.horizontal, 18)
+                                    .foregroundColor(.white)
+                                    .background(Color.orange)
+                                    .cornerRadius(12)
+                                }
+                                .accessibilityLabel("Start Timer")
+                                Spacer()
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        
+                        // Show timer for cooling instruction when active
+                        if instruction.contains("Continue cooling for at least 20 minutes") && (timerIsRunning || timeRemaining < 1200) {
                             SharedTimerView(
                                 timeRemaining: $timeRemaining,
                                 timeRemainingFormatted: timeRemainingFormatted,
                                 timerIsRunning: $timerIsRunning,
                                 onStart: { startTimer() },
                                 onStop: { stopTimer() },
-                                onReset: {
-                                    stopTimer()
-                                    timeRemaining = 1200
-                                    startTimer()
-                                },
+                                onReset: { restartTimer() },
                                 timerColor: .orange,
                                 labelText: "Cooling Timer: "
                             )
@@ -128,7 +170,7 @@ struct SevereBurnStepCard: View {
                             }
                         }
                         
-                        // Show emergency call buttons if instruction mentions emergency numbers
+                        // Show emergency call buttons for emergency number instructions
                         if instruction.contains("999") || instruction.contains("112") {
                             SharedEmergencyCallButtons()
                                 .padding(.top, 4)
@@ -138,6 +180,7 @@ struct SevereBurnStepCard: View {
                 }
             }
             
+            // Display warning note if present
             if let warning = step.warningNote {
                 HStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -163,22 +206,24 @@ struct SevereBurnStepCard: View {
     }
 }
 
+// Main view for severe burns guidance with instructions
 struct SevereBurnsGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of severe burn treatment steps
     let steps = [
         SevereBurnStep(
             number: 1,
             title: "Cool the Burn",
             icon: "drop.fill",
             instructions: [
-                "Start cooling the burn immediately with cool running water",
-                "Help casualty sit or lie down",
-                "Keep burnt area from touching the ground",
-                "Continue cooling for at least 20 minutes"
+                "Start cooling the burn immediately with cool running water.",
+                "Help casualty sit or lie down.",
+                "Keep burnt area from touching the ground.",
+                "Continue cooling for at least 20 minutes."
             ],
-            warningNote: "Do not over-cool the casualty - this could cause dangerous hypothermia",
+            warningNote: "Do not over-cool the casualty - this could cause dangerous hypothermia.",
             imageName: "severe-1"
         ),
         SevereBurnStep(
@@ -186,9 +231,9 @@ struct SevereBurnsGuidanceView: View {
             title: "Call Emergency Services",
             icon: "phone.fill",
             instructions: [
-                "Call 999 or 112 for emergency help",
-                "If possible, ask someone else to call",
-                "Continue cooling while waiting for help"
+                "Call 999 or 112 for emergency help.",
+                "If possible, ask someone else to call.",
+                "Continue cooling while waiting for help."
             ],
             warningNote: nil,
             imageName: "severe-2"
@@ -198,11 +243,11 @@ struct SevereBurnsGuidanceView: View {
             title: "Remove Restrictions",
             icon: "hand.raised.fill",
             instructions: [
-                "Carefully remove jewellery, watches, belts, shoes",
-                "Remove any burnt clothing if not stuck to skin",
-                "Have someone help while you continue cooling"
+                "Carefully remove jewellery, watches, belts, shoes.",
+                "Remove any burnt clothing if not stuck to skin.",
+                "Have someone help while you continue cooling."
             ],
-            warningNote: "Do not remove clothing stuck to the burn",
+            warningNote: "Do not remove clothing stuck to the burn.",
             imageName: "severe-3"
         ),
         SevereBurnStep(
@@ -210,12 +255,12 @@ struct SevereBurnsGuidanceView: View {
             title: "Cover the Burn",
             icon: "bandage.fill",
             instructions: [
-                "Once cooled, cover loosely with cling film lengthways",
-                "Discard first two turns of cling film",
-                "For hands/feet, use clean plastic bag",
-                "Alternative: use sterile dressing or non-fluffy material"
+                "Once cooled, cover loosely with cling film lengthways.",
+                "Discard first two turns of cling film.",
+                "For hands/feet, use clean plastic bag.",
+                "Alternative: use sterile dressing or non-fluffy material."
             ],
-            warningNote: "Do not wrap cling film around the burn - it needs space to swell",
+            warningNote: "Do not wrap cling film around the burn - it needs space to swell.",
             imageName: "severe-4"
         )
     ]
@@ -223,12 +268,15 @@ struct SevereBurnsGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction card explaining severe burns
                 SevereBurnIntroCard()
                 
+                // Display each severe burn treatment step
                 ForEach(steps) { step in
                     SevereBurnStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution information
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -246,6 +294,7 @@ struct SevereBurnsGuidanceView: View {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.orange)
                         Text("Back")
+                            .font(.subheadline)
                             .foregroundColor(.orange)
                     }
                 }
@@ -254,6 +303,7 @@ struct SevereBurnsGuidanceView: View {
     }
 }
 
+// Introduction card explaining what severe burns are
 struct SevereBurnIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -262,6 +312,7 @@ struct SevereBurnIntroCard: View {
                 .bold()
             
             Text("Burns and scalds are caused by damage to the skin when it comes in contact with heat. Your priority is to cool the burn as quickly as possible. If someone has a severe burn they may develop shock which is a life-threatening condition.")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -274,6 +325,7 @@ struct SevereBurnIntroCard: View {
     }
 }
 
+// Card displaying signs and symptoms of severe burns
 struct SevereBurnSymptomsCard: View {
     var body: some View {
         SymptomsCard(

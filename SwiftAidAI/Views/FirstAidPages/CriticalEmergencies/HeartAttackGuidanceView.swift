@@ -11,7 +11,7 @@ struct HeartAttackStep: Identifiable {
     let imageName: String
 }
 
-// Main view for heart attack guidance with step-by-step instructions
+// Main view for heart attack guidance with instructions
 struct HeartAttackGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []

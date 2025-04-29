@@ -12,7 +12,7 @@ struct AnaphylaxisStep: Identifiable {
     let imageName: String?
 }
 
-// Main view for anaphylaxis guidance with step-by-step instructions
+// Main view for anaphylaxis guidance with instructions
 struct AnaphylaxisGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
@@ -157,15 +157,8 @@ struct AnaphylaxisSymptomsCard: View {
 struct AnaphylaxisStepCard: View {
     let step: AnaphylaxisStep
     @Binding var completedSteps: Set<String>
-    
-    // States for timer functionality
-    @State private var timeRemaining = 300 // 5 minutes in seconds
-    @State private var timerIsRunning = false
-    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
-    @State private var timerCancellable: Cancellable? = nil
-    
-    @State private var showingCPR = false
     @State private var injectionTime: Date? = nil
+    @State private var showingCPR = false
     
     // Format time for injection display
     private func formatInjectionTime(_ date: Date) -> String {
@@ -173,26 +166,6 @@ struct AnaphylaxisStepCard: View {
         formatter.timeStyle = .short
         formatter.timeZone = .current
         return formatter.string(from: date)
-    }
-    
-    // Format remaining time for timer
-    private var timeRemainingFormatted: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-    
-    // Start the timer for next dose countdown
-    private func startTimer() {
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
-    }
-    
-    // Stop the timer
-    private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
     }
     
     private func hasEmergencyNumbers(_ text: String) -> Bool {
@@ -238,80 +211,21 @@ struct AnaphylaxisStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Add timer button for second dose step
-            if step.number == 4 {
-                // Show start button only when timer hasn't started and is at initial value
-                if !timerIsRunning && timeRemaining == 300 {
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            startTimer()
-                        }) {
-                            HStack(spacing: 10) {
-                                Image(systemName: "play.circle.fill")
-                                    .font(.system(size: 22, weight: .bold))
-                                Text("Start Timer")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                            }
-                            .frame(height: 44)
-                            .padding(.horizontal, 18)
-                            .foregroundColor(.white)
-                            .background(Color.red)
-                            .cornerRadius(12)
-                        }
-                        .accessibilityLabel("Start Timer")
-                        Spacer()
-                    }
-                    .padding(.vertical, 8)
-                }
-                
-                // Show timer display when started or when time has been modified
-                if timerIsRunning || timeRemaining < 300 {
-                    SharedTimerView(
-                        timeRemaining: $timeRemaining,
-                        timeRemainingFormatted: timeRemainingFormatted,
-                        timerIsRunning: $timerIsRunning,
-                        onStart: { startTimer() },
-                        onStop: { stopTimer() },
-                        onReset: {
-                            stopTimer()
-                            timeRemaining = 300
-                            startTimer()
-                        },
-                        timerColor: .red,
-                        labelText: "Next Dose Timer: "
-                    )
-                    .padding(.leading, 28)
-                    .padding(.vertical, 8)
-                    .onReceive(timer) { _ in
-                        if timerIsRunning && timeRemaining > 0 {
-                            timeRemaining -= 1
-                        } else if timeRemaining == 0 {
-                            stopTimer()
-                        }
-                    }
-                }
-            }
-            
             // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        // Standard checkbox row for instructions
                         CheckboxRow(
                             text: instruction,
                             isChecked: completedSteps.contains(instruction),
                             action: {
                                 if completedSteps.contains(instruction) {
                                     completedSteps.remove(instruction)
-                                    // Clear injection time if unchecking the note time instruction
                                     if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = nil
                                     }
                                 } else {
                                     completedSteps.insert(instruction)
-                                    // Set injection time if checking the note time instruction
                                     if instruction.lowercased().contains("note") && instruction.lowercased().contains("time") {
                                         injectionTime = Date()
                                     }
@@ -319,13 +233,6 @@ struct AnaphylaxisStepCard: View {
                             }
                         )
                         
-                        if hasEmergencyNumbers(instruction) {
-                            SharedEmergencyCallButtons()
-                                .padding(.leading, 28)
-                                .padding(.top, 4)
-                        }
-                        
-                        // Show injection time message if this is the note time instruction
                         if instruction.lowercased().contains("note") && 
                            instruction.lowercased().contains("time") && 
                            completedSteps.contains(instruction) {

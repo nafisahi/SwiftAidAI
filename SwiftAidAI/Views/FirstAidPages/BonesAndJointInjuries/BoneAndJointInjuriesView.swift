@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for bone injury types with unique ID, title, description, icon, color, and type
 struct BoneInjury: Identifiable {
     let id = UUID()
     let title: String
@@ -16,9 +17,11 @@ enum BoneInjuryType {
     case spinal
 }
 
+// Main view displaying a list of bone and joint injury scenarios with navigation to detailed first aid guides
 struct BoneAndJointInjuriesView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of bone and joint injury scenarios with their visual identifiers and brief descriptions
     let boneTopics = [
         // Broken Bones
         BoneInjury(
@@ -42,8 +45,10 @@ struct BoneAndJointInjuriesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through bone injury topics and creates navigation links to their respective first aid guides
                 ForEach(boneTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected injury type
                         switch topic.type {
                         case .fracture:
                             BrokenBonesGuidanceView()
@@ -80,12 +85,13 @@ struct BoneAndJointInjuriesView: View {
     }
 }
 
+// Custom card view component that displays bone injury information with icon, title, description, and navigation indicator
 struct BoneInjuryCard: View {
     let injury: BoneInjury
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with injury-specific color and system icon
             ZStack {
                 Circle()
                     .fill(injury.color.opacity(0.1))
@@ -96,7 +102,7 @@ struct BoneInjuryCard: View {
                     .foregroundColor(injury.color)
             }
             
-            // Content
+            // Text content section displaying the injury title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(injury.title)
                     .font(.headline)
@@ -113,7 +119,7 @@ struct BoneInjuryCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -131,13 +137,14 @@ struct BoneInjuryCard: View {
     }
 }
 
+// Placeholder view for displaying detailed information about a specific bone injury type
 struct BoneInjuryDetailView: View {
     let injury: BoneInjury
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
+                // Header section with icon and title
                 HStack {
                     Image(systemName: injury.icon)
                         .font(.system(size: 40))
@@ -149,7 +156,7 @@ struct BoneInjuryDetailView: View {
                 }
                 .padding()
                 
-                // Content placeholder
+                // Content placeholder for future implementation
                 Text("Detailed information about \(injury.title) will be displayed here.")
                     .padding()
             }

@@ -11,7 +11,7 @@ struct StrokeStep: Identifiable {
     let imageName: String?
 }
 
-// Main view for stroke guidance with step-by-step instructions
+// Main view for stroke guidance with instructions
 struct StrokeGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []

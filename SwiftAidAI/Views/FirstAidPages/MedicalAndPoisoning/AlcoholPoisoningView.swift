@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for alcohol poisoning step information
 struct AlcoholPoisoningStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,11 +12,13 @@ struct AlcoholPoisoningStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for alcohol poisoning guidance with instructions
 struct AlcoholPoisoningView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of steps for managing alcohol poisoning
     let steps = [
         AlcoholPoisoningStep(
             number: 1,
@@ -67,20 +70,24 @@ struct AlcoholPoisoningView: View {
                 "• A responsible adult takes over",
                 "• Emergency help arrives"
             ],
-            warningNote: "If they become unresponsive, check breathing and prepare for CPR.",
+            warningNote: "If they become unresponsive, start CPR immediately.",
             imageName: nil
         )
     ]
     
+    // Main view body showing alcohol poisoning steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining alcohol poisoning
                 AlcoholPoisoningIntroCard()
                 
+                // Display each alcohol poisoning step
                 ForEach(steps) { step in
                     AlcoholPoisoningStepCard(step: step, completedSteps: $completedSteps, showingCPR: $showingCPR)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -91,37 +98,32 @@ struct AlcoholPoisoningView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    dismiss()
-                }) {
+                Button(action: { dismiss() }) {
                     HStack {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(.green)
                         Text("Back")
-                            .foregroundColor(.green)
                     }
+                    .foregroundColor(.green)
                 }
             }
         }
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
         }
     }
 }
 
+// Introduction card explaining what alcohol poisoning is
 struct AlcoholPoisoningIntroCard: View {
+    // Main container for introduction content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("What is Alcohol Poisoning?")
-                .font(.title2)
+                .font(.title3)
                 .bold()
             
             Text("Alcohol poisoning occurs when someone drinks more alcohol than their body can process. It depresses the nervous system, particularly the brain, weakening mental and physical functions, and can lead to unresponsiveness.")
+                .font(.body)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -135,104 +137,86 @@ struct AlcoholPoisoningIntroCard: View {
     }
 }
 
+// Card component for each alcohol poisoning step with instructions and completion tracking
 struct AlcoholPoisoningStepCard: View {
     let step: AlcoholPoisoningStep
     @Binding var completedSteps: Set<String>
     @Binding var showingCPR: Bool
     @State private var showingRecoveryPosition = false
     
-    private func shouldHaveCheckbox(_ text: String) -> Bool {
-        let checkboxItems = [
-            "Look for these signs:",
-            "Later signs may include:",
-            "Call 999 or 112 if:",
-            "Monitor their response level until:",
-            "Reassure them and keep them warm",
-            "Check for injuries, especially head injuries",
-            "Look for signs of other medical conditions",
-            "If conscious and not vomiting, offer sips of water",
-            "Place them in the recovery position to prevent choking"
-        ]
-        return checkboxItems.contains(text)
-    }
-    
-    private func createCheckboxWithRecoveryLink(_ instruction: String) -> some View {
-        HStack(alignment: .center, spacing: 8) {
-            Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
-                .foregroundColor(.primary)
-                .font(.system(size: 20))
-            
-            (Text("Place them in the ")
-                .foregroundColor(.primary) +
-            Text("recovery position")
-                .foregroundColor(.purple)
-                .underline() +
-            Text(" to prevent choking")
-                .foregroundColor(.primary))
-                .font(.body)
-        }
-        .padding(.leading, 8)
-        .onTapGesture {
-            if completedSteps.contains(instruction) {
-                completedSteps.remove(instruction)
-            } else {
-                completedSteps.insert(instruction)
-            }
-        }
-        .overlay(
-            Button(action: { showingRecoveryPosition = true }) {
-                Color.clear
-                    .contentShape(Rectangle())
-            }
-            .opacity(0)
-        )
-    }
-    
-    private func shouldShowEmergencyButtons(_ text: String) -> Bool {
-        return text.contains("999") || text.contains("112")
-    }
-    
-    private var warningHasEmergencyNumbers: Bool {
-        if let warning = step.warningNote {
-            return warning.contains("999") || warning.contains("112")
-        }
-        return false
-    }
-    
+    // Main container for step content
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator
                 ZStack {
                     Circle()
                         .fill(Color.green)
                         .frame(width: 32, height: 32)
                     
                     Text("\(step.number)")
-                        .font(.headline)
+                        .font(.body)
                         .bold()
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
-                        .font(.headline)
+                        .font(.title3)
                         .bold()
                     
                     Image(systemName: step.icon)
-                        .font(.headline)
+                        .font(.title3)
                         .foregroundColor(.green)
                 }
+                
+                Spacer()
             }
             
-            // Instructions
+            // Instructions section with special handling for emergency calls and recovery position
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        if instruction.contains("recovery position") {
-                            createCheckboxWithRecoveryLink(instruction)
-                                .font(.body)
-                        } else if shouldHaveCheckbox(instruction) {
+                        if instruction.hasPrefix("•") {
+                            // Bullet point instructions
+                            Text(instruction)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                                .padding(.leading, 28)
+                                .padding(.vertical, 2)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if instruction.contains("recovery position") {
+                            // Custom checkbox with recovery position link
+                            HStack(alignment: .top, spacing: 8) {
+                                Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(completedSteps.contains(instruction) ? .green : .gray)
+                                    .font(.system(size: 20))
+                                
+                                (Text("Place them in the ")
+                                    .foregroundColor(.primary) +
+                                Text("recovery position")
+                                    .foregroundColor(.green)
+                                    .underline() +
+                                Text(" to prevent choking")
+                                    .foregroundColor(.primary))
+                                    .font(.subheadline)
+                                    .onTapGesture {
+                                        showingRecoveryPosition = true
+                                    }
+                                
+                                Spacer()
+                            }
+                            .onTapGesture {
+                                if completedSteps.contains(instruction) {
+                                    completedSteps.remove(instruction)
+                                } else {
+                                    completedSteps.insert(instruction)
+                                }
+                            }
+                        } else {
+                            // Standard checkbox for other instructions
                             CheckboxRow(
                                 text: instruction,
                                 isChecked: completedSteps.contains(instruction),
@@ -244,44 +228,65 @@ struct AlcoholPoisoningStepCard: View {
                                     }
                                 }
                             )
-                        } else {
-                            Text(instruction)
-                                .font(.body)
-                                .foregroundColor(instruction.hasSuffix(":") ? .primary : .secondary)
-                                .padding(.leading, instruction.hasPrefix("•") ? 24 : 8)
-                                .padding(.vertical, 2)
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         
+                        // Show CPR warning note if instruction contains CPR
                         if instruction.contains("CPR") {
                             CPRWarningNote(showingCPR: $showingCPR)
+                                .tint(.green)
                                 .padding(.leading, 28)
                                 .padding(.top, 4)
                         }
                         
-                        if shouldShowEmergencyButtons(instruction) {
+                        // Show emergency call buttons if instruction contains emergency numbers
+                        if instruction.contains("999") || instruction.contains("112") {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
                                 .padding(.top, 4)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
             }
+            .frame(maxWidth: .infinity)
             
-            // Warning note if present
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 if warning.contains("CPR") {
-                    CPRWarningNote(showingCPR: $showingCPR)
+                    HStack(alignment: .top, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.orange)
+                            .font(.subheadline)
+                        
+                        (Text("If they become unresponsive, ")
+                            .foregroundColor(.orange) +
+                        Text("start CPR")
+                            .foregroundColor(.green)
+                            .underline())
+                            .font(.subheadline)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(.top, 4)
+                    .onTapGesture {
+                        showingCPR = true
+                    }
                 } else {
                     WarningNote(text: warning)
+                        .font(.subheadline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 
-                if warningHasEmergencyNumbers {
+                if warning.contains("999") || warning.contains("112") {
                     SharedEmergencyCallButtons()
                         .padding(.top, 8)
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
+        .frame(maxWidth: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color(.systemBackground))
@@ -292,13 +297,10 @@ struct AlcoholPoisoningStepCard: View {
                 .stroke(Color.green.opacity(0.2), lineWidth: 1)
         )
         .padding(.horizontal)
+        // Sheet presentation for recovery position guidance
         .sheet(isPresented: $showingRecoveryPosition) {
-            NavigationStack {
-                RecoveryPositionView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingRecoveryPosition = false
-                    })
-            }
+            RecoveryPositionView()
+                .tint(.green)
         }
     }
 }

@@ -21,9 +21,9 @@ struct SprainsGuidanceView: View {
             title: "Rest (R)",
             icon: "bed.double.fill",
             instructions: [
-                "Help them to sit or lie down",
-                "Support the injured part in a comfortable position",
-                "Keep the injured area raised if possible"
+                "Help them to sit or lie down.",
+                "Support the injured part in a comfortable position.",
+                "Keep the injured area raised if possible."
             ],
             warningNote: "Do not force movement if it causes pain",
             imageName: "sprain-1"
@@ -34,11 +34,11 @@ struct SprainsGuidanceView: View {
             title: "Ice (I)",
             icon: "snowflake",
             instructions: [
-                "Apply an ice pack or cold compress",
-                "Wrap frozen items in a clean tea towel - never apply directly to skin",
-                "Hold in place for up to 20 minutes"
+                "Apply an ice pack or cold compress.",
+                "Wrap frozen items in a clean tea towel - never apply directly to skin.",
+                "Hold in place for up to 20 minutes."
             ],
-            warningNote: "Do not leave ice on for more than 20 minutes as this can cause tissue damage",
+            warningNote: "Do not leave ice on for more than 20 minutes as this can cause tissue damage.",
             imageName: "sprain-2"
         ),
         
@@ -47,13 +47,13 @@ struct SprainsGuidanceView: View {
             title: "Comfortable Support (C)",
             icon: "hand.raised.fill",
             instructions: [
-                "Use soft padding to support the injury",
+                "Use soft padding to support the injury.",
                 "Offer pain relief if available:",
                 "• Paracetamol",
                 "• Ibuprofen",
-                "Never give aspirin to anyone under 16 years old"
+                "Never give aspirin to anyone under 16 years old."
             ],
-            warningNote: "Check for any medication allergies before offering pain relief",
+            warningNote: "Check for any medication allergies before offering pain relief.",
             imageName: "sprain-3"
         ),
         
@@ -62,12 +62,12 @@ struct SprainsGuidanceView: View {
             title: "Elevate (E)",
             icon: "arrow.up.circle.fill",
             instructions: [
-                "Support the injury in an elevated position",
-                "Use pillows or cushions underneath",
-                "This helps minimize swelling and bruising",
-                "If pain is severe or they cannot move the injured part, call 999 or 112"
+                "Support the injury in an elevated position.",
+                "Use pillows or cushions underneath.",
+                "This helps minimize swelling and bruising.",
+                "If pain is severe or they cannot move the injured part, call 999 or 112."
             ],
-            warningNote: "Seek medical advice if the pain is severe or movement is significantly restricted",
+            warningNote: "Seek medical advice if the pain is severe or movement is significantly restricted.",
             imageName: "sprain-4"
         )
     ]
@@ -133,13 +133,12 @@ struct SprainSymptomsCard: View {
         SymptomsCard(
             title: "Signs and Symptoms",
             symptoms: [
-                "Look for:",
-                "• Pain and tenderness in the affected area",
-                "• Swelling and bruising",
-                "• Difficulty moving the injured area, especially if it's a joint"
+                "Pain and tenderness in the affected area.",
+                "Swelling and bruising.",
+                "Difficulty moving the injured area, especially if it's a joint."
             ],
             accentColor: Color(red: 0.6, green: 0.2, blue: 0.8),
-            warningNote: "If the pain is severe or they cannot move the injured part, seek medical advice"
+            warningNote: "If the pain is severe or they cannot move the injured part, seek medical advice."
         )
     }
 }
@@ -164,16 +163,31 @@ struct SprainStepCard: View {
     
     // Start the timer
     private func startTimer() {
-        timeRemaining = 1200 // Reset to 20 minutes
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
+        if !timerIsRunning {
+            timer = Timer.publish(every: 1, on: .main, in: .common)
+            timerCancellable = timer.connect()
+            timerIsRunning = true
+        }
     }
     
     // Stop the timer
     private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
+        if timerIsRunning {
+            timerCancellable?.cancel()
+            timerIsRunning = false
+        }
+    }
+    
+    // Reset the timer to initial 20-minute duration
+    private func resetTimer() {
+        stopTimer()
+        timeRemaining = 1200 // Reset to 20 minutes
+    }
+    
+    // Restart the timer from the beginning
+    private func restartTimer() {
+        resetTimer()
+        startTimer()
     }
     
     private func hasEmergencyNumbers(_ text: String) -> Bool {
@@ -228,16 +242,34 @@ struct SprainStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     if isHeaderInstruction(instruction) {
-                        Text(instruction)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .padding(.bottom, 4)
+                        if instruction == "Offer pain relief if available:" {
+                            // Show checkbox for the pain relief instruction
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
+                        } else {
+                            // Show regular header text for other instructions
+                            Text(instruction)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .padding(.bottom, 4)
+                        }
                     } else if isMedicationOption(instruction) {
+                        // Show bullet points for medication options
                         Text(instruction)
                             .font(.subheadline)
                             .foregroundColor(.primary)
                             .padding(.leading, 16)
                     } else {
+                        // Show checkbox for regular instructions
                         CheckboxRow(
                             text: instruction,
                             isChecked: completedSteps.contains(instruction),
@@ -254,26 +286,47 @@ struct SprainStepCard: View {
                                     // If checking the ice instruction, show timer
                                     if instruction.contains("Hold in place for up to 20 minutes") {
                                         showTimer = true
-                                        startTimer()
                                     }
                                 }
                             }
                         )
                         .padding(.leading, instruction.hasPrefix("•") ? 16 : 0)
                         
-                        // Show timer after the ice instruction if checked
-                        if instruction.contains("Hold in place for up to 20 minutes") && showTimer {
+                        // Show start button for ice instruction when timer hasn't started
+                        if instruction.contains("Hold in place for up to 20 minutes") && !timerIsRunning && timeRemaining == 1200 {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    startTimer()
+                                }) {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: "play.circle.fill")
+                                            .font(.system(size: 22, weight: .bold))
+                                        Text("Start Timer")
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .frame(height: 44)
+                                    .padding(.horizontal, 18)
+                                    .foregroundColor(.white)
+                                    .background(Color(red: 0.6, green: 0.2, blue: 0.8))
+                                    .cornerRadius(12)
+                                }
+                                .accessibilityLabel("Start Timer")
+                                Spacer()
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        
+                        // Show timer for ice instruction when active
+                        if instruction.contains("Hold in place for up to 20 minutes") && (timerIsRunning || timeRemaining < 1200) {
                             SharedTimerView(
                                 timeRemaining: $timeRemaining,
                                 timeRemainingFormatted: timeRemainingFormatted,
                                 timerIsRunning: $timerIsRunning,
                                 onStart: { startTimer() },
                                 onStop: { stopTimer() },
-                                onReset: {
-                                    stopTimer()
-                                    timeRemaining = 1200  // Reset to 20 minutes
-                                    startTimer()
-                                },
+                                onReset: { restartTimer() },
                                 timerColor: Color(red: 0.6, green: 0.2, blue: 0.8),
                                 labelText: "Ice Timer: "
                             )
@@ -289,6 +342,7 @@ struct SprainStepCard: View {
                         }
                     }
                     
+                    // Show emergency call buttons if instruction contains emergency numbers
                     if hasEmergencyNumbers(instruction) {
                         SharedEmergencyCallButtons()
                             .padding(.leading, 28)

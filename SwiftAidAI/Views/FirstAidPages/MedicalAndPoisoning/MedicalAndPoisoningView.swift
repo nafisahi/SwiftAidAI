@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for medical emergency types with unique ID, title, description, icon, and color
 struct MedicalEmergency: Identifiable {
     let id = UUID()
     let title: String
@@ -9,15 +10,18 @@ struct MedicalEmergency: Identifiable {
     let type: MedicalEmergencyType
 }
 
+// Enum defining the different types of medical emergencies for navigation routing
 enum MedicalEmergencyType {
     case diabetic
     case foodPoisoning
     case alcoholPoisoning
 }
 
+// Main view displaying a list of medical and poisoning scenarios with navigation to detailed first aid guides
 struct MedicalAndPoisoningView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of medical emergency scenarios with their visual identifiers and brief descriptions
     let medicalTopics = [
         MedicalEmergency(
             title: "Diabetic Emergencies",
@@ -45,8 +49,10 @@ struct MedicalAndPoisoningView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through medical topics and creates navigation links to their respective first aid guides
                 ForEach(medicalTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected emergency type
                         switch topic.type {
                         case .diabetic:
                             DiabeticEmergencyView()
@@ -79,12 +85,13 @@ struct MedicalAndPoisoningView: View {
     }
 }
 
+// Custom card view component that displays medical emergency information with icon, title, description, and navigation indicator
 struct MedicalEmergencyCard: View {
     let emergency: MedicalEmergency
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with emergency-specific color and system icon
             ZStack {
                 Circle()
                     .fill(emergency.color.opacity(0.1))
@@ -95,7 +102,7 @@ struct MedicalEmergencyCard: View {
                     .foregroundColor(emergency.color)
             }
             
-            // Content
+            // Text content section displaying the emergency title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(emergency.title)
                     .font(.headline)
@@ -112,7 +119,7 @@ struct MedicalEmergencyCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))

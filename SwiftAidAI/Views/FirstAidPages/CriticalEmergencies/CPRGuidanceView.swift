@@ -36,7 +36,7 @@ struct CPRStep: Identifiable {
     let imageName: String
 }
 
-// Main view for CPR guidance with step-by-step instructions
+// Main view for CPR guidance with instructions
 struct CPRGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss

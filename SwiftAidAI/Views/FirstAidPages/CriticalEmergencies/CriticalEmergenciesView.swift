@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Structure for critical emergencies with ID, title, icon, color and description
 struct CriticalEmergency: Identifiable {
     let id = UUID()
     let title: String
@@ -8,11 +9,12 @@ struct CriticalEmergency: Identifiable {
     let description: String
 }
 
+// Main view displaying a searchable list of life-threatening emergency situations with navigation to detailed guides
 struct CriticalEmergenciesView: View {
     @State private var searchText = ""
-    @State private var isSearching = false
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of critical emergency scenarios with their visual identifiers and brief descriptions
     let criticalTopics = [
         CriticalEmergency(
             title: "Primary Survey (DR ABC)",
@@ -73,8 +75,10 @@ struct CriticalEmergenciesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through filtered topics and creates navigation links to their respective detailed guidance views
                 ForEach(filteredTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate detailed view based on the selected emergency topic
                         switch topic.title {
                         case "Primary Survey (DR ABC)":
                             PrimarySurveyDetailView()
@@ -124,6 +128,7 @@ struct CriticalEmergenciesView: View {
         }
     }
     
+    // Filters the emergency topics based on search text, matching against both title and description
     var filteredTopics: [CriticalEmergency] {
         if searchText.isEmpty {
             return criticalTopics
@@ -136,12 +141,13 @@ struct CriticalEmergenciesView: View {
     }
 }
 
+// Custom card view component that displays emergency information with icon, title, description, and navigation indicator
 struct CriticalEmergencyCard: View {
     let emergency: CriticalEmergency
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with emergency-specific color and system icon
             ZStack {
                 Circle()
                     .fill(emergency.color.opacity(0.1))
@@ -152,7 +158,7 @@ struct CriticalEmergencyCard: View {
                     .foregroundColor(emergency.color)
             }
             
-            // Content
+            // Text content section displaying the emergency title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(emergency.title)
                     .font(.headline)
@@ -166,7 +172,7 @@ struct CriticalEmergencyCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the firstaid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -181,35 +187,6 @@ struct CriticalEmergencyCard: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(emergency.color.opacity(0.2), lineWidth: 1)
         )
-    }
-}
-
-// Placeholder for the detail view
-struct CriticalEmergencyDetailView: View {
-    let emergency: CriticalEmergency
-    
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                // Header
-                HStack {
-                    Image(systemName: emergency.icon)
-                        .font(.system(size: 40))
-                        .foregroundColor(emergency.color)
-                    
-                    Text(emergency.title)
-                        .font(.title)
-                        .bold()
-                }
-                .padding()
-                
-                // Content placeholder
-                Text("Detailed information about \(emergency.title) will be displayed here.")
-                    .padding()
-            }
-        }
-        .navigationTitle(emergency.title)
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

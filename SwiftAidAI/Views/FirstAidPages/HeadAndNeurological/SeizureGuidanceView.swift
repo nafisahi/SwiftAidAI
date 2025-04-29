@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for seizure step information
 struct SeizureStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,21 +12,23 @@ struct SeizureStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for seizure guidance with instructions
 struct SeizureGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
     @Environment(\.dismiss) private var dismiss
     
+    // Array of steps for seizure first aid
     let steps = [
         SeizureStep(
             number: 1,
             title: "Protect the Area",
             icon: "shield.fill",
             instructions: [
-                "Ask bystanders to step back",
-                "Help protect the casualty's privacy",
-                "Clear away dangerous objects",
-                "Make a note of seizure start time"
+                "Ask bystanders to step back.",
+                "Help protect the casualty's privacy.",
+                "Clear away dangerous objects.",
+                "Make a note of seizure start time."
             ],
             warningNote: "Do not restrain the casualty or move them unless in immediate danger. Do not put anything in their mouth.",
             imageName: "seizure-1"
@@ -35,9 +38,9 @@ struct SeizureGuidanceView: View {
             title: "Protect Their Head",
             icon: "brain.head.profile",
             instructions: [
-                "Place soft padding under their head",
-                "Use a rolled-up towel if available",
-                "Loosen any clothing around their neck"
+                "Place soft padding under their head.",
+                "Use a rolled-up towel if available.",
+                "Loosen any clothing around their neck."
             ],
             warningNote: nil,
             imageName: "seizure-2"
@@ -47,9 +50,9 @@ struct SeizureGuidanceView: View {
             title: "After Movements Stop",
             icon: "lungs.fill",
             instructions: [
-                "Open their airway",
-                "Check their breathing",
-                "If breathing, place in recovery position"
+                "Open their airway.",
+                "Check their breathing.",
+                "If breathing, place in recovery position."
             ],
             warningNote: "If they become unresponsive, prepare to start CPR immediately",
             imageName: "seizure-3"
@@ -59,9 +62,9 @@ struct SeizureGuidanceView: View {
             title: "Monitor Response",
             icon: "eye.fill",
             instructions: [
-                "Monitor their level of response",
-                "Note how long the seizure lasted",
-                "Allow 15-30 minutes for recovery"
+                "Monitor their level of response.",
+                "Note how long the seizure lasted.",
+                "Allow 15-30 minutes for recovery."
             ],
             warningNote: "Check for alert bracelet or care plan with specific instructions",
             imageName: "seizure-4"
@@ -88,12 +91,15 @@ struct SeizureGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction card explaining seizures
                 SeizureIntroCard()
                 
+                // Display each seizure step card
                 ForEach(steps) { step in
-                    SeizureStepCard(step: step, completedSteps: $completedSteps, showingCPR: $showingCPR)
+                    SeizureStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -117,16 +123,13 @@ struct SeizureGuidanceView: View {
             }
         }
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }
 
+// Introduction card explaining seizures and their causes
 struct SeizureIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -148,50 +151,34 @@ struct SeizureIntroCard: View {
     }
 }
 
+// Card component for each seizure step with instructions and completion tracking
 struct SeizureStepCard: View {
     let step: SeizureStep
     @Binding var completedSteps: Set<String>
-    @Binding var showingCPR: Bool
+    @State private var seizureStartTime: Date? = nil
+    @State private var showingCPR = false
     
-    // States for timer functionality
-    @State private var timeRemaining = 300 // 5 minutes in seconds for seizure duration
-    @State private var timerIsRunning = false
-    @State private var showTimer = false
-    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
-    @State private var timerCancellable: Cancellable? = nil
+    // Format time for seizure start display
+    private func formatSeizureStartTime(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.timeZone = .current
+        return formatter.string(from: date)
+    }
     
+    // Helper function to check if text contains emergency numbers
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
     
+    // Helper function to check if text is a bullet point
     private func isBulletPoint(_ text: String) -> Bool {
         text.hasPrefix("•")
     }
     
-    // Format remaining time as MM:SS
-    private var timeRemainingFormatted: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-    
-    // Start the timer
-    private func startTimer() {
-        timeRemaining = 300 // Reset to 5 minutes
-        timer = Timer.publish(every: 1, on: .main, in: .common)
-        timerCancellable = timer.connect()
-        timerIsRunning = true
-    }
-    
-    // Stop the timer
-    private func stopTimer() {
-        timerCancellable?.cancel()
-        timerIsRunning = false
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -215,7 +202,7 @@ struct SeizureStepCard: View {
                 }
             }
             
-            // Add the image if available
+            // Display step image if available
             if let imageName = step.imageName {
                 Image(imageName)
                     .resizable()
@@ -225,12 +212,13 @@ struct SeizureStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions list with checkboxes and bullet points
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
                         if isBulletPoint(instruction) {
                             Text(instruction)
+                                .font(.subheadline)
                                 .padding(.leading, 28)
                         } else {
                             CheckboxRow(
@@ -240,59 +228,69 @@ struct SeizureStepCard: View {
                                     if completedSteps.contains(instruction) {
                                         completedSteps.remove(instruction)
                                         if instruction.contains("Make a note of seizure start time") {
-                                            showTimer = false
-                                            stopTimer()
+                                            seizureStartTime = nil
                                         }
                                     } else {
                                         completedSteps.insert(instruction)
                                         if instruction.contains("Make a note of seizure start time") {
-                                            showTimer = true
-                                            startTimer()
+                                            seizureStartTime = Date()
                                         }
                                     }
                                 }
                             )
-                        }
-                        
-                        // Show timer after noting seizure start time
-                        if instruction.contains("Make a note of seizure start time") && showTimer {
-                            SharedTimerView(
-                                timeRemaining: $timeRemaining,
-                                timeRemainingFormatted: timeRemainingFormatted,
-                                timerIsRunning: $timerIsRunning,
-                                onStart: { startTimer() },
-                                onStop: { stopTimer() },
-                                onReset: {
-                                    stopTimer()
-                                    timeRemaining = 300  // Reset to 5 minutes
-                                    startTimer()
-                                },
-                                timerColor: Color(red: 0.3, green: 0.3, blue: 0.8),
-                                labelText: "Seizure Duration: "
-                            )
-                            .padding(.leading, 28)
-                            .padding(.vertical, 8)
-                            .onReceive(timer) { _ in
-                                if timerIsRunning && timeRemaining > 0 {
-                                    timeRemaining -= 1
-                                } else if timeRemaining == 0 {
-                                    stopTimer()
+                            
+                            // Display seizure start time when instruction is checked
+                            if instruction.contains("Make a note of seizure start time") && 
+                               completedSteps.contains(instruction) && 
+                               seizureStartTime != nil {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "clock.fill")
+                                        .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                                        .font(.system(size: 16))
+                                    
+                                    Text("Seizure started at \(formatSeizureStartTime(seizureStartTime!))")
+                                        .font(.subheadline)
+                                        .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                                        .fontWeight(.medium)
                                 }
+                                .padding(.leading, 28)
+                                .padding(.top, 4)
+                                .transition(.slide)
                             }
                         }
                     }
                 }
                 
+                // Warning note with CPR link or standard warning
                 if let warning = step.warningNote {
                     if warning.contains("CPR") {
-                        CPRWarningNote(showingCPR: $showingCPR)
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.subheadline)
+                            
+                            Text("If they become unresponsive, prepare to ")
+                                .foregroundColor(.orange)
+                                .font(.subheadline) +
+                            Text("start CPR")
+                                .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                                .font(.subheadline)
+                                .underline()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 28)
+                        .padding(.top, 4)
+                        .onTapGesture {
+                            showingCPR = true
+                        }
                     } else {
                         WarningNote(text: warning)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 
-                // Add emergency call buttons at the end if the step contains emergency numbers
-                if step.instructions.joined().contains("999") || step.instructions.joined().contains("112") {
+                // Add emergency call buttons at the end of step 5
+                if step.number == 5 {
                     SharedEmergencyCallButtons()
                         .padding(.top, 8)
                 }
@@ -310,12 +308,8 @@ struct SeizureStepCard: View {
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
+                .presentationDragIndicator(.visible)
         }
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for breathing issues with unique ID, title, description, icon, color, and type
 struct BreathingIssue: Identifiable {
     let id = UUID()
     let title: String
@@ -9,14 +10,17 @@ struct BreathingIssue: Identifiable {
     let type: BreathingIssueType
 }
 
+
 enum BreathingIssueType {
     case asthma
     case hyperventilation
 }
 
+// Main view displaying a list of breathing issues with navigation to detailed first aid guides
 struct BreathingIssuesView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of breathing issues with their visual identifiers and brief descriptions
     let breathingTopics = [
         // Asthma Attacks
         BreathingIssue(
@@ -40,8 +44,10 @@ struct BreathingIssuesView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through breathing topics and creates navigation links to their respective first aid guides
                 ForEach(breathingTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected breathing issue type
                         switch topic.type {
                         case .asthma:
                             AsthmaGuidanceView()
@@ -72,12 +78,13 @@ struct BreathingIssuesView: View {
     }
 }
 
+// Custom card view component that displays breathing issue information with icon, title, description, and navigation indicator
 struct BreathingIssueCard: View {
     let issue: BreathingIssue
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with issue-specific color and system icon
             ZStack {
                 Circle()
                     .fill(issue.color.opacity(0.1))
@@ -88,7 +95,7 @@ struct BreathingIssueCard: View {
                     .foregroundColor(issue.color)
             }
             
-            // Content
+            // Text content section displaying the issue title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(issue.title)
                     .font(.headline)
@@ -102,7 +109,7 @@ struct BreathingIssueCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -120,13 +127,14 @@ struct BreathingIssueCard: View {
     }
 }
 
+// Placeholder view for displaying detailed information about a specific breathing issue
 struct BreathingIssueDetailView: View {
     let issue: BreathingIssue
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
+                // Header section with icon and title
                 HStack {
                     Image(systemName: issue.icon)
                         .font(.system(size: 40))
@@ -138,7 +146,7 @@ struct BreathingIssueDetailView: View {
                 }
                 .padding()
                 
-                // Content placeholder
+                // Content placeholder for future implementation
                 Text("Detailed information about \(issue.title) will be displayed here.")
                     .padding()
             }

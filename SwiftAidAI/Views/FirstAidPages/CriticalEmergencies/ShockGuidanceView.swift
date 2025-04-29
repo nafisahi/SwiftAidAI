@@ -11,7 +11,7 @@ struct ShockStep: Identifiable {
     let imageName: String
 }
 
-// Main view for shock guidance with step-by-step instructions
+// Main view for shock guidance with instructions
 struct ShockGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []

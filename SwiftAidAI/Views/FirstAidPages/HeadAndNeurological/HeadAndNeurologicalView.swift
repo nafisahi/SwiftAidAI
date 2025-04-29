@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for head injury types with unique ID, title, description, icon, and color
 struct HeadInjury: Identifiable {
     let id = UUID()
     let title: String
@@ -9,14 +10,17 @@ struct HeadInjury: Identifiable {
     let type: HeadInjuryType
 }
 
+
 enum HeadInjuryType {
     case headInjury
     case seizure
 }
 
+// Main view displaying a list of head and neurological conditions with navigation to detailed first aid guides
 struct HeadAndNeurologicalView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of head and neurological conditions with their visual identifiers and brief descriptions
     let headTopics = [
         HeadInjury(
             title: "Head Injury",
@@ -38,8 +42,10 @@ struct HeadAndNeurologicalView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through head topics and creates navigation links to their respective first aid guides
                 ForEach(headTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected condition type
                         switch topic.type {
                         case .headInjury:
                             HeadInjuryGuidanceView()
@@ -70,12 +76,13 @@ struct HeadAndNeurologicalView: View {
     }
 }
 
+// Custom card view component that displays head injury information with icon, title, description, and navigation indicator
 struct HeadInjuryCard: View {
     let injury: HeadInjury
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with condition-specific color and system icon
             ZStack {
                 Circle()
                     .fill(injury.color.opacity(0.1))
@@ -86,7 +93,7 @@ struct HeadInjuryCard: View {
                     .foregroundColor(injury.color)
             }
             
-            // Content
+            // Text content section displaying the condition title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(injury.title)
                     .font(.headline)
@@ -103,7 +110,7 @@ struct HeadInjuryCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -121,6 +128,7 @@ struct HeadInjuryCard: View {
     }
 }
 
+// View for routing to the appropriate detailed guidance view based on the selected condition type
 struct HeadInjuryDetailView: View {
     let injury: HeadInjury
     

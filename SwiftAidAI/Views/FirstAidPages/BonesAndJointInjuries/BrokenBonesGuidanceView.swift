@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for fracture step information with unique ID, number, title, icon, instructions, warning note, and optional image
 struct FractureStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,21 +12,23 @@ struct FractureStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for broken bones guidance with instructions
 struct BrokenBonesGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of fracture treatment steps
     let steps = [
         FractureStep(
             number: 1,
             title: "Assess Fracture Type",
             icon: "cross.case.fill",
             instructions: [
-                "Check if it's an open fracture (bone visible/skin broken)",
-                "Check if it's a long bone, back, neck, or pelvis injury",
-                "For open fractures or serious injuries, call 999 or 112 immediately"
+                "Check if it's an open fracture (bone visible/skin broken).",
+                "Check if it's a long bone, back, neck, or pelvis injury.",
+                "For open fractures or serious injuries, call 999 or 112 immediately."
             ],
-            warningNote: "Open fractures and injuries to long bones, back, neck, or pelvis require immediate emergency care",
+            warningNote: "Open fractures and injuries to long bones, back, neck, or pelvis require immediate emergency care.",
             imageName: "chemical-burn-1"
         ),
         
@@ -34,9 +37,9 @@ struct BrokenBonesGuidanceView: View {
             title: "Remove Constrictions",
             icon: "hand.raised.fill",
             instructions: [
-                "Remove any rings, watches, or jewelry",
-                "Remove anything that wraps around the injured limb",
-                "Do this as soon as possible before swelling occurs"
+                "Remove any rings, watches, or jewelry.",
+                "Remove anything that wraps around the injured limb.",
+                "Do this as soon as possible before swelling occurs."
             ],
             warningNote: nil,
             imageName: "minor-2"
@@ -47,12 +50,12 @@ struct BrokenBonesGuidanceView: View {
             title: "Wound Care",
             icon: "bandage.fill",
             instructions: [
-                "For open fractures, cover with sterile dressing or clean cloth",
-                "Apply pressure around (not over) the wound",
-                "Secure the dressing with a bandage",
-                "For severe bleeding, call 999 or 112"
+                "For open fractures, cover with sterile dressing or clean cloth.",
+                "Apply pressure around (not over) the wound.",
+                "Secure the dressing with a bandage.",
+                "For severe bleeding, call 999 or 112."
             ],
-            warningNote: "Never apply pressure directly over protruding bone",
+            warningNote: "Never apply pressure directly over protruding bone.",
             imageName: "minor-3"
         ),
         
@@ -61,29 +64,29 @@ struct BrokenBonesGuidanceView: View {
             title: "Immobilize & Support",
             icon: "hand.point.up.fill",
             instructions: [
-                "Keep the casualty still",
-                "Support joints above and below the injury",
-                "Place padding around the injury for support",
-                "Check for sensation changes in the affected area:"
+                "Keep the casualty still.",
+                "Support joints above and below the injury.",
+                "Place padding around the injury for support.",
+                "Check for sensation changes in the affected area."
             ],
-            warningNote: "Do not move the casualty unless they're in immediate danger",
+            warningNote: "Do not move the casualty unless they're in immediate danger.",
             imageName: "fracture-4"
         ),
         
         FractureStep(
             number: 5,
             title: "Check Sensation",
-            icon: "nerve.axon",
+            icon: "hand.raised.fill",
             instructions: [
                 "Ask if the area feels:",
-                "Normal",
-                "Has pins and needles sensation",
-                " Feels unusually hot or cold",
-                "Is numb or has lost feeling",
-                "Call 999 or 112 if there are concerning changes in sensation"
+                "• Normal",
+                "• Has pins and needles sensation",
+                "• Feels unusually hot or cold",
+                "• Is numb or has lost feeling",
+                "Call 999 or 112 if there are concerning changes in sensation."
             ],
-            warningNote: "Loss of sensation may indicate nerve damage and requires immediate medical attention",
-            imageName: "fracture-4"
+            warningNote: "Changes in sensation could indicate nerve damage.",
+            imageName: "broken-bones-5"
         ),
         
         FractureStep(
@@ -91,12 +94,12 @@ struct BrokenBonesGuidanceView: View {
             title: "Secure & Monitor",
             icon: "checkmark.shield.fill",
             instructions: [
-                "Secure upper limb fractures with a sling",
-                "Secure lower limb fractures with broad fold bandages",
-                "Monitor for signs of shock",
-                "If shock develops, call 999 or 112"
+                "Secure upper limb fractures with a sling.",
+                "Secure lower limb fractures with broad fold bandages.",
+                "Monitor for signs of shock.",
+                "If shock develops, call 999 or 112."
             ],
-            warningNote: "Do not raise legs if broken or if there's injury to pelvis/hip",
+            warningNote: "Do not raise legs if broken or if there's injury to pelvis/hip.",
             imageName: "fracture-4"
         )
     ]
@@ -104,12 +107,15 @@ struct BrokenBonesGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction card explaining fractures
                 FractureIntroCard()
                 
+                // Display each fracture treatment step
                 ForEach(steps) { step in
                     FractureStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution information
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -135,6 +141,7 @@ struct BrokenBonesGuidanceView: View {
     }
 }
 
+// Introduction card explaining what a fracture is
 struct FractureIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -156,21 +163,19 @@ struct FractureIntroCard: View {
     }
 }
 
+// Card component for each fracture step with instructions and completion tracking
 struct FractureStepCard: View {
     let step: FractureStep
     @Binding var completedSteps: Set<String>
     
+    // Helper function to check if text contains emergency numbers
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
     
-    private func isHeaderInstruction(_ instruction: String) -> Bool {
-        instruction.hasSuffix(":")
-    }
-    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number, title, and icon
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -204,19 +209,13 @@ struct FractureStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions with checkboxes or bullet points
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
                         if step.number == 5 {
-                            if isHeaderInstruction(instruction) {
-                                // Show header without checkbox
-                                Text(instruction)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .padding(.bottom, 4)
-                            } else {
-                                // Show checkboxes for sensation checks
+                            if instruction == "Ask if the area feels:" {
+                                // Show checkbox only for the main instruction
                                 CheckboxRow(
                                     text: instruction,
                                     isChecked: completedSteps.contains(instruction),
@@ -228,7 +227,27 @@ struct FractureStepCard: View {
                                         }
                                     }
                                 )
-                                .padding(.leading, 16)
+                            } else if instruction == "Call 999 or 112 if there are concerning changes in sensation." {
+                                // Show checkbox for the emergency call instruction
+                                CheckboxRow(
+                                    text: instruction,
+                                    isChecked: completedSteps.contains(instruction),
+                                    action: {
+                                        if completedSteps.contains(instruction) {
+                                            completedSteps.remove(instruction)
+                                        } else {
+                                            completedSteps.insert(instruction)
+                                        }
+                                    }
+                                )
+                            } else {
+                                // Show bullet points for the other sub-points
+                                HStack(alignment: .top, spacing: 8) {
+                                    Text(instruction)
+                                        .font(.subheadline)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding(.leading, 28)
                             }
                         } else {
                             // Regular checkbox for other steps
@@ -245,6 +264,7 @@ struct FractureStepCard: View {
                             )
                         }
                         
+                        // Show emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)

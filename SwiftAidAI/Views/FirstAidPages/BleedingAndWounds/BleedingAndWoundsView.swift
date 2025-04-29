@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for bleeding and wound topics with unique ID, title, icon, color, and description
 struct BleedingWound: Identifiable {
     let id = UUID()
     let title: String
@@ -8,9 +9,11 @@ struct BleedingWound: Identifiable {
     let description: String
 }
 
+// Main view displaying a list of bleeding and wound scenarios with navigation to detailed first aid guides
 struct BleedingAndWoundsView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of bleeding and wound scenarios with their visual identifiers and brief descriptions
     let bleedingTopics = [
         BleedingWound(
             title: "Severe Bleeding",
@@ -41,8 +44,10 @@ struct BleedingAndWoundsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through bleeding topics and creates navigation links to their respective first aid guides
                 ForEach(bleedingTopics) { wound in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected wound type
                         switch wound.title {
                         case "Severe Bleeding":
                             SevereBleedingGuidanceView()
@@ -80,12 +85,13 @@ struct BleedingAndWoundsView: View {
     }
 }
 
+// Custom card view component that displays wound information with icon, title, description, and navigation indicator
 struct BleedingWoundCard: View {
     let wound: BleedingWound
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with wound-specific color and system icon
             ZStack {
                 Circle()
                     .fill(wound.color.opacity(0.1))
@@ -96,7 +102,7 @@ struct BleedingWoundCard: View {
                     .foregroundColor(wound.color)
             }
             
-            // Content
+            // Text content section displaying the wound title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(wound.title)
                     .font(.headline)
@@ -110,7 +116,7 @@ struct BleedingWoundCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -128,13 +134,14 @@ struct BleedingWoundCard: View {
     }
 }
 
+// Placeholder view for displaying detailed information about a specific wound type
 struct BleedingWoundDetailView: View {
     let wound: BleedingWound
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
+                // Header section with icon and title
                 HStack {
                     Image(systemName: wound.icon)
                         .font(.system(size: 40))
@@ -146,7 +153,7 @@ struct BleedingWoundDetailView: View {
                 }
                 .padding()
                 
-                // Content placeholder
+                // Content placeholder for future implementation
                 Text("Detailed information about \(wound.title) will be displayed here.")
                     .padding()
             }

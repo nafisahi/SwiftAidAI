@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Data structure for severe bleeding step information
+// Data structure for severe bleeding step information with unique ID, number, title, icon, instructions, and optional warning/image
 struct BleedingStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,12 +11,13 @@ struct BleedingStep: Identifiable {
     let imageName: String?
 }
 
-// Main view for severe bleeding guidance with step-by-step instructions
+// Main view for severe bleeding guidance with instructions and completion tracking
 struct SevereBleedingGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     @State private var showingCPR = false
     
+    // Predefined list of bleeding control steps with detailed instructions and visual aids
     let steps = [
         BleedingStep(
             number: 1,
@@ -119,10 +120,10 @@ struct SevereBleedingGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Introduction explaining severe bleeding
+                // Introduction explaining the importance of immediate action for severe bleeding
                 BleedingIntroductionCard()
                 
-                // Display each bleeding step
+                // Display each bleeding control step with completion tracking
                 ForEach(steps) { step in
                     BleedingStepCard(step: step, completedSteps: $completedSteps)
                 }
@@ -150,7 +151,7 @@ struct SevereBleedingGuidanceView: View {
     }
 }
 
-// Introduction card explaining importance of immediate action
+// Introduction card explaining the importance of immediate action for severe bleeding
 struct BleedingIntroductionCard: View {
     // Main container for introduction content
     var body: some View {
@@ -172,12 +173,13 @@ struct BleedingIntroductionCard: View {
     }
 }
 
-// Card component for each bleeding step with instructions and completion tracking
+// Card component for each bleeding step with instructions, completion tracking, and CPR guidance
 struct BleedingStepCard: View {
     let step: BleedingStep
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
     
+    // Check if text contains emergency phone numbers
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
@@ -187,7 +189,7 @@ struct BleedingStepCard: View {
         VStack(alignment: .leading, spacing: 12) {
             // Header with step number and title
             HStack(spacing: 16) {
-                // Circular step number indicator
+                // Circular step number indicator with red background
                 ZStack {
                     Circle()
                         .fill(Color.red)
@@ -225,7 +227,7 @@ struct BleedingStepCard: View {
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
-                        // Special handling for CPR instruction
+                        // Special handling for CPR instruction with interactive text
                         if instruction.contains("start CPR") {
                             HStack(alignment: .top, spacing: 8) {
                                 Image(systemName: completedSteps.contains(instruction) ? "checkmark.square.fill" : "square")

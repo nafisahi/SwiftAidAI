@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Defines the structure for burn injury types with unique ID, title, description, icon, and color
 struct BurnInjury: Identifiable {
     let id = UUID()
     let type: BurnType
@@ -9,6 +10,7 @@ struct BurnInjury: Identifiable {
     let color: Color
 }
 
+
 enum BurnType {
     case chemical
     case severe
@@ -16,9 +18,11 @@ enum BurnType {
     case sunburn
 }
 
+// Main view displaying a list of burn and scald scenarios with navigation to detailed first aid guides
 struct BurnsAndScaldsView: View {
     @Environment(\.dismiss) private var dismiss
     
+    // Predefined list of burn and scald scenarios with their visual identifiers and brief descriptions
     let burnTopics = [
         BurnInjury(
             type: .chemical,
@@ -53,8 +57,10 @@ struct BurnsAndScaldsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
+                // Iterates through burn topics and creates navigation links to their respective first aid guides
                 ForEach(burnTopics) { topic in
                     NavigationLink(destination: {
+                        // Routes to the appropriate first aid guide based on the selected burn type
                         switch topic.type {
                         case .chemical:
                             ChemicalBurnsGuidanceView()
@@ -90,12 +96,13 @@ struct BurnsAndScaldsView: View {
     }
 }
 
+// Custom card view component that displays burn information with icon, title, description, and navigation indicator
 struct BurnInjuryCard: View {
     let burn: BurnInjury
     
     var body: some View {
         HStack(spacing: 16) {
-            // Icon Circle
+            // Circular icon container with burn-specific color and system icon
             ZStack {
                 Circle()
                     .fill(burn.color.opacity(0.1))
@@ -106,7 +113,7 @@ struct BurnInjuryCard: View {
                     .foregroundColor(burn.color)
             }
             
-            // Content
+            // Text content section displaying the burn title and brief description
             VStack(alignment: .leading, spacing: 4) {
                 Text(burn.title)
                     .font(.headline)
@@ -123,7 +130,7 @@ struct BurnInjuryCard: View {
             
             Spacer()
             
-            // Arrow indicator
+            // Right-facing chevron indicating the card is tappable and leads to the first aid guide
             Image(systemName: "chevron.right")
                 .foregroundColor(.gray)
                 .font(.system(size: 14, weight: .semibold))
@@ -141,13 +148,14 @@ struct BurnInjuryCard: View {
     }
 }
 
+// Placeholder view for displaying detailed information about a specific burn type
 struct BurnInjuryDetailView: View {
     let burn: BurnInjury
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Header
+                // Header section with icon and title
                 HStack {
                     Image(systemName: burn.icon)
                         .font(.system(size: 40))
@@ -159,7 +167,7 @@ struct BurnInjuryDetailView: View {
                 }
                 .padding()
                 
-                // Content placeholder
+                // Content placeholder for future implementation
                 Text("Detailed information about \(burn.title) will be displayed here.")
                     .padding()
             }

@@ -11,7 +11,7 @@ struct RecoveryStep: Identifiable {
     let imageName: String?
 }
 
-// Main view for recovery position guidance with step-by-step instructions
+// Main view for recovery position guidance with instructions
 struct RecoveryPositionView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss

@@ -11,7 +11,7 @@ struct ChokingStep: Identifiable {
     let imageName: String?
 }
 
-// Main view for choking guidance with step-by-step instructions
+// Main view for choking guidance with instructions
 struct ChokingGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss

@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for head injury step information
 struct HeadInjuryStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,10 +11,12 @@ struct HeadInjuryStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for head injury guidance with instructions
 struct HeadInjuryGuidanceView: View {
     @State private var completedSteps: Set<String> = []
     @Environment(\.dismiss) private var dismiss
     
+    // Array of steps for head injury first aid
     let steps = [
         HeadInjuryStep(
             number: 1,
@@ -56,7 +59,7 @@ struct HeadInjuryGuidanceView: View {
                 "U - Unresponsive: Check if no response to above",
                 "Call 999 or 112 if unresponsive or worried"
             ],
-            warningNote: "If they become unresponsive during assessment, start CPR immediately",
+            warningNote: "Call emergency services immediately if they fail to respond to any stimuli",
             imageName: "heart-attack-2"
         ),
         HeadInjuryStep(
@@ -74,7 +77,7 @@ struct HeadInjuryGuidanceView: View {
                 "• Seizures",
                 "• Blood from ear/nose"
             ],
-            warningNote: "Call 999 or 112 immediately if any serious symptoms develop. If they become unresponsive, start CPR immediately",
+            warningNote: "Call 999 or 112 immediately if any serious symptoms develop",
             imageName: "heart-attack-2"
         ),
         HeadInjuryStep(
@@ -90,7 +93,7 @@ struct HeadInjuryGuidanceView: View {
                 "• No responsible caretaker available",
                 "• Symptoms worsen"
             ],
-            warningNote: "Do not let them return to sports until cleared by a healthcare professional. If they become unresponsive at any point, start CPR immediately",
+            warningNote: "Do not let them return to sports until cleared by a healthcare professional",
             imageName: "heart-attack-2"
         )
     ]
@@ -98,12 +101,15 @@ struct HeadInjuryGuidanceView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction card explaining head injuries
                 HeadInjuryIntroCard()
                 
+                // Display each head injury step card
                 ForEach(steps) { step in
                     HeadInjuryStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -129,6 +135,7 @@ struct HeadInjuryGuidanceView: View {
     }
 }
 
+// Introduction card explaining head injuries
 struct HeadInjuryIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -137,8 +144,10 @@ struct HeadInjuryIntroCard: View {
                 .bold()
             
             Text("Head injuries can range from mild to severe. Quick assessment and appropriate response are crucial. This guide will help you recognize and respond to different types of head injuries.")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+                .lineSpacing(4)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
@@ -150,22 +159,25 @@ struct HeadInjuryIntroCard: View {
     }
 }
 
+// Card component for each head injury step with instructions and completion tracking
 struct HeadInjuryStepCard: View {
     let step: HeadInjuryStep
     @Binding var completedSteps: Set<String>
     @State private var showingCPR = false
     
+    // Helper function to check if text contains emergency numbers
     private func hasEmergencyNumbers(_ text: String) -> Bool {
         text.contains("999") || text.contains("112")
     }
     
+    // Helper function to check if text is a bullet point
     private func isBulletPoint(_ text: String) -> Bool {
         text.hasPrefix("•")
     }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
                 ZStack {
                     Circle()
@@ -189,7 +201,7 @@ struct HeadInjuryStepCard: View {
                 }
             }
             
-            // Add the image if available
+            // Display step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -199,13 +211,28 @@ struct HeadInjuryStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions list with checkboxes and bullet points
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     VStack(alignment: .leading, spacing: 4) {
                         if isBulletPoint(instruction) {
                             Text(instruction)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
                                 .padding(.leading, 28)
+                                .padding(.vertical, 2)
+                        } else if instruction.hasSuffix(":") {
+                            CheckboxRow(
+                                text: instruction,
+                                isChecked: completedSteps.contains(instruction),
+                                action: {
+                                    if completedSteps.contains(instruction) {
+                                        completedSteps.remove(instruction)
+                                    } else {
+                                        completedSteps.insert(instruction)
+                                    }
+                                }
+                            )
                         } else {
                             CheckboxRow(
                                 text: instruction,
@@ -220,6 +247,7 @@ struct HeadInjuryStepCard: View {
                             )
                         }
                         
+                        // Add emergency call buttons if instruction contains emergency numbers
                         if hasEmergencyNumbers(instruction) {
                             SharedEmergencyCallButtons()
                                 .padding(.leading, 28)
@@ -228,11 +256,30 @@ struct HeadInjuryStepCard: View {
                     }
                 }
                 
+                // Warning note with CPR link or standard warning
                 if let warning = step.warningNote {
                     if warning.contains("CPR") {
-                        CPRWarningNote(showingCPR: $showingCPR)
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.orange)
+                                .font(.subheadline)
+                            
+                            (Text("If they become unresponsive, prepare to ")
+                                .foregroundColor(.orange) +
+                            Text("start CPR")
+                                .foregroundColor(Color(red: 0.3, green: 0.3, blue: 0.8))
+                                .underline())
+                                .font(.subheadline)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(4)
+                        }
+                        .padding(.top, 4)
+                        .onTapGesture {
+                            showingCPR = true
+                        }
                     } else {
                         WarningNote(text: warning)
+                            .padding(.top, 4)
                         if hasEmergencyNumbers(warning) {
                             SharedEmergencyCallButtons()
                                 .padding(.top, 4)
@@ -253,12 +300,7 @@ struct HeadInjuryStepCard: View {
         )
         .padding(.horizontal)
         .sheet(isPresented: $showingCPR) {
-            NavigationStack {
-                CPRGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingCPR = false
-                    })
-            }
+            CPRGuidanceView()
         }
     }
 }

@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for blister step information with unique ID, number, title, icon, instructions, and optional warning/image
 struct BlisterStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,10 +11,12 @@ struct BlisterStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for blister guidance with instructions and completion tracking
 struct BlisterGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
+    // Predefined list of blister treatment steps with detailed instructions and visual aids
     let steps = [
         BlisterStep(
             number: 1,
@@ -41,15 +44,19 @@ struct BlisterGuidanceView: View {
         )
     ]
     
+    // Main view body showing blister treatment steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining blisters
                 BlisterIntroCard()
                 
+                // Display each treatment step with completion tracking
                 ForEach(steps) { step in
                     BlisterStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -72,6 +79,7 @@ struct BlisterGuidanceView: View {
     }
 }
 
+// Introduction card explaining what blisters are and how they form
 struct BlisterIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -93,14 +101,16 @@ struct BlisterIntroCard: View {
     }
 }
 
+// Card component for each blister step with instructions and completion tracking
 struct BlisterStepCard: View {
     let step: BlisterStep
     @Binding var completedSteps: Set<String>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator with red background
                 ZStack {
                     Circle()
                         .fill(Color(red: 0.8, green: 0.2, blue: 0.2))
@@ -112,6 +122,7 @@ struct BlisterStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -123,7 +134,7 @@ struct BlisterStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -133,7 +144,7 @@ struct BlisterStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     CheckboxRow(
@@ -150,11 +161,12 @@ struct BlisterStepCard: View {
                 }
             }
             
-            // Warning note
+            // Warning note section if present
             if let warning = step.warningNote {
                 WarningNote(text: warning)
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)

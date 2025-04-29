@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+// Data structure for nosebleed step information with unique ID, number, title, icon, instructions, and optional warning/image
 struct NosebleedStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -11,10 +12,12 @@ struct NosebleedStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for nosebleed guidance with instructions, completion tracking, and timer functionality
 struct NosebleedGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     
+    // Predefined list of nosebleed treatment steps with detailed instructions and visual aids
     let steps = [
         NosebleedStep(
             number: 1,
@@ -54,15 +57,19 @@ struct NosebleedGuidanceView: View {
         )
     ]
     
+    // Main view body showing nosebleed treatment steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining nosebleeds
                 NosebleedIntroCard()
                 
+                // Display each treatment step with completion tracking
                 ForEach(steps) { step in
                     NosebleedStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -85,6 +92,7 @@ struct NosebleedGuidanceView: View {
     }
 }
 
+// Introduction card explaining what nosebleeds are and their causes
 struct NosebleedIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -106,10 +114,18 @@ struct NosebleedIntroCard: View {
     }
 }
 
+// Card component for each nosebleed step with instructions, completion tracking, and timer functionality
 struct NosebleedStepCard: View {
     let step: NosebleedStep
     @Binding var completedSteps: Set<String>
     
+    // States for timer functionality
+    @State private var timeRemaining = 600 // 10 minutes in seconds
+    @State private var timerIsRunning = false
+    @State private var timer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var timerCancellable: Cancellable? = nil
+    
+    // Check if warning note contains emergency phone numbers
     private var warningHasEmergencyNumbers: Bool {
         if let warning = step.warningNote {
             return warning.contains("999") || warning.contains("112")
@@ -117,10 +133,31 @@ struct NosebleedStepCard: View {
         return false
     }
     
+    // Format remaining time for timer display
+    private var timeRemainingFormatted: String {
+        let minutes = timeRemaining / 60
+        let seconds = timeRemaining % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    // Start the timer for nose pinching countdown
+    private func startTimer() {
+        timer = Timer.publish(every: 1, on: .main, in: .common)
+        timerCancellable = timer.connect()
+        timerIsRunning = true
+    }
+    
+    // Stop the timer
+    private func stopTimer() {
+        timerCancellable?.cancel()
+        timerIsRunning = false
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator with red background
                 ZStack {
                     Circle()
                         .fill(Color(red: 0.8, green: 0.2, blue: 0.2))
@@ -132,6 +169,7 @@ struct NosebleedStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -143,7 +181,7 @@ struct NosebleedStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -153,7 +191,63 @@ struct NosebleedStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Timer section for nose pinching step
+            if step.number == 2 {
+                // Show start button only when timer hasn't started and is at initial value
+                if !timerIsRunning && timeRemaining == 600 {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            startTimer()
+                        }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 22, weight: .bold))
+                                Text("Start Timer")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(height: 44)
+                            .padding(.horizontal, 18)
+                            .foregroundColor(.white)
+                            .background(Color(red: 0.8, green: 0.2, blue: 0.2))
+                            .cornerRadius(12)
+                        }
+                        .accessibilityLabel("Start Timer")
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                }
+                
+                // Show timer display when started or when time has been modified
+                if timerIsRunning || timeRemaining < 600 {
+                    SharedTimerView(
+                        timeRemaining: $timeRemaining,
+                        timeRemainingFormatted: timeRemainingFormatted,
+                        timerIsRunning: $timerIsRunning,
+                        onStart: { startTimer() },
+                        onStop: { stopTimer() },
+                        onReset: {
+                            stopTimer()
+                            timeRemaining = 600
+                            startTimer()
+                        },
+                        timerColor: Color(red: 0.8, green: 0.2, blue: 0.2),
+                        labelText: "Nose Pinching Timer: "
+                    )
+                    .padding(.leading, 28)
+                    .padding(.vertical, 8)
+                    .onReceive(timer) { _ in
+                        if timerIsRunning && timeRemaining > 0 {
+                            timeRemaining -= 1
+                        } else if timeRemaining == 0 {
+                            stopTimer()
+                        }
+                    }
+                }
+            }
+            
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     CheckboxRow(
@@ -170,7 +264,7 @@ struct NosebleedStepCard: View {
                 }
             }
             
-            // Warning note
+            // Warning note section with emergency call buttons if needed
             if let warning = step.warningNote {
                 WarningNote(text: warning)
                 
@@ -181,6 +275,7 @@ struct NosebleedStepCard: View {
                 }
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)

@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Data structure for cut and graze step information with unique ID, number, title, icon, instructions, and optional warning/image
 struct CutGrazeStep: Identifiable {
     let id = UUID()
     let number: Int
@@ -10,11 +11,13 @@ struct CutGrazeStep: Identifiable {
     let imageName: String?
 }
 
+// Main view for cuts and grazes guidance with instructions and completion tracking
 struct CutsAndGrazesGuidanceView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var completedSteps: Set<String> = []
     @State private var showingSevereBleedingSheet = false
     
+    // Predefined list of cut and graze treatment steps with detailed instructions and visual aids
     let steps = [
         CutGrazeStep(
             number: 1,
@@ -44,7 +47,7 @@ struct CutsAndGrazesGuidanceView: View {
         )
     ]
     
-    // Emergency criteria previously in step 3
+    // Emergency criteria for when to seek medical help
     let emergencyCriteria = [
         "A wound won't stop bleeding.",
         "A foreign object is embedded in the wound.",
@@ -53,21 +56,25 @@ struct CutsAndGrazesGuidanceView: View {
         "You are unsure whether the casualty has been immunised against tetanus."
     ]
     
+    // Main view body showing cut and graze treatment steps
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                // Introduction explaining cuts and grazes
                 CutsAndGrazesIntroCard()
                 
+                // Display each treatment step with completion tracking
                 ForEach(steps) { step in
                     CutGrazeStepCard(step: step, completedSteps: $completedSteps)
                 }
                 
-                // Emergency Info Card (replacing step 3)
+                // Emergency Info Card showing when to seek medical help
                 EmergencyInfoCard(
                     criteria: emergencyCriteria,
                     showingSevereBleedingSheet: $showingSevereBleedingSheet
                 )
                 
+                // Footer with attribution info
                 AttributionFooter()
                     .padding(.bottom, 32)
             }
@@ -87,21 +94,19 @@ struct CutsAndGrazesGuidanceView: View {
                 }
             }
         }
+        // Sheet presentation for severe bleeding guidance if needed
         .sheet(isPresented: $showingSevereBleedingSheet) {
-            NavigationStack {
-                SevereBleedingGuidanceView()
-                    .navigationBarItems(trailing: Button("Done") {
-                        showingSevereBleedingSheet = false
-                    })
-            }
+            SevereBleedingGuidanceView()
+                .navigationBarBackButtonHidden(true)
         }
     }
 }
 
+// Introduction card explaining what cuts and grazes are
 struct CutsAndGrazesIntroCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // End of Selection
+            // Definition of cuts and grazes
             VStack(alignment: .leading, spacing: 8) {
                 Text("What is a cut?")
                     .font(.headline)
@@ -128,14 +133,16 @@ struct CutsAndGrazesIntroCard: View {
     }
 }
 
+// Card component for each cut and graze step with instructions and completion tracking
 struct CutGrazeStepCard: View {
     let step: CutGrazeStep
     @Binding var completedSteps: Set<String>
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Header
+            // Header with step number and title
             HStack(spacing: 16) {
+                // Circular step number indicator with red background
                 ZStack {
                     Circle()
                         .fill(Color(red: 0.8, green: 0.2, blue: 0.2))
@@ -147,6 +154,7 @@ struct CutGrazeStepCard: View {
                         .foregroundColor(.white)
                 }
                 
+                // Step title and icon
                 HStack {
                     Text(step.title)
                         .font(.headline)
@@ -158,7 +166,7 @@ struct CutGrazeStepCard: View {
                 }
             }
             
-            // Add the image if present
+            // Step image if available
             if let imageName = step.imageName, let uiImage = UIImage(named: imageName) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -168,7 +176,7 @@ struct CutGrazeStepCard: View {
                     .padding(.vertical, 8)
             }
             
-            // Instructions
+            // Instructions section containing checkboxes for each step
             VStack(alignment: .leading, spacing: 8) {
                 ForEach(step.instructions, id: \.self) { instruction in
                     CheckboxRow(
@@ -190,6 +198,7 @@ struct CutGrazeStepCard: View {
                 WarningNote(text: warning)
             }
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
@@ -204,14 +213,14 @@ struct CutGrazeStepCard: View {
     }
 }
 
-// New Emergency Info Card
+// Card showing emergency criteria and when to seek medical help
 struct EmergencyInfoCard: View {
     let criteria: [String]
     @Binding var showingSevereBleedingSheet: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header
+            // Header with warning icon and title
             HStack {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.title2)
@@ -223,10 +232,11 @@ struct EmergencyInfoCard: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
+            // Divider with custom color
             Divider()
                 .background(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.3))
             
-            // Criteria list
+            // Criteria list with special handling for bleeding link
             VStack(alignment: .leading, spacing: 10) {
                 Text("Contact emergency services if:")
                     .font(.subheadline)
@@ -235,7 +245,7 @@ struct EmergencyInfoCard: View {
                 
                 ForEach(criteria, id: \.self) { criterion in
                     if criterion.contains("won't stop bleeding") {
-                        // Special handling for bleeding link
+                        // Interactive text for severe bleeding guidance
                         HStack(alignment: .top, spacing: 8) {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 6))
@@ -257,6 +267,7 @@ struct EmergencyInfoCard: View {
                             .font(.subheadline)
                         }
                     } else {
+                        // Standard criteria item
                         HStack(alignment: .top, spacing: 8) {
                             Image(systemName: "circle.fill")
                                 .font(.system(size: 6))
@@ -271,13 +282,15 @@ struct EmergencyInfoCard: View {
                 }
             }
             
+            // Divider with custom color
             Divider()
                 .background(Color(red: 0.8, green: 0.2, blue: 0.2).opacity(0.3))
                 .padding(.vertical, 8)
             
-            // Using SharedEmergencyCallButtons component directly without title
+            // Emergency call buttons
             SharedEmergencyCallButtons()
         }
+        // Card styling with background, shadow and border
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 16)
