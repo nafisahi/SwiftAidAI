@@ -2,6 +2,8 @@ import Foundation
 import SwiftUI
 import Contacts
 import UserNotifications
+import FirebaseFirestore
+import FirebaseAuth
 
 // Stores health data like heart rate and steps
 struct HealthMetrics {
@@ -23,6 +25,7 @@ class AlertViewModel: ObservableObject {
             if autoAlertEnabled {
                 NotificationManager.shared.requestPermission()
             }
+            saveSettings()
         }
     }
     
@@ -53,9 +56,10 @@ class AlertViewModel: ObservableObject {
     }()
     private let contactService = EmergencyContactService()
     
-    // Load saved contacts when view model is created
+    // Loading saved contacts and settings, setting up health monitoring and notification handling
     init() {
         loadContacts()
+        loadSettings()
         setupHealthMonitoring()
         setupNotificationHandling()
     }
@@ -192,6 +196,50 @@ class AlertViewModel: ObservableObject {
         NotificationDelegate.shared.onEmergencyAlert = { [weak self] in
             self?.sendEmergencyAlert()
         }
+    }
+    
+    // Save settings to Firestore
+    private func saveSettings() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
+        let settingsData: [String: Any] = [
+            "autoAlertEnabled": autoAlertEnabled
+        ]
+        
+        Firestore.firestore()
+            .collection("users")
+            .document(userId)
+            .collection("settings")
+            .document("alert_settings")
+            .setData(settingsData) { error in
+                if let error = error {
+                    // Error saving settings
+                }
+            }
+    }
+    
+    // Load settings from Firestore
+    private func loadSettings() {
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
+        Firestore.firestore()
+            .collection("users")
+            .document(userId)
+            .collection("settings")
+            .document("alert_settings")
+            .getDocument { [weak self] document, error in
+                if let error = error {
+                    // Error loading settings
+                    return
+                }
+                
+                if let data = document?.data(),
+                   let autoAlertEnabled = data["autoAlertEnabled"] as? Bool {
+                    DispatchQueue.main.async {
+                        self?.autoAlertEnabled = autoAlertEnabled
+                    }
+                }
+            }
     }
 }
 

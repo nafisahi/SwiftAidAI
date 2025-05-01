@@ -15,7 +15,7 @@ class CPRBeatPlayer: ObservableObject {
                 player?.prepareToPlay()
                 player?.play()
             } catch {
-                print("Error loading beat sound: \(error.localizedDescription)")
+                // Error loading beat sound
             }
         }
     }

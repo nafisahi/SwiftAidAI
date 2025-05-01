@@ -25,7 +25,7 @@ class HealthManager {
     
     // Notification cooldown management
     private var lastNotificationTime: Date?
-    private let notificationCooldown: TimeInterval = 300 // 5 minutes cooldown
+    private let notificationCooldown: TimeInterval = 120 // 2 minutes cooldown
     
     init(alertViewModel: AlertViewModel) {
         self.alertViewModel = alertViewModel
